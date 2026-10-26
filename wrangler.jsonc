@@ -1,0 +1,32 @@
+{
+  // Configuracion del Worker que sirve la web.
+  //
+  // Hoy este Worker no tiene codigo: solo reparte los archivos de `dist`,
+  // que es lo que deja Vite al compilar. Parece un rodeo frente a publicar
+  // la web a secas, pero no lo es: en la fase 2 hace falta un Durable Object
+  // para que los dos jugadores se encuentren en la misma mesa, y los Durable
+  // Objects solo existen en Workers, no en Pages. Asi la web y el servidor
+  // de la mesa viven en el mismo proyecto y en el mismo dominio, sin lios de
+  // permisos entre dominios.
+  //
+  // En la fase 2 esto crecera con un `main` (el codigo del Worker) y un
+  // `durable_objects`. De momento, solo archivos.
+
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  // El nombre es la direccion: magic-mesa.<subdominio de la cuenta>.workers.dev
+  "name": "magic-mesa",
+
+  // Fija como se comporta el entorno de Cloudflare. Se deja quieta: subirla
+  // puede cambiar el comportamiento de cosas que ya funcionan.
+  "compatibility_date": "2026-10-26",
+
+  "assets": {
+    "directory": "./dist",
+
+    // Cuando se pida una direccion que no es un archivo, devolver el
+    // index.html en vez de un error. Hace falta en cuanto la web tenga
+    // direcciones por dentro, como /mesa/1234.
+    "not_found_handling": "single-page-application"
+  }
+}

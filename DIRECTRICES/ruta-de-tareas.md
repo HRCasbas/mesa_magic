@@ -201,14 +201,29 @@ poco fiable, y SpellTable lleva años peleándose con ello.
 - **React 19 + TypeScript + Vite.** Arrastrar pegatinas con precisión encima
   de un `<video>` es exactamente lo que el HTML hace de fábrica. Flutter
   sería la herramienta equivocada aquí, aunque Héctor lo conozca de Cashtor.
-- **La web se publica en Cloudflare Pages**, en
-  **https://magic-mesa.pages.dev**. El nombre lo eligió Héctor el 26/10/2026:
-  la primera dirección era `hrcasbas.github.io/mesa_magic/` y no le gustaba
-  llevar su usuario dentro. En github.io eso no se puede quitar, porque la
-  dirección es siempre `usuario.github.io/repositorio/`; en Cloudflare el
-  nombre del proyecto **es** la dirección y se elige.
-  De paso adelanta trabajo: la cuenta de Cloudflare hace falta igualmente en
-  la fase 2, para el Worker y el relé TURN.
+- **La web se publica en un Worker de Cloudflare**, llamado `magic-mesa`. El
+  nombre lo eligió Héctor el 26/10/2026: la primera dirección era
+  `hrcasbas.github.io/mesa_magic/` y no le gustaba llevar su usuario dentro.
+  En github.io eso no se puede quitar, porque la dirección es siempre
+  `usuario.github.io/repositorio/`; en Cloudflare el nombre del proyecto
+  **es** la dirección y se elige.
+- **Worker y no Pages, y no es un capricho.** Cloudflare ya empuja los
+  proyectos nuevos a Workers y deja Pages en mantenimiento, pero la razón de
+  peso es otra: **los Durable Objects solo existen en Workers.** Son justo la
+  pieza que la fase 2 necesita para que los dos jugadores se encuentren en la
+  misma mesa. Yendo por Pages habría habido que montar un Worker aparte, en
+  otro dominio, con permisos entre dominios de por medio. Así la web y el
+  servidor de la mesa son **el mismo proyecto y el mismo dominio**.
+  Se descubrió cuando Héctor mandó una captura del formulario: había caído en
+  el de Workers y parecía un error. No lo era.
+- **`wrangler.jsonc` es la configuración de ese Worker.** Hoy solo reparte
+  los archivos de `dist`; en la fase 2 crecerá con un `main` (el código) y un
+  `durable_objects`.
+- **La dirección lleva un nivel más:** `magic-mesa.<subdominio>.workers.dev`,
+  donde el subdominio se elige **una sola vez por cuenta**. Cuidado ahí: si
+  se acepta el que propone Cloudflare, puede volver a colarse el usuario, que
+  es justo lo que Héctor no quería. Un dominio propio (~10 €/año) lo deja en
+  `magicmesa.es` el día que apetezca.
 - **`vite.config.ts` lleva `base: './'`**, rutas relativas, para que la misma
   compilación valga en los dos sitios a la vez: en Cloudflare, colgando de la
   raíz, y en GitHub Pages, colgando de una subcarpeta. Así la mudanza no dejó

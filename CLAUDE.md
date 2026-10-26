@@ -74,6 +74,7 @@ src/
   index.css           hoja de estilo única; los colores en :root
 public/               lo que se copia tal cual
 DIRECTRICES/          la memoria del proyecto
+wrangler.jsonc        el Worker de Cloudflare que sirve la web
 .node-version         la version de Node con la que compila Cloudflare
 .github/workflows/    publicar.yml: la red de seguridad en GitHub Pages
 ```
@@ -110,8 +111,8 @@ y en el PATH de usuario. No hay instalación en Archivos de programa. El
 archivo `.node-version` le dice a Cloudflare que use esa misma versión, para
 que compile igual que aquí.
 
-**Publicar es empujar a `main`.** Cloudflare Pages compila y publica solo en
-un par de minutos, en **https://magic-mesa.pages.dev**.
+**Publicar es empujar a `main`.** Cloudflare compila y publica solo en un par
+de minutos, en **magic-mesa.&lt;subdominio&gt;.workers.dev**.
 
 ---
 

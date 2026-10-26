@@ -7,7 +7,7 @@ pegatinas que se arrastran encima del vídeo.
 **No es Commander.** Son partidas de dos, formatos normales tipo Modern,
 Standard o Limited.
 
-**Dirección:** https://magic-mesa.pages.dev
+**Dirección:** magic-mesa.&lt;subdominio&gt;.workers.dev
 
 ---
 
