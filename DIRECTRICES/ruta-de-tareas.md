@@ -219,11 +219,22 @@ poco fiable, y SpellTable lleva años peleándose con ello.
 - **`wrangler.jsonc` es la configuración de ese Worker.** Hoy solo reparte
   los archivos de `dist`; en la fase 2 crecerá con un `main` (el código) y un
   `durable_objects`.
-- **La dirección lleva un nivel más:** `magic-mesa.<subdominio>.workers.dev`,
-  donde el subdominio se elige **una sola vez por cuenta**. Cuidado ahí: si
-  se acepta el que propone Cloudflare, puede volver a colarse el usuario, que
-  es justo lo que Héctor no quería. Un dominio propio (~10 €/año) lo deja en
-  `magicmesa.es` el día que apetezca.
+- **La dirección es https://magic-mesa.duelo.workers.dev.** Lleva un nivel
+  más que en Pages: `worker.subdominio.workers.dev`. Cloudflare puso de
+  subdominio de cuenta `hrcasbas`, sacado del correo, que era justo lo que
+  Héctor no quería; se cambió a `duelo` el 26/10/2026 desde
+  Cómputo → Workers y Pages → Cambiar subdominio de cuenta.
+  `duel`, en inglés, estaba **ocupado**: los subdominios son únicos en todo
+  Cloudflare, no por cuenta, y las palabras cortas en inglés están cogidas.
+  `duelo`, `tapete` y `elduelo` estaban libres. Se probaron en el propio
+  formulario, que valida al momento, sin confirmar nada.
+  **Cambiar el subdominio tira la dirección vieja al instante** y la nueva
+  tarda unos minutos en responder. Si algún día se vuelve a tocar, avisar
+  antes a quien tenga el enlace.
+  Un dominio propio (~10 €/año) lo dejaría en `magicmesa.es` el día que
+  apetezca, y es un ajuste de dos minutos, no una mudanza.
+- **Cuota de compilación: 3.000 minutos al mes** en el plan gratis. Una
+  compilación de esta web gasta menos de un minuto.
 - **`vite.config.ts` lleva `base: './'`**, rutas relativas, para que la misma
   compilación valga en los dos sitios a la vez: en Cloudflare, colgando de la
   raíz, y en GitHub Pages, colgando de una subcarpeta. Así la mudanza no dejó

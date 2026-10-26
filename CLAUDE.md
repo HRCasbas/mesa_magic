@@ -112,7 +112,7 @@ archivo `.node-version` le dice a Cloudflare que use esa misma versión, para
 que compile igual que aquí.
 
 **Publicar es empujar a `main`.** Cloudflare compila y publica solo en un par
-de minutos, en **magic-mesa.&lt;subdominio&gt;.workers.dev**.
+de minutos, en **https://magic-mesa.duelo.workers.dev**.
 
 ---
 
