@@ -74,14 +74,17 @@ src/
   index.css           hoja de estilo única; los colores en :root
 public/               lo que se copia tal cual
 DIRECTRICES/          la memoria del proyecto
-.github/workflows/    publicar.yml: compila y publica al empujar a main
+.node-version         la version de Node con la que compila Cloudflare
+.github/workflows/    publicar.yml: la red de seguridad en GitHub Pages
 ```
 
 - **React 19 + TypeScript + Vite.** TypeScript no es un capricho: el estado
   de la partida viaja entre los dos navegadores y los dos lados tienen que
   entenderlo igual.
-- **`vite.config.ts` lleva `base: '/mesa_magic/'`** porque la web se publica
-  en una subcarpeta de github.io. Si se quita, la página sale en blanco.
+- **`vite.config.ts` lleva `base: './'`**, o sea rutas relativas, para que la
+  misma compilación valga colgada de la raíz (Cloudflare Pages) y de una
+  subcarpeta (GitHub Pages). El día que la web tenga varias direcciones por
+  dentro, lo relativo deja de valer y hay que poner la ruta buena.
 - **Un solo tema, oscuro, y no se puede elegir.** Esta web se mira al lado
   del vídeo de una mesa; una pantalla blanca deslumbra y hace perder el
   detalle de las cartas.
@@ -103,10 +106,12 @@ npm run lint
 ```
 
 Node.js está en `C:\Users\hecso\develop\.tools\node` (portátil, v24.22.1 LTS)
-y en el PATH de usuario. No hay instalación en Archivos de programa.
+y en el PATH de usuario. No hay instalación en Archivos de programa. El
+archivo `.node-version` le dice a Cloudflare que use esa misma versión, para
+que compile igual que aquí.
 
-**Publicar es empujar a `main`.** La acción de GitHub compila y publica sola
-en un par de minutos.
+**Publicar es empujar a `main`.** Cloudflare Pages compila y publica solo en
+un par de minutos, en **https://magic-mesa.pages.dev**.
 
 ---
 

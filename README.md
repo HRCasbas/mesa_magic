@@ -7,7 +7,7 @@ pegatinas que se arrastran encima del vídeo.
 **No es Commander.** Son partidas de dos, formatos normales tipo Modern,
 Standard o Limited.
 
-**Dirección:** https://hrcasbas.github.io/mesa_magic/
+**Dirección:** https://magic-mesa.pages.dev
 
 ---
 
@@ -42,8 +42,8 @@ npm run lint
 Con `npm run dev` corriendo, la web se recarga sola al guardar un archivo.
 Para pararla, `Ctrl+C`.
 
-**Publicar es empujar a `main`.** No hay que ejecutar nada más: una acción de
-GitHub compila y publica sola en un par de minutos.
+**Publicar es empujar a `main`.** No hay que ejecutar nada más: Cloudflare
+Pages compila y publica solo en un par de minutos.
 
 ## Qué lleva dentro
 

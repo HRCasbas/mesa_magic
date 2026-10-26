@@ -201,14 +201,32 @@ poco fiable, y SpellTable lleva años peleándose con ello.
 - **React 19 + TypeScript + Vite.** Arrastrar pegatinas con precisión encima
   de un `<video>` es exactamente lo que el HTML hace de fábrica. Flutter
   sería la herramienta equivocada aquí, aunque Héctor lo conozca de Cashtor.
-- **La web se publica en GitHub Pages** desde una acción de GitHub, en
-  `https://hrcasbas.github.io/mesa_magic/`. Por eso `vite.config.ts` lleva
-  `base: '/mesa_magic/'`: sin eso la página sale en blanco. Si algún día se
-  muda a Cloudflare Pages, `base` pasa a ser `'/'`.
-- **El repositorio es público**, como el de la web de Pokémon. GitHub Pages
-  gratis lo exige. No es un problema: las claves que aparecerán en el código
-  (la `anon key` de Supabase) están pensadas para ser públicas y lo que
-  protege los datos es RLS, no esconder la clave.
+- **La web se publica en Cloudflare Pages**, en
+  **https://magic-mesa.pages.dev**. El nombre lo eligió Héctor el 26/10/2026:
+  la primera dirección era `hrcasbas.github.io/mesa_magic/` y no le gustaba
+  llevar su usuario dentro. En github.io eso no se puede quitar, porque la
+  dirección es siempre `usuario.github.io/repositorio/`; en Cloudflare el
+  nombre del proyecto **es** la dirección y se elige.
+  De paso adelanta trabajo: la cuenta de Cloudflare hace falta igualmente en
+  la fase 2, para el Worker y el relé TURN.
+- **`vite.config.ts` lleva `base: './'`**, rutas relativas, para que la misma
+  compilación valga en los dos sitios a la vez: en Cloudflare, colgando de la
+  raíz, y en GitHub Pages, colgando de una subcarpeta. Así la mudanza no dejó
+  ninguna de las dos en blanco ni un minuto. **Cuidado para más adelante:** en
+  cuanto la web tenga direcciones por dentro (`/mesa/1234`), lo relativo deja
+  de valer y hay que poner la ruta buena del sitio definitivo.
+- **`.node-version` fija Node 24.22.1 para Cloudflare**, la misma de aquí.
+  Es un archivo del repositorio a propósito, en vez de una variable que haya
+  que escribir en el panel: así la versión viaja con el código y no hay un
+  ajuste suelto que nadie recuerda.
+- **GitHub Pages se queda como red de seguridad** mientras se comprueba que
+  Cloudflare va bien, y se apaga después. La acción `publicar.yml` es la que
+  lo mantiene vivo.
+- **El repositorio es público.** No es un problema: las claves que aparecerán
+  en el código (la `anon key` de Supabase) están pensadas para ser públicas y
+  lo que protege los datos es RLS, no esconder la clave. Con Cloudflare se
+  podría pasar a privado, que GitHub Pages gratis no lo permitía; queda como
+  opción si algún día apetece.
 - **Node.js portátil en `C:\Users\hecso\develop\.tools\node`** (v24.22.1 LTS,
   huella SHA-256 comprobada contra la lista oficial), añadido al PATH de
   usuario. Sin administrador y sin tocar el registro: para quitarlo se borra
@@ -222,8 +240,8 @@ poco fiable, y SpellTable lleva años peleándose con ello.
 
 ## Pendiente de que Héctor decida
 
-- **El nombre.** «Mesa Magic» es provisional, puesto para que la fase 0
-  tuviera título.
+- **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
+  0 tuviera título. La dirección ya sí está elegida: `magic-mesa.pages.dev`.
 - **Cloudflare Access** (gratis hasta 50 usuarios) pondría una puerta en el
   borde, antes de que la web llegue a cargarse. Más seguro, pero añade un
   código al correo cada vez. No se ha metido.
