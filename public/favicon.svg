@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#0f1115"/>
+  <!-- Dos cartas, una por mesa -->
+  <rect x="12" y="16" width="22" height="31" rx="3" fill="#c8a24a" transform="rotate(-9 23 31)"/>
+  <rect x="30" y="16" width="22" height="31" rx="3" fill="#e7e9ee" transform="rotate(9 41 31)"/>
+</svg>

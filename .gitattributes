@@ -1,0 +1,7 @@
+# Los archivos se guardan en el repositorio con saltos de linea de Unix.
+# Windows los sigue viendo como siempre, pero la accion que publica la web
+# corre en Linux y asi los dos ven exactamente el mismo archivo.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

@@ -1,0 +1,57 @@
+# Publica la web en GitHub Pages cada vez que algo entra en `main`.
+#
+# Héctor no tiene que ejecutar nada: con que el cambio llegue a `main`, esto
+# compila y publica solo. Tarda un par de minutos.
+
+name: Publicar la web
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Los permisos que pide GitHub Pages para publicar.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si se empujan dos cambios seguidos, que no se pisen entre ellos.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Traer el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Instalar las dependencias
+        run: npm ci
+
+      - name: Comprobar que compila (TypeScript incluido)
+        run: npm run build
+
+      - name: Dejar la carpeta dist lista para publicar
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publicar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: despliegue
+        uses: actions/deploy-pages@v4

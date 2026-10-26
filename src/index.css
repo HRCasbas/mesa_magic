@@ -1,0 +1,257 @@
+/* Mesa Magic — hoja de estilo única, fase 0.
+ *
+ * Fondo oscuro a propósito: esta web se va a mirar al lado del vídeo de una
+ * mesa, muchas veces de noche, y una pantalla blanca al lado de la imagen
+ * deslumbra y te hace perder el detalle de las cartas. Si algún día hay que
+ * darle la vuelta, se cambian los colores de :root y nada más. */
+
+:root {
+  --fondo: #0f1115;
+  --fondo-tarjeta: #171a21;
+  --borde: #262b36;
+  --texto: #e7e9ee;
+  --texto-suave: #9aa1b1;
+  --acento: #c8a24a;
+  --bien: #5dc98a;
+  --mal: #e0644f;
+  --duda: #e0b44f;
+
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+.pagina {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 3rem;
+}
+
+/* ---- Cabecera ---- */
+
+.cabecera {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.cabecera__fase {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--acento);
+}
+
+.cabecera__titulo {
+  margin: 0.35rem 0 0;
+  font-size: clamp(2rem, 9vw, 2.75rem);
+  letter-spacing: -0.02em;
+}
+
+.cabecera__lema {
+  margin: 0.35rem 0 0;
+  color: var(--texto-suave);
+}
+
+/* ---- Tarjetas ---- */
+
+.tarjeta {
+  background: var(--fondo-tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 0.9rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.tarjeta h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
+}
+
+.tarjeta p {
+  margin: 0 0 0.75rem;
+}
+
+.tarjeta p:last-child {
+  margin-bottom: 0;
+}
+
+.aviso {
+  background: #1f2330;
+  border-left: 3px solid var(--acento);
+  border-radius: 0 0.45rem 0.45rem 0;
+  padding: 0.7rem 0.9rem;
+  color: var(--texto-suave);
+  font-size: 0.93rem;
+}
+
+.aviso strong {
+  color: var(--texto);
+}
+
+.cargando {
+  color: var(--texto-suave);
+}
+
+/* ---- Comprobaciones ---- */
+
+.comprobaciones {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.comprobacion {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--borde);
+}
+
+.comprobacion:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.comprobacion__signo {
+  flex: 0 0 1.6rem;
+  height: 1.6rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--fondo);
+}
+
+.comprobacion--bien .comprobacion__signo {
+  background: var(--bien);
+}
+
+.comprobacion--mal .comprobacion__signo {
+  background: var(--mal);
+}
+
+.comprobacion--duda .comprobacion__signo {
+  background: var(--duda);
+}
+
+.comprobacion__texto {
+  min-width: 0;
+}
+
+.comprobacion__titulo {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.comprobacion__detalle {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.comprobacion__porque {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+}
+
+.resumen {
+  margin: 1rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--borde);
+  font-weight: 600;
+}
+
+.resumen--bien {
+  color: var(--bien);
+}
+
+.resumen--mal {
+  color: var(--mal);
+}
+
+/* ---- Fases ---- */
+
+.fases {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.fase {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--texto-suave);
+}
+
+.fase__numero {
+  flex: 0 0 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--borde);
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.fase--hecha {
+  color: var(--texto);
+}
+
+.fase--hecha .fase__numero {
+  background: var(--bien);
+  border-color: var(--bien);
+  color: var(--fondo);
+  font-weight: 700;
+}
+
+/* ---- Pie ---- */
+
+.pie {
+  margin-top: 1.75rem;
+}
+
+.aparato {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.aparato__par {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.aparato dt {
+  font-weight: 600;
+}
+
+.aparato dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
