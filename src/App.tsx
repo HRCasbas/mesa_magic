@@ -22,8 +22,9 @@ const FASES = [
   { numero: 4, nombre: 'Los contadores', hecha: false },
   { numero: 5, nombre: 'Los marcadores', hecha: false },
   { numero: 6, nombre: 'Leer las cartas', hecha: false },
-  { numero: 7, nombre: 'Mazos e historial', hecha: false },
-  { numero: 8, nombre: 'El remate', hecha: false },
+  { numero: 7, nombre: 'Los mazos', hecha: false },
+  { numero: 8, nombre: 'El historial', hecha: false },
+  { numero: 9, nombre: 'El remate', hecha: false },
 ]
 
 function FilaComprobacion({ dato }: { dato: Comprobacion }) {

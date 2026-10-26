@@ -38,8 +38,9 @@ Tres cosas:
 | **4** | Los contadores, por el canal de datos | |
 | **5** | Las pegatinas arrastrables | |
 | **6** | Leer las cartas: foto de alta resolución, congelar y ampliar, Scryfall | |
-| **7** | Mazos e historial, y exportarlos a un archivo | |
-| **8** | El remate: PWA, pantalla que no se apaga, atajos, al mejor de tres | |
+| **7** | Mazos: zona propia, portada, lista privada, elegir mazo para jugar | |
+| **8** | Historial de partidas: registro automático al terminar, y qué sale de él | |
+| **9** | El remate: PWA, pantalla que no se apaga, atajos, al mejor de tres | |
 
 **Supabase solo se toca en la fase 1 y en la 7.** De la 2 a la 6, todo
 Cloudflare.
@@ -79,6 +80,104 @@ hace falta ninguna función de Supabase.
 
 ---
 
+## Mazos y registro de partidas (pedido por Héctor el 26/10/2026)
+
+> «Para jugar una partida hay que elegir un mazo de un usuario. Cada usuario
+> tiene que tener una zona para poder listar sus mazos y poder poner una
+> carta de imagen principal del mazo para que sea fácil reconocible.»
+
+### La regla que lo ordena todo
+
+**No se empieza una serie sin que los dos hayan elegido mazo.** No es una
+pega burocrática: es lo único que hace que el historial valga algo. Un
+registro de partidas sin saber con qué se jugó no sirve para nada.
+
+El mazo se elige **al empezar la serie, no partida a partida**: en un al
+mejor de tres se juega con el mismo mazo las tres.
+
+### Un mazo
+
+- Nombre, formato (Modern, Standard, Limited, Pioneer, Casual…), notas.
+- **Carta de portada**, para reconocerlo de un vistazo.
+- **Lista de cartas, privada.**
+- Activo o retirado.
+
+**El rival ve el nombre, el formato y la portada. La lista de cartas no.**
+En Magic no se enseña el mazo al contrario, y esto no es un detalle técnico
+sino una regla del producto.
+
+### La portada: se guarda el identificador, no la imagen
+
+Se busca la carta por nombre en Scryfall y se guarda **su identificador y el
+nombre de la carta**, nunca el archivo. La imagen se le pide a Scryfall al
+pintarla. Por tres razones:
+
+1. El almacenamiento del proyecto es 1 GB y **está compartido con la web de
+   Pokémon**. Las imágenes de cartas lo llenarían a tontas y a locas.
+2. Las ilustraciones son de Wizards. Scryfall las sirve; copiarlas a un sitio
+   propio abre una pregunta que no hace falta abrirse.
+3. Si Scryfall no responde, se pinta el nombre de la carta y el mazo se sigue
+   reconociendo. Por eso se guarda también el nombre, y no solo el id.
+
+### Borrar un mazo no puede dejar el historial cojo
+
+**El historial guarda el nombre y la portada del mazo tal como estaban el día
+de la partida**, no solo un enlace al mazo. Así se puede borrar o renombrar un
+mazo sin que las partidas viejas queden en blanco ni mientan.
+
+Es la misma regla que en Cashtor: *un dato que cambia con el tiempo lleva el
+tiempo dentro*. Y permite cumplir la otra: *toda lista donde algo aparece por
+primera vez tiene que dejar borrarlo*.
+
+### El registro es automático, y eso es el 90 % del valor
+
+**Al jugador no se le pide un formulario al acabar.** La aplicación lleva el
+panel, así que ya sabe casi todo:
+
+- Fecha y hora de inicio y de fin, y cuánto ha durado.
+- Los dos mazos (nombre y portada congelados) y los dos jugadores.
+- **Quién empezó cada partida.**
+- En qué turno terminó.
+- Vidas finales de los dos, y veneno si lo hubo.
+- El marcador de la serie.
+- El formato.
+
+Solo hay que preguntar dos cosas, y una se propone sola:
+
+- **Quién ha ganado.** Si unas vidas llegan a 0 o el veneno a 10, se propone
+  y basta con confirmar.
+- **Cómo ha terminado:** vidas a 0, veneno, sin cartas en la biblioteca,
+  concesión, otra.
+
+Y una línea de notas, opcional.
+
+### Lo que sale de ahí, que es lo que de verdad se mira
+
+- **El cruce de mazos:** «mi Rojo Agresivo contra tu Control Azul, 4-2».
+  Es la consulta que un jugador hace de verdad.
+- **Qué tal te va empezando tú y empezando él.** En Magic jugar primero es
+  una ventaja real y medible, y **nadie la apunta a mano jamás**. Aquí sale
+  gratis porque el panel ya sabe quién empezó. De todo el historial, esto es
+  lo que más va a sorprender.
+- Cuántos turnos dura de media cada enfrentamiento.
+- Rachas, y cuánto hace que no juegas con un mazo.
+
+### Dos detalles que hay que resolver al implementarlo
+
+- **Quién escribe la fila.** Al acabar, los dos navegadores tienen el mismo
+  estado; si escriben los dos, salen dos partidas. **Escribe el que creó la
+  mesa**, el otro solo lee. Y la fila lleva el identificador de la serie con
+  una restricción única, para que un reintento no duplique.
+- **Si alguien se va sin cerrar**, la partida queda *sin terminar* y se puede
+  cerrar luego a mano desde el historial. **No se inventa un resultado.**
+
+### Lo que leen los dos
+
+Una partida la pueden leer **los dos que la jugaron**. Los mazos, solo su
+dueño, salvo el nombre, el formato y la portada, que el rival necesita ver.
+
+---
+
 ## Lo que no se negocia
 
 - **No se crea un proyecto nuevo de Supabase.** El plan gratis da dos
@@ -97,14 +196,33 @@ hace falta ninguna función de Supabase.
 
 ---
 
-## Pendiente antes de la fase 1, y es bloqueante
+## Compartir Auth con Pokémon: comprobado y despejado (26/10/2026)
 
-**Hay que mirar las políticas RLS de `public.marcas` y `public.puntos` antes
-de crear la primera cuenta.** Los usuarios de Auth son compartidos con la web
-de Pokémon: quien se registre para Magic existirá también allí. Si alguna
-política deja pasar al rol `authenticated` en general, en vez de comparar
-`auth.uid()`, el amigo podría leer o escribir los datos de Pokémon en cuanto
-se cree la cuenta.
+Era el punto bloqueante de la fase 1: los usuarios de Auth son compartidos
+con la web de Pokémon, así que quien se registre para Magic existirá también
+allí. **Comprobado, y no hay que tocar nada.**
+
+- `public.marcas` y `public.puntos` tienen RLS activo.
+- **Todas sus políticas están concedidas solo al rol `anon`.** No hay ni una
+  para `authenticated`.
+- Y en Postgres **`authenticated` no es miembro de `anon`**: son hermanos,
+  los dos colgando de `authenticator`. Así que las políticas de `anon` no le
+  aplican.
+
+Con RLS activo y sin política que le aplique, a un usuario con sesión se le
+deniega el acceso. **Un usuario de Magic no puede leer ni escribir los datos
+de Pokémon.**
+
+Se miró con una consulta de **metadatos** (`pg_class`, `pg_policies`,
+`pg_auth_members`), sin leer ni una fila de datos.
+
+> **Apunte que no es cosa de Magic.** La web de Pokémon se protege con una
+> clave fija que el navegador manda en una cabecera, comprobada por la
+> función `clave_correcta()`. Como esa web es pública, la clave viaja en su
+> JavaScript y cualquiera que la abra puede leerla. Son 162 marcas de una
+> colección, así que el daño posible es ninguno, **y Magic no lo empeora en
+> nada**. Queda anotado porque se vio, no porque haya que arreglarlo desde
+> aquí. Esas tablas no se tocan.
 
 **El registro público se queda desactivado** y las dos cuentas se crean a
 mano. Un registro abierto no solo mete a desconocidos en la mesa: también les

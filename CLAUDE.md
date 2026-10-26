@@ -60,7 +60,16 @@ textos que ve el usuario, con sus acentos puestos.
    de cortar a la vista.
 3. **El registro va cerrado.** Las cuentas se crean a mano.
 4. **Las pegatinas en coordenadas normalizadas**, nunca en píxeles.
-5. **Un número que necesita una explicación para no confundir, sobra.**
+5. **No se empieza una serie sin que los dos hayan elegido mazo.** Es lo
+   único que hace que el historial valga algo.
+6. **El rival ve el nombre, el formato y la portada de tu mazo. La lista de
+   cartas no.** En Magic no se enseña el mazo al contrario.
+7. **El resultado de la partida se registra solo.** Al jugador se le
+   preguntan dos cosas como mucho, y una se propone sola.
+8. **El historial guarda el nombre y la portada del mazo tal como estaban el
+   día de la partida**, para que borrar un mazo no deje las partidas viejas
+   en blanco.
+9. **Un número que necesita una explicación para no confundir, sobra.**
 
 ---
 
