@@ -18,8 +18,7 @@ Tres cosas:
 
 1. **Vídeo en vivo de las dos mesas**, con el menor retardo posible.
 2. **Panel de contadores compartido**: vidas, veneno, energía, experiencia,
-   infección, cartas en mano y cementerio, turno y fase, quién empieza, la
-   tirada, y el marcador de la serie (partida 1 de 3).
+   infección, cartas en mano y cementerio, turno y fase, y quién empieza.
 3. **Pegatinas arrastrables encima del vídeo**: +1/+1, −1/−1, vínculo vital,
    arrolla, volar, toque mortal, tapado/destapado, señalar una carta («esta»)
    y fichas genéricas. Que se muevan, cambien de valor y se borren, y que la
@@ -32,15 +31,15 @@ Tres cosas:
 | Fase | Qué se hace | Estado |
 |---|---|---|
 | **0** | El terreno: carpeta, repositorio, web vacía publicada en HTTPS, comprobaciones del aparato | **Hecha** (26/10/2026) |
-| **1** | La puerta: usuario y clave, registro cerrado, dos cuentas | Siguiente |
+| **1** | La puerta: usuario y clave, registro cerrado, dos cuentas | **Hecha** (26/10/2026) |
 | **2** | La mesa: Worker de Cloudflare, señalización, credenciales TURN | |
 | **3** | El vídeo: WebRTC, cámara propia y del otro, cortar, diagnóstico | |
 | **4** | Los contadores, por el canal de datos | |
 | **5** | Las pegatinas arrastrables | |
 | **6** | Leer las cartas: foto de alta resolución, congelar y ampliar, Scryfall | |
-| **7** | Mazos: zona propia, portada, lista privada, elegir mazo para jugar | |
-| **8** | Historial de partidas: registro automático al terminar, y qué sale de él | |
-| **9** | El remate: PWA, pantalla que no se apaga, atajos, al mejor de tres | |
+| **7** | Mazos: zona propia, portada, elegir mazo para jugar | |
+| **8** | Historial: declarar ganador, aceptar, y qué sale del registro | |
+| **9** | El remate: PWA, pantalla que no se apaga, atajos | |
 
 **Supabase solo se toca en la fase 1 y en la 7.** De la 2 a la 6, todo
 Cloudflare.
@@ -80,6 +79,76 @@ hace falta ninguna función de Supabase.
 
 ---
 
+## Fase 1: lo que quedó montado (26/10/2026)
+
+### En la base de datos
+
+**Migración `magic_001_esquema_y_jugadores`.** Ensayada antes en una
+transacción con `rollback`, y comprobado después que el `rollback` no había
+dejado nada a medias.
+
+- Esquema `magic`, con `magic.jugadores` (id que apunta a `auth.users`,
+  nombre, creado).
+- **`anon` no entra en `magic`.** La guía oficial de Supabase dice de dar
+  permiso a `anon`, `authenticated` y `service_role`; aquí solo a los dos
+  últimos, porque sin sesión no se ve nada. Comprobado: sin sesión la API
+  responde `401 permission denied for schema magic`.
+- RLS en `jugadores`: los dos se ven el nombre (hace falta para el dado y el
+  historial), cada uno edita solo su ficha.
+
+### En el panel de Supabase
+
+- **Esquema `magic` expuesto** en Data API → Settings → Exposed schemas.
+- **Registro público cerrado.** Comprobado desde fuera: un `POST` a
+  `/auth/v1/signup` responde `422 signup_disabled`.
+- **Site URL** cambiada de `http://localhost:3000` (el valor por defecto, que
+  nadie había tocado) a `https://magic-mesa.duelo.workers.dev`, y añadida esa
+  misma dirección a Redirect URLs. **Sin esto, el enlace del correo de
+  invitación habría llevado a ninguna parte.**
+- Cuenta de Héctor creada **por invitación**, no escribiendo una clave: la
+  clave la pone él desde el correo. **Aquí no se manejan claves de nadie.**
+  Falta la del amigo, que necesita su correo.
+
+### ⚠ La trampa del contador «Exposed tables»
+
+El panel dice **«0 of 3 tables exposed»**, y entre esas tres están
+`public.marcas` y `public.puntos`, **que funcionan perfectamente** en la web
+de Pokémon. O sea que ese contador **no mide lo que parece**.
+
+Los permisos de verdad, mirados en la base, son estos:
+
+| Tabla | `anon` | `authenticated` |
+|---|---|---|
+| `public.marcas` | SELECT, INSERT, UPDATE, DELETE | nada útil |
+| `public.puntos` | SELECT, INSERT, UPDATE | nada útil |
+| `magic.jugadores` | **nada** | SELECT, INSERT, UPDATE, DELETE |
+
+**No tocar ese selector de tablas.** Guardar con él podría reescribir los
+permisos de `marcas` y `puntos` y dejar la web de Pokémon muerta. Lo que hacía
+falta era exponer el **esquema**, y con eso basta.
+
+**Cómo se guardó sin riesgo:** se tomó una referencia antes (`marcas` y
+`puntos` respondían `200 []`, o sea permisos bien y RLS bloqueando) y se
+repitió después de guardar. Siguieron dando `200 []`. Si hubieran dado 401, se
+habrían restaurado los permisos, que estaban apuntados.
+
+### En la web
+
+- `src/supabase.ts`: el cliente, con el esquema `magic` fijado, y los errores
+  de Supabase traducidos a castellano llano.
+- `src/sesion.ts`: lleva la sesión y la ficha. El estado `cargando` existe
+  para que a quien ya entró no le parpadee la pantalla de entrada delante.
+- `src/PantallaEntrada.tsx`: correo, clave y recuperar clave. **No hay botón
+  de crear cuenta**, a propósito.
+- `src/PantallaDentro.tsx`: pide el nombre la primera vez, y luego las
+  comprobaciones del aparato, que ahora viven detrás de la puerta.
+- **La clave publicable está en el código y a la vista, y está bien.** Está
+  pensada para ir dentro de la web; lo que protege los datos es RLS. La que
+  no puede salir de Supabase nunca es la de servicio (`service_role`), y esa
+  no está ni va a estar.
+
+---
+
 ## Mazos y registro de partidas (pedido por Héctor el 26/10/2026)
 
 > «Para jugar una partida hay que elegir un mazo de un usuario. Cada usuario
@@ -88,23 +157,36 @@ hace falta ninguna función de Supabase.
 
 ### La regla que lo ordena todo
 
-**No se empieza una serie sin que los dos hayan elegido mazo.** No es una
+**No se empieza una partida sin que los dos hayan elegido mazo.** No es una
 pega burocrática: es lo único que hace que el historial valga algo. Un
 registro de partidas sin saber con qué se jugó no sirve para nada.
 
-El mazo se elige **al empezar la serie, no partida a partida**: en un al
-mejor de tres se juega con el mismo mazo las tres.
+### Partidas sueltas encadenadas, no series (Héctor, 26/10/2026)
+
+**No hay «al mejor de tres».** Hay un **botón de elegir ganador y
+finalizar**, y cuando una partida termina **se precarga el mismo mazo** para
+que cada uno le dé a empezar o elija otro.
+
+Es mejor que la serie fija que había antes: la serie metía un concepto que
+había que mantener (¿y si queréis jugar cinco? ¿y si dejáis una a medias?),
+y encadenar partidas sueltas no mete ninguno.
+
+**Y se cae un contador del panel:** el «llevamos 3-2 hoy» ya no hay que
+llevarlo a mano, porque **sale solo del historial**.
 
 ### Un mazo
 
 - Nombre, formato (Modern, Standard, Limited, Pioneer, Casual…), notas.
 - **Carta de portada**, para reconocerlo de un vistazo.
-- **Lista de cartas, privada.**
 - Activo o retirado.
 
-**El rival ve el nombre, el formato y la portada. La lista de cartas no.**
-En Magic no se enseña el mazo al contrario, y esto no es un detalle técnico
-sino una regla del producto.
+**Sin lista de cartas** (Héctor, 26/10/2026). Mantener a mano sesenta cartas
+por mazo es justo el trabajo que nadie hace dos veces, y el mazo aquí solo
+tiene que servir para **reconocerlo y apuntar con qué jugaste**. De paso
+desaparece el problema de privacidad: sin lista no hay nada que esconder, y
+el rival puede ver el mazo entero, que son tres datos.
+
+Si algún día hace falta, se añade sin romper nada de lo que haya.
 
 ### La portada: se guarda el identificador, no la imagen
 
@@ -129,27 +211,46 @@ Es la misma regla que en Cashtor: *un dato que cambia con el tiempo lleva el
 tiempo dentro*. Y permite cumplir la otra: *toda lista donde algo aparece por
 primera vez tiene que dejar borrarlo*.
 
-### El registro es automático, y eso es el 90 % del valor
+### El ganador se declara y el otro acepta. Nada se adivina
 
-**Al jugador no se le pide un formulario al acabar.** La aplicación lleva el
-panel, así que ya sabe casi todo:
+**Corrección de Héctor, 26/10/2026, y tiene toda la razón:**
+
+> «El cómo ha terminado no puede ser automático porque hay cartas que
+> imposibilitan la victoria aunque estés a cero, Magic es enorme, hay muchas
+> casuísticas.»
+
+Es exacto. Estar a 0 vidas **no es perder** si hay una Platinum Angel en
+juego, o Phyrexian Unlife, o cualquiera de las decenas de cartas que cambian
+las condiciones de derrota. Una aplicación que mire el contador de vidas y
+declare un ganador se va a equivocar, y se va a equivocar en la partida que
+más rabia dé.
+
+Así que **la aplicación no propone nada**:
+
+1. Uno pulsa **«Gana él» o «Gano yo»** y finaliza.
+2. **El otro acepta.** Hasta que no acepta, no se registra nada.
+3. **Opcionalmente**, motivo de la victoria: vidas, veneno, sin biblioteca,
+   **por carta** (las que te hacen ganar o perder directamente), u otra.
+   Opcional de verdad: se puede dejar en blanco.
+4. Una línea de notas, también opcional.
+
+Esto es además lo que ya hacéis en la mesa: lo acordáis entre los dos. La
+aplicación solo lo apunta.
+
+**Si el otro no acepta**, la partida queda pendiente y quien la declaró puede
+retirarla o corregirla. **No se inventa un resultado nunca.**
+
+### Lo que sí se apunta solo
+
+Todo esto la aplicación ya lo sabe porque lleva el panel, y no hay que
+preguntarlo:
 
 - Fecha y hora de inicio y de fin, y cuánto ha durado.
 - Los dos mazos (nombre y portada congelados) y los dos jugadores.
-- **Quién empezó cada partida.**
+- **Quién empezó**, que sale del dado.
 - En qué turno terminó.
-- Vidas finales de los dos, y veneno si lo hubo.
-- El marcador de la serie.
+- Vidas y veneno finales de los dos, como dato, **no como veredicto**.
 - El formato.
-
-Solo hay que preguntar dos cosas, y una se propone sola:
-
-- **Quién ha ganado.** Si unas vidas llegan a 0 o el veneno a 10, se propone
-  y basta con confirmar.
-- **Cómo ha terminado:** vidas a 0, veneno, sin cartas en la biblioteca,
-  concesión, otra.
-
-Y una línea de notas, opcional.
 
 ### Lo que sale de ahí, que es lo que de verdad se mira
 
@@ -162,19 +263,44 @@ Y una línea de notas, opcional.
 - Cuántos turnos dura de media cada enfrentamiento.
 - Rachas, y cuánto hace que no juegas con un mazo.
 
+### El dado de quién empieza (Héctor, 26/10/2026)
+
+> «Al iniciar salen los dos usuarios y una mini animación de un dado de 6
+> caras, y si hay empate repite; si no, gana el dado más alto y directamente
+> se apunta como jugador inicial. La app ya no hace nada más.»
+
+**Mejor que lo que había**, que era un apaño de criptografía (cada uno manda
+su número tapado y se destapan a la vez) para un problema que entre dos
+amigos no existe. Un dado que ven los dos rodar se entiende sin que nadie lo
+explique.
+
+Cómo se hace:
+
+- Salen los dos jugadores en pantalla y ruedan los dos dados.
+- **Empate, repite** automáticamente.
+- El más alto empieza, y **queda apuntado**. Fin. La aplicación no hace nada
+  más con eso.
+
+**Una mejora que no cuesta nada y conviene hacer:** que **cada navegador
+aporte un número al azar** y el resultado salga de los dos combinados. Así
+ninguno de los dos puede decidir la tirada por su cuenta, aunque quisiera.
+Se ve exactamente igual, cuesta tres líneas y quita para siempre la duda de
+«es que tu móvil tira mejor».
+
 ### Dos detalles que hay que resolver al implementarlo
 
 - **Quién escribe la fila.** Al acabar, los dos navegadores tienen el mismo
   estado; si escriben los dos, salen dos partidas. **Escribe el que creó la
-  mesa**, el otro solo lee. Y la fila lleva el identificador de la serie con
-  una restricción única, para que un reintento no duplique.
+  mesa**, cuando el otro acepta. La fila lleva el identificador de la partida
+  con una restricción única, para que un reintento no duplique.
 - **Si alguien se va sin cerrar**, la partida queda *sin terminar* y se puede
-  cerrar luego a mano desde el historial. **No se inventa un resultado.**
+  cerrar luego a mano desde el historial.
 
 ### Lo que leen los dos
 
-Una partida la pueden leer **los dos que la jugaron**. Los mazos, solo su
-dueño, salvo el nombre, el formato y la portada, que el rival necesita ver.
+Una partida la pueden leer **los dos que la jugaron**. Un mazo lo edita solo
+su dueño, pero lo **ve** el rival entero: sin lista de cartas, un mazo son
+tres datos y no hay nada que esconder.
 
 ---
 

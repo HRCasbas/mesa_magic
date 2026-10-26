@@ -255,3 +255,152 @@ body {
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- La puerta ---- */
+
+.entrada {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 1rem;
+}
+
+.entrada__caja {
+  width: 100%;
+  max-width: 23rem;
+  background: var(--fondo-tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 0.9rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+}
+
+.entrada__cabecera {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.entrada__titulo {
+  margin: 0;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+}
+
+.entrada__lema {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.entrada__forma {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.entrada__pie {
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--borde);
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+/* ---- Campos ---- */
+
+.campo {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.campo__nombre {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.campo input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  font-size: 1rem; /* 16px o mas: por debajo, el movil hace zoom al tocar */
+  color: var(--texto);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+}
+
+.campo input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+  border-color: var(--acento);
+}
+
+.campo input:disabled {
+  opacity: 0.6;
+}
+
+/* ---- Botones ---- */
+
+.boton {
+  padding: 0.7rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.boton--principal {
+  background: var(--acento);
+  color: #1a1203; /* tinta oscura sobre el dorado: se lee de sobra */
+}
+
+.boton--plano {
+  background: transparent;
+  color: var(--texto-suave);
+  border-color: var(--borde);
+  font-weight: 500;
+}
+
+.boton--plano:hover:not(:disabled) {
+  color: var(--texto);
+  border-color: var(--texto-suave);
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* La cabecera de dentro lleva el boton de salir debajo del saludo. */
+.cabecera .boton--plano {
+  margin-top: 0.9rem;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+}
+
+/* ---- Recados ---- */
+
+.recado {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.recado--mal {
+  background: #2a1512;
+  color: #f0a394;
+  border-left: 3px solid var(--mal);
+}
+
+.recado--bien {
+  background: #122a1d;
+  color: #93d9b1;
+  border-left: 3px solid var(--bien);
+}

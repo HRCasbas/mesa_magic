@@ -19,9 +19,9 @@ base de datos con otra web: hay cosas que no se pueden tocar.
 
 ## Estado
 
-**Fase 0 terminada.** La web existe, se publica con HTTPS y comprueba si el
-aparato desde el que la abres sirve para jugar. Todavía no hay cámara, ni
-cuentas, ni partida.
+**Fases 0 y 1 terminadas.** La web existe, se publica con HTTPS y tiene
+puerta: sin entrar con correo y clave no se ve nada. El registro está
+cerrado y las cuentas se crean a mano. Todavía no hay cámara ni partida.
 
 ## Cómo se trabaja
 

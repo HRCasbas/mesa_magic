@@ -60,12 +60,13 @@ textos que ve el usuario, con sus acentos puestos.
    de cortar a la vista.
 3. **El registro va cerrado.** Las cuentas se crean a mano.
 4. **Las pegatinas en coordenadas normalizadas**, nunca en píxeles.
-5. **No se empieza una serie sin que los dos hayan elegido mazo.** Es lo
-   único que hace que el historial valga algo.
-6. **El rival ve el nombre, el formato y la portada de tu mazo. La lista de
-   cartas no.** En Magic no se enseña el mazo al contrario.
-7. **El resultado de la partida se registra solo.** Al jugador se le
-   preguntan dos cosas como mucho, y una se propone sola.
+5. **No se empieza una partida sin que los dos hayan elegido mazo.** Es lo
+   único que hace que el historial valga algo. **No hay series:** hay un
+   botón de finalizar, y al acabar se precarga el mismo mazo.
+6. **La aplicación nunca declara un ganador.** Uno lo declara y el otro
+   acepta. Estar a 0 vidas no es perder: hay cartas que lo impiden, y Magic
+   tiene demasiadas casuísticas para adivinar.
+7. **Un mazo no lleva lista de cartas.** Nombre, formato, portada y notas.
 8. **El historial guarda el nombre y la portada del mazo tal como estaban el
    día de la partida**, para que borrar un mazo no deje las partidas viejas
    en blanco.
@@ -78,7 +79,11 @@ textos que ve el usuario, con sus acentos puestos.
 ```
 src/
   main.tsx            arranque de React
-  App.tsx             la página
+  App.tsx             decide si hay sesión y nada más
+  PantallaEntrada.tsx la puerta: correo y clave
+  PantallaDentro.tsx  lo que se ve con sesión
+  sesion.ts           lleva la sesión y la ficha del jugador
+  supabase.ts         el cliente, y los errores en castellano
   comprobaciones.ts   si este aparato sirve para jugar
   index.css           hoja de estilo única; los colores en :root
 public/               lo que se copia tal cual
