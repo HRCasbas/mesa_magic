@@ -1,6 +1,5 @@
 import {
   FASES,
-  deQuienEsElTurno,
   numeroDeTurno,
   turnosJugados,
   useContadores,
@@ -100,6 +99,7 @@ export function PantallaContadores({
   codigo,
   tuId,
   suId,
+  tuNombre,
   nombreDelOtro,
   datosAbiertos,
   enviarDato,
@@ -109,16 +109,18 @@ export function PantallaContadores({
   tuId: string
   /** Null mientras estés solo en la mesa. */
   suId: string | null
+  tuNombre: string
   nombreDelOtro: string | null
   datosAbiertos: boolean
   enviarDato: (dato: unknown) => boolean
   alRecibirDato: (oyente: (dato: unknown) => void) => () => void
 }) {
-  const contadores = useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato })
-  const { compartido } = contadores
+  const contadores = useContadores({ codigo, tuId, suId, datosAbiertos, enviarDato, alRecibirDato })
+  const { compartido, esMiTurno } = contadores
 
-  const deQuien = suId ? deQuienEsElTurno(compartido, tuId, suId) : ''
-  const nombreDeQuienJuega = deQuien === tuId ? 'ti' : (nombreDelOtro ?? 'tu rival')
+  // Siempre por su nombre, también el tuyo. «Turno 17 de ti» obliga a parar
+  // a pensar de quién habla; «Turno 17 de Héctor» no (Héctor, 27/10/2026).
+  const nombreDeQuienJuega = contadores.deQuienEs === tuId ? tuNombre : (nombreDelOtro ?? 'tu rival')
 
   return (
     <section className="tarjeta">
@@ -156,12 +158,25 @@ export function PantallaContadores({
             <span className="turno__fase">{FASES[compartido.fase]}</span>
           </p>
           <div className="turno__botones">
-            <button type="button" className="boton boton--plano" onClick={contadores.siguienteFase}>
+            <button
+              type="button"
+              className="boton boton--plano"
+              onClick={contadores.siguienteFase}
+              disabled={!esMiTurno}
+            >
               Siguiente fase
             </button>
-            <button type="button" className="boton boton--principal" onClick={contadores.pasarTurno}>
+            <button
+              type="button"
+              className="boton boton--principal"
+              onClick={contadores.pasarTurno}
+              disabled={!esMiTurno}
+            >
               Pasar turno
             </button>
+            {/* «Turno atrás» lo tienen los dos a propósito: si pasas turno
+                sin querer, deja de ser tuyo, y sin esto no podrías
+                deshacerlo tú mismo. */}
             <button type="button" className="boton boton--plano" onClick={contadores.turnoAtras}>
               Turno atrás
             </button>
@@ -171,8 +186,16 @@ export function PantallaContadores({
 
       {compartido.empieza && (
         <p className="aviso aviso--suelto">
-          La <strong>barra espaciadora</strong> pasa turno. Van{' '}
-          <strong>{turnosJugados(compartido)}</strong>{' '}
+          {esMiTurno ? (
+            <>
+              Te toca. La <strong>barra espaciadora</strong> pasa turno.
+            </>
+          ) : (
+            <>
+              Le toca a <strong>{nombreDeQuienJuega}</strong>. El turno lo pasa quien lo juega.
+            </>
+          )}{' '}
+          Van <strong>{turnosJugados(compartido)}</strong>{' '}
           {turnosJugados(compartido) === 1 ? 'turno jugado' : 'turnos jugados'}.
         </p>
       )}

@@ -109,12 +109,22 @@ function leerGuardados(codigo: string): Contadores {
 interface Opciones {
   /** El código de la mesa. Sirve para guardar tus números por separado. */
   codigo: string
+  tuId: string
+  /** Null mientras estés solo en la mesa. */
+  suId: string | null
   datosAbiertos: boolean
   enviarDato: (dato: unknown) => boolean
   alRecibirDato: (oyente: (dato: unknown) => void) => () => void
 }
 
-export function useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato }: Opciones) {
+export function useContadores({
+  codigo,
+  tuId,
+  suId,
+  datosAbiertos,
+  enviarDato,
+  alRecibirDato,
+}: Opciones) {
   const [mios, setMios] = useState<Contadores>(() => leerGuardados(codigo))
   const [suyos, setSuyos] = useState<Contadores | null>(null)
   const [compartido, setCompartido] = useState<Compartido>(COMPARTIDO_NUEVO)
@@ -137,22 +147,38 @@ export function useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato
 
   const reiniciarMios = useCallback(() => setMios(CONTADORES_NUEVOS), [])
 
+  /**
+   * El turno solo lo mueve quien lo está jugando (Héctor, 27/10/2026).
+   *
+   * Se comprueba aquí dentro y no solo apagando el botón: así vale igual
+   * para la barra espaciadora, y se mira contra el estado del momento, no
+   * contra el que hubiera cuando se pintó la pantalla.
+   */
+  function esSuyoElTurno(c: Compartido): boolean {
+    if (!c.empieza || !suId) return false
+    return deQuienEsElTurno(c, tuId, suId) === tuId
+  }
+
   const siguienteFase = useCallback(() => {
     setCompartido((c) => {
+      if (!esSuyoElTurno(c)) return c
       const siguiente = c.fase + 1
       return siguiente < FASES.length
         ? { ...c, fase: siguiente, secuencia: c.secuencia + 1 }
         : { ...c, turnoEnJuego: c.turnoEnJuego + 1, fase: 0, secuencia: c.secuencia + 1 }
     })
-  }, [])
+    // `esSuyoElTurno` solo depende de estos dos, que no cambian en una mesa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tuId, suId])
 
   const pasarTurno = useCallback(() => {
     setCompartido((c) =>
-      c.empieza
+      esSuyoElTurno(c)
         ? { ...c, turnoEnJuego: c.turnoEnJuego + 1, fase: 0, secuencia: c.secuencia + 1 }
         : c,
     )
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tuId, suId])
 
   /** Para el espacio pulsado sin querer, que es fácil. */
   const turnoAtras = useCallback(() => {
@@ -238,10 +264,15 @@ export function useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato
     }
   }, [codigo, mios])
 
+  const deQuienEs = suId && compartido.empieza ? deQuienEsElTurno(compartido, tuId, suId) : ''
+
   return {
     mios,
     suyos,
     compartido,
+    /** Id de quien juega ahora. Vacío si aún no se sabe quién empieza. */
+    deQuienEs,
+    esMiTurno: deQuienEs !== '' && deQuienEs === tuId,
     enlazados: datosAbiertos,
     cambiar,
     reiniciarMios,

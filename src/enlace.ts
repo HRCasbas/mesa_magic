@@ -313,7 +313,13 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
      */
     async function proponer(enchufe: RTCPeerConnection) {
       if (enchufe.signalingState !== 'stable') return
-      if (!enchufe.getSenders().some((e) => e.track)) return
+      // Se propone si hay algo que ofrecer: una cámara encendida o el canal
+      // de datos. Lo segundo faltaba, y era un agujero del mismo tamaño que
+      // el de la fase 3: sin cámaras, el único que tiene algo que ofrecer es
+      // el que abrió el canal, y si SU oferta se perdía no volvía a
+      // proponer. Resultado: los contadores no llegaban al otro lado.
+      const hayAlgoQueOfrecer = enchufe.getSenders().some((e) => e.track) || canal.current !== null
+      if (!hayAlgoQueOfrecer) return
       try {
         haciendoOferta.current = true
         await enchufe.setLocalDescription()

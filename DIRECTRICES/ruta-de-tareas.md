@@ -482,6 +482,28 @@ cosas que hay que mantener de acuerdo entre dos navegadores.
 Esto es además lo que pidió Héctor para el historial: **los turnos jugados
 salen de aquí**, sin apuntar nada aparte. Fase 8.
 
+### El turno solo lo mueve quien lo juega (Héctor, 27/10/2026)
+
+> «Con el PC paso el turno de los 2 jugadores, solo debería dejar pasar si
+> es mi turno.»
+
+«Siguiente fase» y «Pasar turno» están apagados cuando no te toca, **y la
+comprobación está dentro de la función, no solo en el botón**. Dos razones:
+la barra espaciadora no pasa por el botón, y así se mira contra el estado
+del momento y no contra el que hubiera cuando se pintó la pantalla.
+
+**«Turno atrás» lo tienen los dos a propósito.** Si pasas turno sin querer,
+el turno deja de ser tuyo; sin esta excepción no podrías deshacer tu propio
+error y tendrías que pedírselo al otro.
+
+### Por su nombre, nunca «ti» (Héctor, 27/10/2026)
+
+> «Pone "turno X de ti", prefiero turno X de Troil (aunque sea yo mismo).»
+
+«Turno 17 de ti» obliga a parar medio segundo a pensar de quién habla.
+«Turno 17 de Héctor» no. En la columna de los contadores sí se queda «Tú»,
+porque ahí la pregunta es otra: cuáles son mis números.
+
 ### Quién empieza: dos botones, de momento
 
 Hace falta saberlo para contar los turnos, así que hay dos botones
@@ -508,6 +530,34 @@ Dos detalles que costaron una vuelta:
   dejará de notarse.
 
 Y hay **«Turno atrás»**, porque una barra espaciadora se pulsa sin querer.
+
+### ⚠ El canal de datos no se abría (arreglado 27/10/2026)
+
+Héctor lo vio en la primera prueba: los dos en la mesa, pero «no se ven las
+vidas del contrario» y el aviso rojo de *todavía no hay camino directo*.
+
+**Era el mismo fallo de la fase 3, otra vez, en otro sitio.** El seguro que
+se puso allí (`{listo:true}`: cuando el otro avisa de que ya escucha,
+vuelves a proponer) tenía una condición de más:
+
+```
+if (!pc.getSenders().some((e) => e.track)) return   // ← mal
+```
+
+O sea: **solo volvía a proponer si había una cámara encendida.** Sin
+cámaras, el único que tenía algo que ofrecer era el que abre el canal de
+datos, y si justo su oferta se perdía, no volvía a proponerla nunca. Los
+contadores se quedaban cada uno en su casa.
+
+Arreglado preguntando por lo que de verdad hay que ofrecer: **una cámara o
+el canal de datos.** Queda además bien repartido: el que abre el canal lo
+tiene desde el principio y es quien vuelve a proponer; el otro no propone
+nada vacío, porque todavía no tiene nada.
+
+**La lección, que ya van dos veces:** al añadir una cosa nueva que viaja por
+el enlace, hay que preguntarse si los seguros que ya había la cuentan. Un
+seguro que mira solo lo que existía cuando se escribió no protege lo de
+después.
 
 ### El canal de datos lo abre uno solo
 
@@ -551,9 +601,15 @@ pasar de la última cambia el turno, y lo guardado aguanta una recarga (16
 vidas y 10 de veneno seguían ahí). En móvil las dos columnas se apilan y los
 botones salen grandes.
 
-**Lo que no se ha podido probar: que los números lleguen al otro.** Hace
-falta iniciar sesión en dos sitios. Es justo donde se escondía el fallo de
-la fase 3, así que conviene mirarlo de verdad.
+**Y el 27/10 se probaron los dos lados a la vez**, montando los dos paneles
+en la misma página con un canal de mentira entre ellos. Comprobado: las
+vidas de uno salen en el panel del otro, el turno se ve igual en los dos,
+los botones de turno se apagan en el lado al que no le toca y la barra
+espaciadora solo mueve el turno de quien lo juega.
+
+**Lo que sigue sin probarse: que el canal de datos de verdad se abra entre
+dos navegadores.** Eso hace falta sesión en dos sitios, y es justo donde se
+escondieron los dos fallos que han llegado a producción.
 
 ### Truco al probar en el navegador
 
@@ -1197,6 +1253,20 @@ mira».
   **Cómo se encontró:** comparando el nombre del archivo publicado con el
   recién compilado. Si no coinciden, no se ha desplegado, y hay que ir al
   registro antes de seguir esperando.
+
+- **27/10/2026 — Un seguro solo protege lo que existía cuando se escribió.**
+  El seguro contra la oferta perdida de la fase 3 preguntaba «¿tengo alguna
+  cámara que ofrecer?». Al añadir el canal de datos en la fase 4, esa
+  pregunta dejó de valer y el mismo fallo volvió, ahora sin cámaras de por
+  medio. **Al meter algo nuevo por un camino que ya existe, repasar los
+  seguros de ese camino uno por uno** y preguntarse si cuentan lo nuevo.
+  Las dos veces lo encontró Héctor probando, no la compilación.
+
+- **27/10/2026 — Se pueden probar los dos lados sin dos sesiones.** Montando
+  los dos paneles en la misma página con un canal de mentira entre ellos se
+  comprueba todo lo que es lógica: la sincronía, de quién es el turno, qué
+  botones se apagan. Queda fuera solo el transporte. **Es mucho más barato
+  que no probar nada por no poder probarlo todo.**
 
 - **27/10/2026 — Un contador que hay que corregir en cada acción no lo
   lleva nadie.** Se metieron cartas en mano y en cementerio porque estaban

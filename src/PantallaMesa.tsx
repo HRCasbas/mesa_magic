@@ -181,6 +181,7 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
           codigo={mesa.codigo}
           tuId={mesa.tuId}
           suId={elOtro?.id ?? null}
+          tuNombre={nombre}
           nombreDelOtro={elOtro?.nombre ?? null}
           datosAbiertos={enlace.datosAbiertos}
           enviarDato={enlace.enviarDato}
