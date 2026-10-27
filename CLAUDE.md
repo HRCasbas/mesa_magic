@@ -29,6 +29,12 @@ archivos.
 **Es muy bueno detectando problemas de uso reales.** Cuando dice que algo no
 se entiende, tiene razón.
 
+**Respuestas cortas.** Lo pidió el 27/10/2026: *«Sé más directo, no me hagas
+leer toda la conversación, dime novedades y qué tengo que hacer o probar».*
+Tres bloques y poco más: **qué hay nuevo**, **qué tiene que hacer él**, **qué
+tiene que probar**. El porqué de las decisiones va a `DIRECTRICES/`, que para
+eso está; en el chat solo si lo pregunta.
+
 Escribe en **castellano**, sin anglicismos innecesarios, y en el código
 también: nombres de variables, de funciones y comentarios en castellano. Los
 textos que ve el usuario, con sus acentos puestos.
