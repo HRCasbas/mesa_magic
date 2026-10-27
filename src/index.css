@@ -800,3 +800,123 @@ body {
   margin-top: 0;
   margin-bottom: 1rem;
 }
+
+/* ---- Las pegatinas ---- */
+
+/* La capa va justo encima del fotograma, no de la caja del video. Deja
+   pasar los clics: lo unico que se toca son las pegatinas. */
+.capa {
+  position: absolute;
+  pointer-events: none;
+}
+
+.pegada {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.4rem;
+  background: rgba(15, 17, 21, 0.88);
+  color: var(--texto);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: grab;
+  pointer-events: auto;
+  /* Sin esto, arrastrar con el dedo mueve la pagina en vez de la pegatina. */
+  touch-action: none;
+  user-select: none;
+}
+
+.pegada:active {
+  cursor: grabbing;
+  border-color: var(--acento);
+}
+
+.pegada__que {
+  font-weight: 700;
+}
+
+.pegada__valor {
+  min-width: 1rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.pegada__tecla {
+  min-width: 1.4rem;
+  min-height: 1.4rem;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--texto-suave);
+  font-family: inherit;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pegada__tecla:hover {
+  color: var(--texto);
+  border-color: var(--acento);
+}
+
+.pegada__tecla--quitar:hover {
+  color: var(--mal);
+  border-color: var(--mal);
+}
+
+/* Las que cuentan algo se distinguen de un vistazo por el color del borde. */
+.pegada--mas {
+  border-color: var(--bien);
+}
+
+.pegada--menos {
+  border-color: var(--mal);
+}
+
+.pegada--esta {
+  border-color: var(--acento);
+}
+
+/* ---- La paleta ---- */
+
+.paleta__cabecera {
+  margin: 1.25rem 0 0.75rem;
+  font-size: 1rem;
+}
+
+.paleta__donde {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.paleta__titulo {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.paleta__clases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.paleta__clase {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+}
+
+.paleta__mas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}

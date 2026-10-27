@@ -35,7 +35,7 @@ Tres cosas:
 | **2** | La mesa: Worker, Durable Object, encontrarse con un código | **Hecha** (27/10/2026) |
 | **3** | El vídeo: WebRTC, credenciales TURN, cortar, diagnóstico | **Hecha** (27/10/2026), falta el relé |
 | **4** | Los contadores, por el canal de datos | **Hecha** (27/10/2026) |
-| **5** | Las pegatinas arrastrables | |
+| **5** | Las pegatinas arrastrables | **Hecha** (27/10/2026) |
 | **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | |
 | **7** | Mazos: zona propia, portada, elegir mazo para jugar | |
 | **8** | Historial: declarar ganador, aceptar, y qué sale del registro | |
@@ -663,6 +663,64 @@ Una captura puede adelantarse al repintado de React y hacer creer que una
 pulsación no ha entrado. Aquí pasó: once clics en el veneno parecían dos. No
 era un fallo, era la foto. **Antes de dar por roto algo así, volver a mirar
 un segundo después.**
+
+---
+
+## Fase 5: las pegatinas (27/10/2026)
+
+Nueve clases: `+1/+1`, `−1/−1`, ficha, tapada, vuela, arrolla, toque mortal,
+vínculo vital y «esta carta». Las tres primeras llevan número. Viajan por el
+canal de datos, como los contadores.
+
+### Sobre el fotograma, no sobre la caja del vídeo
+
+La regla 4 dice coordenadas normalizadas (0 a 1), y hay un detalle que no
+está en la regla pero la hace cierta: con `object-fit: contain`, **un móvil
+en vertical deja dos franjas negras a los lados**. Si el 0 a 1 se midiera
+sobre la caja, la pegatina caería varios centímetros más allá de donde la
+pusiste. Así que la capa se coloca sobre **el fotograma pintado**, calculado
+con el `videoWidth`/`videoHeight` real y un `ResizeObserver`.
+
+### El arrastre se escucha en la ventana
+
+Lo primero que se probó fue `setPointerCapture`, que suena a lo correcto, y
+**no movía nada**. Escuchando `pointermove` en la ventana desde el
+`pointerdown` funciona siempre: aunque el dedo se salga de la pegatina
+—que es lo normal al mover deprisa—, aunque pase por encima de otra y
+aunque React repinte en medio.
+
+Y `touch-action: none` en la pegatina, o arrastrar con el dedo movería la
+página en vez de la pegatina.
+
+### Mover todas de una vez
+
+Es lo que ya decía la investigación para cuando alguien da un golpe a la
+cámara: en vez de recolocar pegatina por pegatina, se arrastra **el grupo
+entero de esa mesa** de un gesto. Está como un botón que se queda puesto.
+
+### Cada uno puede pegar en las dos mesas
+
+Hay un selector de **«pegar en»**. Marcar tus criaturas es lo normal, pero
+señalar una carta del rival con «esta» también, y en una mesa de verdad se
+señala con el dedo.
+
+### Mientras arrastras, el otro no te mueve la pegatina
+
+Lo que llega del otro se acepta entero salvo la que tengas cogida en ese
+momento, que mantiene tu posición. Y mientras arrastras **se manda como
+mucho una vez cada 60 ms**: a sesenta fotogramas por segundo serían sesenta
+mensajes y no hace ninguna falta.
+
+### Probado el 27/10/2026
+
+Dos lados en la misma página con un canal de mentira entre ellos: pegar,
+arrastrar (cae en las coordenadas exactas), subir y bajar el número, quitar,
+mover todas a la vez (las dos se desplazan lo mismo) y que todo eso se vea
+igual en el otro lado, en los dos sentidos. Y la tarjeta del vídeo montada
+con la paleta, comprobando que cada pegatina cae en la mesa elegida.
+
+**Sin probar:** con dos navegadores de verdad y con cámara encendida, que es
+donde se ve si el fotograma calculado cuadra con la imagen.
 
 ---
 

@@ -1,26 +1,78 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
+import { CapaPegatinas } from './CapaPegatinas'
 import type { Diagnostico, EstadoVideo } from './enlace'
+import { CLASES, type ClasePegatina, type ManejoPegatinas } from './pegatinas'
+
+/** Mientras no se sepa el tamaño del fotograma, la capa ocupa toda la caja. */
+const TODA_LA_CAJA: CSSProperties = { inset: 0 }
 
 function Imagen({
   media,
   mio,
   etiqueta,
   vacia,
+  pegatinas,
+  manejo,
 }: {
   media: MediaStream | null
   mio: boolean
   etiqueta: string
   vacia: string
+  pegatinas: ManejoPegatinas['lista']
+  manejo: ManejoPegatinas
 }) {
   const elemento = useRef<HTMLVideoElement>(null)
+  const caja = useRef<HTMLDivElement>(null)
+  const [marco, setMarco] = useState<CSSProperties>(TODA_LA_CAJA)
 
   useEffect(() => {
     if (elemento.current) elemento.current.srcObject = media
   }, [media])
 
+  // Dónde cae de verdad la imagen dentro de la caja. Con `object-fit:
+  // contain`, un móvil en vertical deja dos franjas negras a los lados, y
+  // las pegatinas tienen que ir sobre la imagen, no sobre las franjas.
+  useEffect(() => {
+    const video = elemento.current
+    const fuera = caja.current
+    if (!video || !fuera) return
+
+    function recalcular() {
+      if (!video || !fuera) return
+      const sitio = fuera.getBoundingClientRect()
+      if (!video.videoWidth || !video.videoHeight || !sitio.width || !sitio.height) {
+        setMarco(TODA_LA_CAJA)
+        return
+      }
+      const deLaImagen = video.videoWidth / video.videoHeight
+      const deLaCaja = sitio.width / sitio.height
+      const ancho = deLaImagen > deLaCaja ? sitio.width : sitio.height * deLaImagen
+      const alto = deLaImagen > deLaCaja ? sitio.width / deLaImagen : sitio.height
+      setMarco({
+        left: (sitio.width - ancho) / 2,
+        top: (sitio.height - alto) / 2,
+        width: ancho,
+        height: alto,
+      })
+    }
+
+    video.addEventListener('loadedmetadata', recalcular)
+    video.addEventListener('resize', recalcular)
+    // Al empezar a observar, el navegador avisa una primera vez solo, así
+    // que no hace falta llamarlo aquí a mano.
+    const vigilante = new ResizeObserver(recalcular)
+    vigilante.observe(fuera)
+
+    return () => {
+      video.removeEventListener('loadedmetadata', recalcular)
+      video.removeEventListener('resize', recalcular)
+      vigilante.disconnect()
+    }
+  }, [media])
+
   return (
-    <div className={mio ? 'imagen imagen--mia' : 'imagen'}>
+    <div className={mio ? 'imagen imagen--mia' : 'imagen'} ref={caja}>
       <video
         ref={elemento}
         autoPlay
@@ -30,7 +82,91 @@ function Imagen({
         muted={mio}
       />
       {!media && <p className="imagen__vacia">{vacia}</p>}
+      <CapaPegatinas lista={pegatinas} estilo={marco} manejo={manejo} />
       <span className="imagen__etiqueta">{etiqueta}</span>
+    </div>
+  )
+}
+
+function Paleta({
+  mesaMia,
+  mesaSuya,
+  nombreDelOtro,
+  moverTodas,
+  alternarMoverTodas,
+  pegar,
+  quitarTodas,
+}: {
+  mesaMia: string
+  mesaSuya: string | null
+  nombreDelOtro: string | null
+  moverTodas: boolean
+  alternarMoverTodas: () => void
+  pegar: (clase: ClasePegatina, mesa: string) => void
+  quitarTodas: (mesa: string) => void
+}) {
+  const [enLaSuya, setEnLaSuya] = useState(false)
+  const mesa = enLaSuya && mesaSuya ? mesaSuya : mesaMia
+
+  return (
+    <div className="paleta">
+      {mesaSuya && (
+        <div className="paleta__donde">
+          <span className="paleta__titulo">Pegar en</span>
+          <button
+            type="button"
+            className={enLaSuya ? 'boton boton--plano' : 'boton boton--principal'}
+            onClick={() => setEnLaSuya(false)}
+          >
+            Mi mesa
+          </button>
+          <button
+            type="button"
+            className={enLaSuya ? 'boton boton--principal' : 'boton boton--plano'}
+            onClick={() => setEnLaSuya(true)}
+          >
+            Mesa de {nombreDelOtro ?? 'tu rival'}
+          </button>
+        </div>
+      )}
+
+      <div className="paleta__clases">
+        {CLASES.map(({ clase, nombre }) => (
+          <button
+            key={clase}
+            type="button"
+            className={`boton boton--plano paleta__clase paleta__clase--${clase}`}
+            onClick={() => pegar(clase, mesa)}
+          >
+            {nombre}
+          </button>
+        ))}
+      </div>
+
+      <div className="paleta__mas">
+        <button
+          type="button"
+          className={moverTodas ? 'boton boton--principal' : 'boton boton--plano'}
+          onClick={alternarMoverTodas}
+        >
+          {moverTodas ? 'Moviendo todas' : 'Mover todas'}
+        </button>
+        <button type="button" className="boton boton--plano" onClick={() => quitarTodas(mesa)}>
+          Quitar las de esa mesa
+        </button>
+      </div>
+
+      <p className="aviso aviso--suelto">
+        Sale en medio de la imagen y se arrastra hasta la carta.{' '}
+        {moverTodas ? (
+          <strong>Arrastrando una se mueven todas las de esa mesa.</strong>
+        ) : (
+          <>
+            Si alguien da un golpe a la cámara, <strong>Mover todas</strong> recoloca el grupo
+            entero de un arrastre.
+          </>
+        )}
+      </p>
     </div>
   )
 }
@@ -110,6 +246,13 @@ export function PantallaVideo({
   micCortado,
   variasCamaras,
   nombreDelOtro,
+  mesaMia,
+  mesaSuya,
+  pegatinas,
+  moverTodas,
+  alternarMoverTodas,
+  pegar,
+  quitarTodas,
   encender,
   apagar,
   cambiarCamara,
@@ -126,6 +269,13 @@ export function PantallaVideo({
   variasCamaras: boolean
   /** Null mientras estés solo en la mesa. */
   nombreDelOtro: string | null
+  mesaMia: string
+  mesaSuya: string | null
+  pegatinas: ManejoPegatinas
+  moverTodas: boolean
+  alternarMoverTodas: () => void
+  pegar: (clase: ClasePegatina, mesa: string) => void
+  quitarTodas: (mesa: string) => void
   encender: () => void
   apagar: () => void
   cambiarCamara: () => void
@@ -181,8 +331,17 @@ export function PantallaVideo({
               ? `${nombreDelOtro} todavía no ha encendido su cámara.`
               : 'Esperando a tu rival.'
           }
+          pegatinas={mesaSuya ? pegatinas.lista.filter((p) => p.mesa === mesaSuya) : []}
+          manejo={pegatinas}
         />
-        <Imagen media={miMedia} mio etiqueta="Tu mesa" vacia="Tu cámara está apagada." />
+        <Imagen
+          media={miMedia}
+          mio
+          etiqueta="Tu mesa"
+          vacia="Tu cámara está apagada."
+          pegatinas={pegatinas.lista.filter((p) => p.mesa === mesaMia)}
+          manejo={pegatinas}
+        />
       </div>
 
       <div className="controles">
@@ -217,6 +376,17 @@ export function PantallaVideo({
           Tu imagen está cortada. {nombreDelOtro ?? 'Tu rival'} no ve tu mesa; tú la suya sí.
         </p>
       )}
+
+      <h3 className="paleta__cabecera">Las pegatinas</h3>
+      <Paleta
+        mesaMia={mesaMia}
+        mesaSuya={mesaSuya}
+        nombreDelOtro={nombreDelOtro}
+        moverTodas={moverTodas}
+        alternarMoverTodas={alternarMoverTodas}
+        pegar={pegar}
+        quitarTodas={quitarTodas}
+      />
 
       <PanelDiagnostico datos={diagnostico} />
     </section>

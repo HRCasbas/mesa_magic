@@ -4,6 +4,7 @@ import { PantallaContadores } from './PantallaContadores'
 import { PantallaVideo } from './PantallaVideo'
 import { useEnlace } from './enlace'
 import { useMesa } from './mesa'
+import { usePegatinas } from './pegatinas'
 
 /**
  * La mesa y, cuando estáis los dos, el vídeo.
@@ -31,6 +32,12 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
     soyEducado,
     enviarSenal: mesa.enviarSenal,
     alRecibirSenal: mesa.alRecibirSenal,
+  })
+
+  const pegatinas = usePegatinas({
+    datosAbiertos: enlace.datosAbiertos,
+    enviarDato: enlace.enviarDato,
+    alRecibirDato: enlace.alRecibirDato,
   })
 
   async function unirse(evento: FormEvent) {
@@ -165,6 +172,13 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
         micCortado={enlace.micCortado}
         variasCamaras={enlace.variasCamaras}
         nombreDelOtro={elOtro?.nombre ?? null}
+        mesaMia={mesa.tuId ?? ''}
+        mesaSuya={elOtro?.id ?? null}
+        pegatinas={pegatinas.manejo}
+        moverTodas={pegatinas.moverTodas}
+        alternarMoverTodas={() => pegatinas.setMoverTodas((v) => !v)}
+        pegar={pegatinas.pegar}
+        quitarTodas={pegatinas.quitarTodas}
         encender={enlace.encender}
         apagar={enlace.apagar}
         cambiarCamara={enlace.cambiarCamara}
