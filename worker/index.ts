@@ -1,10 +1,14 @@
 import { Mesa } from './mesa'
+import { servidoresDeConexion } from './servidores'
 
 export { Mesa }
 
 export interface Entorno {
   MESAS: DurableObjectNamespace<Mesa>
   ASSETS: Fetcher
+  /** Credenciales del relé de vídeo. Si faltan, se va solo con STUN. */
+  TURN_CLAVE_ID?: string
+  TURN_TOKEN?: string
 }
 
 /** Letras y numeros sin los que se confunden al dictarlos por telefono. */
@@ -23,6 +27,16 @@ export default {
       const bytes = crypto.getRandomValues(new Uint8Array(4))
       const codigo = [...bytes].map((b) => ALFABETO[b % ALFABETO.length]).join('')
       return Response.json({ codigo })
+    }
+
+    // Los servidores con los que los dos navegadores se buscan.
+    // No lleva nada secreto: las credenciales del relé que devuelve son de
+    // un solo dia y solo valen para pasar video.
+    if (url.pathname === '/api/servidores') {
+      const datos = await servidoresDeConexion(entorno)
+      return Response.json(datos, {
+        headers: { 'Cache-Control': 'no-store' },
+      })
     }
 
     // Entrar en una mesa.

@@ -33,7 +33,7 @@ Tres cosas:
 | **0** | El terreno: carpeta, repositorio, web vacía publicada en HTTPS, comprobaciones del aparato | **Hecha** (26/10/2026) |
 | **1** | La puerta: usuario y clave, registro cerrado, dos cuentas | **Hecha** (26/10/2026) |
 | **2** | La mesa: Worker, Durable Object, encontrarse con un código | **Hecha** (27/10/2026) |
-| **3** | El vídeo: WebRTC, credenciales TURN, cortar, diagnóstico | |
+| **3** | El vídeo: WebRTC, credenciales TURN, cortar, diagnóstico | **Hecha** (27/10/2026), falta el relé |
 | **4** | Los contadores, por el canal de datos | |
 | **5** | Las pegatinas arrastrables | |
 | **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | |
@@ -231,6 +231,91 @@ cuenta no vale: entrar dos veces con el mismo usuario cierra la conexión
 vieja a propósito, para que nadie ocupe las dos plazas sin querer.
 
 Queda pendiente de probar en cuanto haya dos cuentas.
+
+---
+
+## Fase 3: el vídeo (27/10/2026)
+
+Cuando estáis los dos en la mesa aparece el botón de encender la cámara. El
+vídeo va **directo de un navegador al otro**, cifrado, sin pasar por ningún
+servidor nuestro. La mesa solo sirvió para pasaros las primeras cartas de
+presentación y se queda al margen.
+
+### Lo que se le pide a la cámara, y por qué es al revés de lo normal
+
+`1920 × 1080` pero **solo 24 fotogramas por segundo**. Aquí hay que leer
+texto impreso quieto encima de una mesa, no seguir movimiento: con 24
+imágenes sobra, y lo que se ahorra ahí se gasta en nitidez.
+
+Y `contentHint = 'detail'` en la pista de vídeo. **Sin eso, al mover una
+carta el texto se emborrona durante medio segundo**, porque el códec da por
+hecho que lo que importa es la fluidez.
+
+Tope de calidad: 3 Mbps. Por encima no mejora lo legible.
+
+### El choque de ofertas, resuelto sin hablarlo
+
+Si los dos encienden la cámara a la vez, los dos hacen una oferta y se
+pisan. Uno tiene que ceder, y se decide **comparando los identificadores de
+los dos jugadores**: el menor cede. Los dos navegadores llegan a la misma
+conclusión por su cuenta, sin un mensaje de más.
+
+### El relé es opcional a propósito
+
+`/api/servidores` devuelve siempre STUN público, y **añade el relé solo si
+hay credenciales configuradas**. Sin ellas no falla: devuelve STUN y dice por
+qué no hay relé, y la aplicación funciona igual para la mayoría.
+
+Comprobado en local: sin credenciales responde
+`{"hayRele":false,"motivo":"No hay credenciales de relé configuradas…"}`.
+
+**El día que se pongan las credenciales empieza a funcionar para el resto sin
+tocar una línea de código.**
+
+### ⚠ Las credenciales del relé las tiene que poner Héctor
+
+No las puede poner Claude: son un token de API, y **escribir claves o tokens
+en un formulario es algo que Claude no hace**. Los pasos:
+
+1. Panel de Cloudflare → **Realtime** → **TURN** → crear una clave.
+2. Apuntar el **Key ID** y el **API token** (el token solo se enseña una vez).
+3. Worker `magic-mesa` → **Settings** → **Variables and Secrets**, y añadir
+   dos **secretos**:
+   - `TURN_CLAVE_ID` → el Key ID
+   - `TURN_TOKEN` → el API token
+4. Volver a desplegar (o esperar al siguiente empujón a `main`).
+
+Para comprobarlo: `/api/servidores` tiene que pasar a decir `"hayRele":true`,
+y el panel de diagnóstico de la web lo enseña.
+
+**1.000 GB al mes gratis**, y una partida de dos horas por el relé gasta unos
+4,5 GB: caben unas 200 partidas al mes.
+
+### El panel de diagnóstico
+
+Se prometió desde el principio y aquí está: camino (**directo** o **relé**),
+estado de la conexión, resolución que recibes, fotogramas por segundo, kbps e
+ida y vuelta real del vídeo.
+
+No es un lujo: es lo que permite que Héctor diga «va borroso» y se sepa por
+qué, en vez de adivinar.
+
+### Audio
+
+Se ha incluido micrófono, con cancelación de eco y botón de silenciar.
+**No lo pidió nadie**, pero una videollamada sin voz obliga a tener el
+teléfono al oído toda la partida. Si estorba, se quita quitando `audio` de
+`LO_QUE_SE_PIDE` en `src/video.ts`.
+
+### ⚠ Lo que NO se ha podido probar
+
+**El vídeo de verdad.** Hace falta dos sesiones distintas con cámara, y
+Claude no puede iniciar sesión porque eso es escribir contraseñas. Probado
+lo que se podía: que compila, que el endpoint de servidores responde bien
+sin credenciales, y que el resto del Worker sigue en pie.
+
+Queda que Héctor lo pruebe con sus dos cuentas y diga qué ve en el panel de
+diagnóstico.
 
 ---
 

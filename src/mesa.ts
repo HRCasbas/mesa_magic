@@ -32,11 +32,32 @@ export function useMesa(nombre: string) {
   const [estado, setEstado] = useState<EstadoMesa>('fuera')
   const [codigo, setCodigo] = useState<string | null>(null)
   const [jugadores, setJugadores] = useState<Ocupante[]>([])
+  const [tuId, setTuId] = useState<string | null>(null)
   const [motivo, setMotivo] = useState<string | null>(null)
   const [retardo, setRetardo] = useState<number | null>(null)
 
   const conexion = useRef<WebSocket | null>(null)
   const salidaBuscada = useRef(false)
+
+  // Quien quiere enterarse de las señales que llegan. Es un conjunto en una
+  // referencia y no estado: si fuera estado, cada señal repintaría la
+  // pantalla entera, y por aquí pasan muchas al montar el vídeo.
+  const oyentes = useRef(new Set<(carga: unknown) => void>())
+
+  /** Avisarme cuando llegue una señal del otro. Devuelve cómo darse de baja. */
+  const alRecibirSenal = useCallback((oyente: (carga: unknown) => void) => {
+    oyentes.current.add(oyente)
+    return () => {
+      oyentes.current.delete(oyente)
+    }
+  }, [])
+
+  /** Mandarle una señal al otro. La mesa no la abre: solo la pasa. */
+  const enviarSenal = useCallback((carga: unknown) => {
+    const ws = conexion.current
+    if (ws?.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({ tipo: 'senal', carga }))
+  }, [])
 
   const cerrar = useCallback(() => {
     salidaBuscada.current = true
@@ -45,6 +66,7 @@ export function useMesa(nombre: string) {
     setEstado('fuera')
     setCodigo(null)
     setJugadores([])
+    setTuId(null)
     setRetardo(null)
     setMotivo(null)
   }, [])
@@ -93,10 +115,14 @@ export function useMesa(nombre: string) {
         switch (mensaje.tipo) {
           case 'estado':
             setJugadores(mensaje.jugadores)
+            setTuId(mensaje.tuId)
             setEstado('dentro')
             break
           case 'eco':
             setRetardo(Math.round(performance.now() - mensaje.marca))
+            break
+          case 'senal':
+            for (const oyente of oyentes.current) oyente(mensaje.carga)
             break
           case 'fuera':
             setMotivo(mensaje.motivo)
@@ -148,5 +174,18 @@ export function useMesa(nombre: string) {
     }
   }, [])
 
-  return { estado, codigo, jugadores, motivo, retardo, crear, entrar, cerrar, medirRetardo }
+  return {
+    estado,
+    codigo,
+    jugadores,
+    tuId,
+    motivo,
+    retardo,
+    crear,
+    entrar,
+    cerrar,
+    medirRetardo,
+    enviarSenal,
+    alRecibirSenal,
+  }
 }

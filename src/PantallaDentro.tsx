@@ -17,7 +17,7 @@ const FASES = [
   { numero: 0, nombre: 'El terreno', hecha: true },
   { numero: 1, nombre: 'La puerta', hecha: true },
   { numero: 2, nombre: 'La mesa', hecha: true },
-  { numero: 3, nombre: 'El vídeo', hecha: false },
+  { numero: 3, nombre: 'El vídeo', hecha: true },
   { numero: 4, nombre: 'Los contadores', hecha: false },
   { numero: 5, nombre: 'Las pegatinas', hecha: false },
   { numero: 6, nombre: 'Leer las cartas', hecha: false },
@@ -124,7 +124,7 @@ export function PantallaDentro({
   return (
     <main className="pagina">
       <header className="cabecera">
-        <p className="cabecera__fase">Fase 2 · La mesa</p>
+        <p className="cabecera__fase">Fase 3 · El vídeo</p>
         <h1 className="cabecera__titulo">Mesa Magic</h1>
         <p className="cabecera__lema">Hola, {jugador.nombre}.</p>
         <button
@@ -139,15 +139,10 @@ export function PantallaDentro({
       <PantallaMesa nombre={jugador.nombre} />
 
       <section className="tarjeta">
-        <h2>Todavía no hay vídeo</h2>
+        <h2>Lo que falta</h2>
         <p>
-          La mesa ya sirve para encontraros, y eso es lo que hacía falta antes que nada. La
-          imagen llega en la fase 3, y entonces irá <strong>directa</strong> de tu navegador al
-          suyo, sin pasar por la mesa.
-        </p>
-        <p className="aviso">
-          <strong>La cámara sigue sin encenderse.</strong> Abajo solo se pregunta al navegador si
-          existe alguna.
+          Ya hay mesa y ya hay vídeo. Faltan los contadores, las pegatinas sobre la imagen, poder
+          tocar una carta para verla ampliada, y los mazos con el historial de partidas.
         </p>
       </section>
 
