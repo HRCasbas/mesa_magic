@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-import type { Diagnostico, EstadoVideo } from './video'
+import type { Diagnostico, EstadoVideo } from './enlace'
 
 function Imagen({
   media,

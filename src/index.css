@@ -647,3 +647,149 @@ body {
     width: 12rem;
   }
 }
+
+/* ---- Los contadores ---- */
+
+.turno {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.turno__donde {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.turno__donde strong {
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.turno__fase {
+  margin-left: 0.6rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.3rem;
+  color: var(--texto);
+  font-size: 0.85rem;
+}
+
+.turno__botones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.jugadores {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.jugador {
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  padding: 0.9rem;
+}
+
+/* La tuya se distingue sin leer: es la unica que se puede tocar. */
+.jugador--mio {
+  border-color: var(--acento);
+}
+
+.jugador__nombre {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+.vidas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.vidas__lado {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.vidas__valor {
+  min-width: 3.5rem;
+  text-align: center;
+  font-size: 2.6rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.menudos {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.menudo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.menudo__nombre {
+  flex: 1;
+  color: var(--texto-suave);
+}
+
+.menudo__valor {
+  min-width: 1.75rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* El veneno a diez se marca, pero la aplicacion no dice que nadie pierda. */
+.menudo--aviso .menudo__valor {
+  color: var(--mal);
+  font-weight: 700;
+}
+
+.menudo__botones {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.tecla {
+  min-width: 2rem;
+  min-height: 2rem;
+  padding: 0 0.4rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.4rem;
+  background: var(--fondo);
+  color: var(--texto);
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tecla:hover {
+  border-color: var(--acento);
+}
+
+.tecla--ancha {
+  min-width: 2.6rem;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* En pantalla ancha, los dos jugadores uno al lado del otro. */
+@media (min-width: 46rem) {
+  .jugadores {
+    grid-template-columns: 1fr 1fr;
+  }
+}

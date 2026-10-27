@@ -34,7 +34,7 @@ Tres cosas:
 | **1** | La puerta: usuario y clave, registro cerrado, dos cuentas | **Hecha** (26/10/2026) |
 | **2** | La mesa: Worker, Durable Object, encontrarse con un código | **Hecha** (27/10/2026) |
 | **3** | El vídeo: WebRTC, credenciales TURN, cortar, diagnóstico | **Hecha** (27/10/2026), falta el relé |
-| **4** | Los contadores, por el canal de datos | |
+| **4** | Los contadores, por el canal de datos | **Hecha** (27/10/2026) |
 | **5** | Las pegatinas arrastrables | |
 | **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | |
 | **7** | Mazos: zona propia, portada, elegir mazo para jugar | |
@@ -43,6 +43,24 @@ Tres cosas:
 
 **Supabase solo se toca en la fase 1 y en la 7.** De la 2 a la 6, todo
 Cloudflare.
+
+### ⚠ Lo que se ve ahora NO es el aspecto final (Héctor, 27/10/2026)
+
+> «Entiendo que esta versión actual es de prueba, porque cambiaría
+> absolutamente todo (tamaño de la webcam… muchas cosas).»
+
+Exacto, y conviene decirlo aquí para que nadie pierda el tiempo puliendo
+pantallas que se van a tirar. Lo que hay ahora es **un andamio**: cada fase
+añade su trozo debajo del anterior, en tarjetas sueltas, para poder probarlo
+por separado.
+
+**El aspecto de verdad se monta en la fase 9**, cuando ya se sepa todo lo
+que tiene que caber a la vez: el vídeo grande, los contadores al lado, las
+pegatinas encima de la imagen y el lateral de consultas. Hasta entonces, las
+tarjetas se quedan como están y **no se discuten tamaños ni colocación**.
+
+Lo único que sí se cuida desde ya es que cada pieza funcione y que el estado
+viaje bien entre los dos navegadores, porque eso no se rehace en la fase 9.
 
 ---
 
@@ -393,6 +411,82 @@ Cómo se leen estos números, que no es evidente:
 
 ---
 
+## Fase 4: los contadores (27/10/2026)
+
+Vidas, veneno, energía, experiencia, cartas en mano y en el cementerio, más
+el turno y la fase. Van **por el canal de datos del enlace**, el mismo
+camino directo que el vídeo. Ni base de datos ni Worker: si Supabase está
+dormida, los números siguen funcionando.
+
+### La decisión que ordena todo: cada uno lleva SUS números
+
+Los del rival se ven pero **no se tocan**. Así se juega en una mesa de
+verdad: le dices «te quito tres» y los baja él.
+
+Y no es solo fidelidad. **Quita de un plumazo el problema de los dos tocando
+el mismo número a la vez.** De cada número manda uno solo, así que no hay
+nada que resolver: ni versiones, ni relojes, ni «gana el último». Era eso o
+montar un mecanismo de mezcla para un caso que entre dos amigos casi no
+pasa y que, cuando pasa, se arregla hablando.
+
+Lo único que es de los dos es **el turno y la fase**, porque ahí sí hay una
+sola verdad. Eso lleva un contador de cambios (`secuencia`) y se acepta lo
+que llega solo si trae más cambios que lo que tienes. **Sin eso, dos
+pulsaciones casi a la vez se devuelven el turno una a otra sin parar.**
+
+### El canal de datos lo abre uno solo
+
+`createDataChannel` lo llama **el «maleducado»**, el mismo que no cede en
+los choques de ofertas; el otro lo recoge por `ondatachannel`. Si lo abren
+los dos hay dos canales y una renegociación de más, con choque garantizado
+nada más empezar.
+
+Y como el enlace se abre al estar los dos en la mesa (ver fase 3), **los
+contadores funcionan sin que nadie encienda la cámara**.
+
+### Lo que se guarda y lo que no
+
+- **Tus números se guardan en el navegador**, por mesa
+  (`magic:contadores:CÓDIGO`). Una recarga sin querer en mitad de una
+  partida no te pone las vidas a veinte otra vez.
+- **El turno y la fase no se guardan**, y no hace falta: al abrir el canal
+  cada uno manda un `hola`, el otro contesta con su estado, y como su
+  `secuencia` es mayor que la tuya recién empezada, se recupera solo.
+- **Nada de esto va a Supabase.** Lo que sobrevive a la partida es el
+  historial, y eso es la fase 8.
+
+### Detalles pensados, por si alguien los cambia sin saber
+
+- **Las vidas pueden bajar de cero.** Estar a cero no es perder (regla 6) y
+  hay cartas que lo aprovechan. Los demás contadores se paran en cero.
+- **El veneno se para en diez** y se pone en rojo. Se marca y ya: **la
+  aplicación no dice que nadie haya perdido**, igual que con las vidas.
+- **Veneno e infección son el mismo contador.** En Magic la infección pone
+  contadores de veneno; dos casillas distintas serían dos sitios donde
+  apuntar lo mismo, que es justo lo que prohíbe la regla 9.
+- **Nada de daño de comandante ni nada de Commander**: aquí se juega de dos.
+
+### Probado el 27/10/2026
+
+Montando el panel suelto en el navegador, sin sesión: suben y bajan las
+vidas, el veneno se para en diez y se pone rojo, las fases avanzan y al
+pasar de la última cambia el turno, y lo guardado aguanta una recarga (16
+vidas y 10 de veneno seguían ahí). En móvil las dos columnas se apilan y los
+botones salen grandes.
+
+**Lo que no se ha podido probar: que los números lleguen al otro.** Hace
+falta iniciar sesión en dos sitios. Es justo donde se escondía el fallo de
+la fase 3, así que conviene mirarlo de verdad.
+
+### Truco al probar en el navegador
+
+Una captura puede adelantarse al repintado de React y hacer creer que una
+pulsación no ha entrado. Aquí pasó: once clics en el veneno parecían dos. No
+era un fallo, era la foto. **Antes de dar por roto algo así, volver a mirar
+un segundo después.**
+
+---
+
 ## Mazos y registro de partidas (pedido por Héctor el 26/10/2026)
 
 > «Para jugar una partida hay que elegir un mazo de un usuario. Cada usuario
@@ -424,6 +518,12 @@ llevarlo a mano, porque **sale solo del historial**.
 - **Carta de portada**, para reconocerlo de un vistazo.
 - **Lista de cartas** (decidido el 27/10/2026, ver abajo).
 - Activo o retirado.
+
+**Y se puede editar** (Héctor, 27/10/2026). Un mazo no se queda como se
+importó: se cambian cartas entre partidas. Hay que poder tocar el nombre, el
+formato, la portada, las notas y la lista. Ojo con la regla 8: **editar un
+mazo no puede cambiar lo que dice el historial** de las partidas ya jugadas,
+que guardan su copia del nombre y la portada de aquel día.
 
 **El 26/10/2026 se decidió que NO llevara lista de cartas**, con un
 argumento que sigue siendo verdad: mantener a mano sesenta cartas por mazo

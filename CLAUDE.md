@@ -93,8 +93,12 @@ src/
   PantallaEntrada.tsx la puerta: correo y clave
   PantallaDentro.tsx  lo que se ve con sesión
   PantallaMesa.tsx    crear mesa, entrar con código, ver quién está
+  PantallaVideo.tsx   las dos imágenes, los cortes y el diagnóstico
+  PantallaContadores.tsx  vidas, veneno, turno y fase
   sesion.ts           lleva la sesión y la ficha del jugador
   mesa.ts             la conexión con la mesa
+  enlace.ts           el camino directo entre los dos: vídeo y datos
+  contadores.ts       los números de la partida, y cómo viajan
   supabase.ts         el cliente, y los errores en castellano
   comprobaciones.ts   si este aparato sirve para jugar
   index.css           hoja de estilo única; los colores en :root

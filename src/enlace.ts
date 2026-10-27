@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-// El vídeo, de tu navegador al suyo y sin pasar por ningún servidor nuestro.
+// El enlace directo entre los dos navegadores: el vídeo y, por el mismo
+// camino, el canal de datos por el que viajan los contadores y, más
+// adelante, las pegatinas.
+//
+// Las dos cosas van juntas a propósito. Son la misma conexión: abrir una
+// segunda para los datos sería repetir todo el trabajo de encontrarse, y
+// dejaría dos caminos que pueden caerse por separado.
 //
 // Va cifrado siempre: WebRTC no sabe funcionar sin cifrar, no es una opción
 // que se active. Y como va directo, el retardo es de décimas de segundo en
@@ -115,7 +121,7 @@ function razonDelFallo(error: unknown): string {
   return 'No se ha podido encender la cámara.'
 }
 
-export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Opciones) {
+export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: Opciones) {
   const [estado, setEstado] = useState<EstadoVideo>('apagado')
   const [fallo, setFallo] = useState<string | null>(null)
   const [miMedia, setMiMedia] = useState<MediaStream | null>(null)
@@ -124,8 +130,11 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
   const [videoCortado, setVideoCortado] = useState(false)
   const [micCortado, setMicCortado] = useState(false)
   const [variasCamaras, setVariasCamaras] = useState(false)
+  const [datosAbiertos, setDatosAbiertos] = useState(false)
 
   const enlace = useRef<RTCPeerConnection | null>(null)
+  const canal = useRef<RTCDataChannel | null>(null)
+  const oyentesDeDatos = useRef(new Set<(dato: unknown) => void>())
   const miMediaRef = useRef<MediaStream | null>(null)
   /** Lo que se le ha colgado al enlace, para no colgarlo dos veces. */
   const emisores = useRef<RTCRtpSender[]>([])
@@ -171,6 +180,28 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
         // Algún navegador puede no dejarlo. No es grave: solo significa
         // que el vídeo irá a la calidad que decida él.
       })
+    }
+  }, [])
+
+  // ---- el canal de datos ----
+
+  /**
+   * Mandarle algo al otro por el camino directo. Devuelve si ha salido: si
+   * el canal todavía no está abierto, no se guarda nada en cola, porque un
+   * contador viejo que llega tarde es peor que no llegar.
+   */
+  const enviarDato = useCallback((dato: unknown) => {
+    const c = canal.current
+    if (c?.readyState !== 'open') return false
+    c.send(JSON.stringify(dato))
+    return true
+  }, [])
+
+  /** Avisarme de lo que llegue por el canal. Devuelve cómo darse de baja. */
+  const alRecibirDato = useCallback((oyente: (dato: unknown) => void) => {
+    oyentesDeDatos.current.add(oyente)
+    return () => {
+      oyentesDeDatos.current.delete(oyente)
     }
   }, [])
 
@@ -325,6 +356,35 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
         if (vivo) setSuMedia(evento.streams[0] ?? null)
       }
 
+      // El canal de datos lo abre UNO SOLO de los dos. Si lo abrieran los
+      // dos habría dos canales y una renegociación de más, con el choque de
+      // ofertas garantizado nada más empezar. Lo abre el «maleducado», que
+      // es el que no cede en los choques; el otro lo recoge al llegar.
+      function usarCanal(c: RTCDataChannel) {
+        canal.current = c
+        c.onopen = () => {
+          if (vivo) setDatosAbiertos(true)
+        }
+        c.onclose = () => {
+          if (vivo) setDatosAbiertos(false)
+        }
+        c.onmessage = (evento) => {
+          let dato: unknown
+          try {
+            dato = JSON.parse(evento.data as string)
+          } catch {
+            return
+          }
+          for (const oyente of oyentesDeDatos.current) oyente(dato)
+        }
+      }
+
+      if (soyEducado) {
+        pc.ondatachannel = (evento) => usarCanal(evento.channel)
+      } else {
+        usarCanal(pc.createDataChannel('partida', { ordered: true }))
+      }
+
       pc.onicecandidate = ({ candidate }) => {
         enviarSenal({ candidato: candidate ? candidate.toJSON() : null } satisfies Senal)
       }
@@ -465,6 +525,9 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
       vivo = false
       if (reloj) clearInterval(reloj)
       bajaDeSenales?.()
+      canal.current?.close()
+      canal.current = null
+      setDatosAbiertos(false)
       pc?.close()
       enlace.current = null
       emisores.current = []
@@ -500,6 +563,9 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
     videoCortado,
     micCortado,
     variasCamaras,
+    datosAbiertos,
+    enviarDato,
+    alRecibirDato,
     encender,
     apagar,
     cambiarCamara,

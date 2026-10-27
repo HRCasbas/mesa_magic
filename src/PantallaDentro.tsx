@@ -18,7 +18,7 @@ const FASES = [
   { numero: 1, nombre: 'La puerta', hecha: true },
   { numero: 2, nombre: 'La mesa', hecha: true },
   { numero: 3, nombre: 'El vídeo', hecha: true },
-  { numero: 4, nombre: 'Los contadores', hecha: false },
+  { numero: 4, nombre: 'Los contadores', hecha: true },
   { numero: 5, nombre: 'Las pegatinas', hecha: false },
   { numero: 6, nombre: 'Leer las cartas', hecha: false },
   { numero: 7, nombre: 'Los mazos', hecha: false },
@@ -124,7 +124,7 @@ export function PantallaDentro({
   return (
     <main className="pagina">
       <header className="cabecera">
-        <p className="cabecera__fase">Fase 3 · El vídeo</p>
+        <p className="cabecera__fase">Fase 4 · Los contadores</p>
         <h1 className="cabecera__titulo">Mesa Magic</h1>
         <p className="cabecera__lema">Hola, {jugador.nombre}.</p>
         <button
@@ -141,8 +141,8 @@ export function PantallaDentro({
       <section className="tarjeta">
         <h2>Lo que falta</h2>
         <p>
-          Ya hay mesa y ya hay vídeo. Faltan los contadores, las pegatinas sobre la imagen, poder
-          tocar una carta para verla ampliada, y los mazos con el historial de partidas.
+          Ya hay mesa, vídeo y contadores. Faltan las pegatinas sobre la imagen, poder tocar una
+          carta para verla ampliada, y los mazos con el historial de partidas.
         </p>
       </section>
 

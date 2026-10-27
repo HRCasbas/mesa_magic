@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react'
 
+import { PantallaContadores } from './PantallaContadores'
 import { PantallaVideo } from './PantallaVideo'
+import { useEnlace } from './enlace'
 import { useMesa } from './mesa'
-import { useVideo } from './video'
 
 /**
  * La mesa y, cuando estáis los dos, el vídeo.
@@ -25,7 +26,7 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
   // conclusión sin tener que hablarlo.
   const soyEducado = !!mesa.tuId && !!elOtro && mesa.tuId < elOtro.id
 
-  const video = useVideo({
+  const enlace = useEnlace({
     activo: estamosLosDos,
     soyEducado,
     enviarSenal: mesa.enviarSenal,
@@ -155,21 +156,35 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
           puedes encender y encuadrar mientras esperas, y comprobar que el
           navegador te da el permiso sin depender del otro. */}
       <PantallaVideo
-        estado={video.estado}
-        fallo={video.fallo}
-        miMedia={video.miMedia}
-        suMedia={video.suMedia}
-        diagnostico={video.diagnostico}
-        videoCortado={video.videoCortado}
-        micCortado={video.micCortado}
-        variasCamaras={video.variasCamaras}
+        estado={enlace.estado}
+        fallo={enlace.fallo}
+        miMedia={enlace.miMedia}
+        suMedia={enlace.suMedia}
+        diagnostico={enlace.diagnostico}
+        videoCortado={enlace.videoCortado}
+        micCortado={enlace.micCortado}
+        variasCamaras={enlace.variasCamaras}
         nombreDelOtro={elOtro?.nombre ?? null}
-        encender={video.encender}
-        apagar={video.apagar}
-        cambiarCamara={video.cambiarCamara}
-        alternarVideo={video.alternarVideo}
-        alternarMicrofono={video.alternarMicrofono}
+        encender={enlace.encender}
+        apagar={enlace.apagar}
+        cambiarCamara={enlace.cambiarCamara}
+        alternarVideo={enlace.alternarVideo}
+        alternarMicrofono={enlace.alternarMicrofono}
       />
+
+      {/* La `key` hace que cada mesa empiece con sus propios números: al
+          cambiar de código, el panel se monta de cero y lee lo guardado de
+          esa mesa, no lo de la anterior. */}
+      {mesa.codigo && (
+        <PantallaContadores
+          key={mesa.codigo}
+          codigo={mesa.codigo}
+          nombreDelOtro={elOtro?.nombre ?? null}
+          datosAbiertos={enlace.datosAbiertos}
+          enviarDato={enlace.enviarDato}
+          alRecibirDato={enlace.alRecibirDato}
+        />
+      )}
     </>
   )
 }
