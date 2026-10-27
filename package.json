@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "tipos": "wrangler types",
+    "build": "npm run tipos && tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "mesa": "npm run build && wrangler dev"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

@@ -739,6 +739,21 @@ Scryfall es gratis y sin clave, pero pide identificarse con un
 
 ## Lecciones
 
+- **27/10/2026 — Lo que se ignora en git tiene que generarse en la
+  compilación.** `worker-configuration.d.ts` (los tipos de Cloudflare) se
+  añadió a `.gitignore` por no meter 600 KB generados en el repositorio, pero
+  `tsc` lo necesita. Aquí compilaba porque el archivo estaba en disco; en la
+  máquina de Cloudflare no existía y la compilación reventó con
+  `TS2688: Cannot find type definition file`. **Y falló en silencio**: la web
+  siguió sirviendo la versión anterior, así que parecía que el despliegue
+  tardaba, no que se había caído.
+  Arreglado metiendo `wrangler types` dentro de `npm run build`, que además
+  quita el pie de que los tipos se queden desfasados al tocar
+  `wrangler.jsonc`.
+  **Cómo se encontró:** comparando el nombre del archivo publicado con el
+  recién compilado. Si no coinciden, no se ha desplegado, y hay que ir al
+  registro antes de seguir esperando.
+
 - **26/10/2026 — La puerta no puede ir al final.** El plan tenía las cuentas
   en la última fase, como suele hacerse. Héctor pidió que la webcam fuera
   «segura y con usuario», y tenía razón: montar el vídeo primero deja una web
