@@ -36,7 +36,7 @@ Tres cosas:
 | **3** | El vídeo: WebRTC, cámara propia y del otro, cortar, diagnóstico | |
 | **4** | Los contadores, por el canal de datos | |
 | **5** | Las pegatinas arrastrables | |
-| **6** | Leer las cartas: foto de alta resolución, congelar y ampliar, Scryfall | |
+| **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | |
 | **7** | Mazos: zona propia, portada, elegir mazo para jugar | |
 | **8** | Historial: declarar ganador, aceptar, y qué sale del registro | |
 | **9** | El remate: PWA, pantalla que no se apaga, atajos | |
@@ -505,6 +505,76 @@ poco fiable, y SpellTable lleva años peleándose con ello.
   mesa, muchas veces de noche; una pantalla blanca al lado deslumbra y te
   hace perder el detalle de las cartas. Los colores salen de `:root` en
   `index.css`.
+
+---
+
+## Identificar una carta tocándola (idea de Héctor, 27/10/2026)
+
+> «Pulsar en la carta y que aparezca en un lado la imagen ampliada.
+> Tesseract.js lee el nombre de arriba o el código de edición, y la API
+> gratuita de Scryfall.»
+
+Va en la dirección correcta: ataca el único problema del proyecto que no
+tenía buena solución. Pero **el cuello de botella no es el OCR, son los
+píxeles**, y eso cambia el orden en que hay que montarlo.
+
+### Los números
+
+Con el tapete encuadrado a 1080p, una carta ocupa unos 200 px de ancho y
+**el nombre mide unos 10 px de alto**. Tesseract necesita 30 px o más por
+carácter para ir fino. **El código de edición de abajo es todavía más
+pequeño**: a esa resolución, inviable.
+
+### El orden correcto: primero la foto, después el OCR
+
+1. Se toca la carta en el vídeo.
+2. Se le pide al navegador del otro **una foto de esa zona a resolución
+   nativa** (4K si su cámara lo da). Ya estaba planeado en la fase 6 y llega
+   por el canal de datos en menos de un segundo.
+3. **Esa foto, ampliada, ya se lee.** Aquí ya se ha ganado, sin OCR.
+4. Tesseract corre **sobre esa foto**, donde el nombre mide 30–60 px. Ahí sí
+   tiene sentido.
+5. Scryfall con `fuzzy` perdona lo que el OCR se deje: «Lighming Bol»
+   encuentra «Lightning Bolt».
+6. Si aun así falla, se escriben tres letras y `/cards/autocomplete` resuelve.
+
+**El OCR es un acelerador, nunca la única vía.** Así nunca te quedas sin
+nada, que es la diferencia entre una función que se usa y una que se
+abandona.
+
+### Lo que pesa (medido el 27/10/2026, no de memoria)
+
+| Pieza | Tamaño |
+|---|---|
+| `tesseract.js` 7.0.0 | 1,35 MB |
+| Núcleo wasm (se baja uno) | 2–3 MB |
+| Datos del inglés, versión **rápida** | **1,89 MB** |
+| Datos del inglés, versión buena | 10,42 MB |
+
+Unos **4–5 MB la primera vez**, y luego cacheado. **Se carga solo al pulsar
+«identificar», nunca al abrir la web.** Con la versión rápida basta: el
+nombre de una carta es texto grande, limpio y con mucho contraste.
+
+### Dos trampas conocidas
+
+- **Cartas tapadas:** el nombre queda en vertical. Hay que girar la imagen y
+  probar las dos orientaciones.
+- **Perspectiva:** la cámara mira en ángulo y el texto sale inclinado.
+  Tesseract quiere texto horizontal.
+
+### La alternativa barata, por si basta
+
+Tocar la carta, escribir tres o cuatro letras y que Scryfall autocomplete.
+**Dos segundos, infalible y cero megas.** Para dos amigos que preguntan «¿qué
+hace esa?» cinco veces por partida, puede que gane al OCR.
+
+**Recomendación:** en la fase 6, primero el recorte ampliado y el buscador
+manual, que son baratos y seguros. El OCR encima, **midiendo si acierta lo
+suficiente**. Si acierta poco, se queda como está y no se ha perdido casi
+nada.
+
+Scryfall es gratis y sin clave, pero pide identificarse con un
+`User-Agent` propio y dejar 50–100 ms entre peticiones. Se respeta.
 
 ---
 
