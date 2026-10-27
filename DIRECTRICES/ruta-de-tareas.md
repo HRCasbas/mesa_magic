@@ -532,15 +532,57 @@ pequeño**: a esa resolución, inviable.
    nativa** (4K si su cámara lo da). Ya estaba planeado en la fase 6 y llega
    por el canal de datos en menos de un segundo.
 3. **Esa foto, ampliada, ya se lee.** Aquí ya se ha ganado, sin OCR.
-4. Tesseract corre **sobre esa foto**, donde el nombre mide 30–60 px. Ahí sí
-   tiene sentido.
-5. Scryfall con `fuzzy` perdona lo que el OCR se deje: «Lighming Bol»
-   encuentra «Lightning Bolt».
-6. Si aun así falla, se escriben tres letras y `/cards/autocomplete` resuelve.
+4. El OCR corre **sobre esa foto**, no sobre el vídeo.
 
 **El OCR es un acelerador, nunca la única vía.** Así nunca te quedas sin
 nada, que es la diferencia entre una función que se usa y una que se
-abandona.
+abandona a la tercera vez que falla.
+
+### Cartas en japonés o chino (Héctor, 27/10/2026)
+
+> «A veces están en chino o japonés y desconocemos el nombre de la carta.»
+
+Esto **rompe la vía del nombre**: Tesseract con datos de inglés no lee
+japonés, y cargar `jpn` o `chi_sim` son megas más y mucha menos fiabilidad
+sobre una foto en ángulo.
+
+**La salida es el número de colección**, y es mejor que el nombre en todo:
+
+- Abajo a la izquierda de toda carta moderna hay `123/281` y el código de la
+  edición (`NEO`, `MH3`…).
+- **Es idéntico en todos los idiomas.** Una carta japonesa lleva el mismo
+  número que la inglesa.
+- Es **ASCII puro**: dígitos, barra y tres o cuatro letras mayúsculas. A
+  Tesseract se le puede decir que **solo acepte esos caracteres**
+  (`tessedit_char_whitelist`), y eso dispara el acierto. Es de lo más fácil
+  que existe para un OCR, mucho más que leer japonés.
+- El resultado es **exacto, no aproximado**: `/cards/neo/123`.
+- Y se puede pedir **en el idioma que se quiera**: `/cards/neo/123/ja`
+  devuelve el nombre impreso japonés **y** el nombre en inglés.
+
+Comprobado el 27/10/2026 contra la API de verdad: `/cards/neo/123` devuelve
+*Tatsunari, Toad Rider*, y `/cards/neo/123/ja` devuelve
+`カエル乗り、達成` junto al nombre inglés.
+
+**Pega:** las cartas anteriores a 2003 aproximadamente no llevan número de
+colección. Para esas, la vía del nombre o la mano.
+
+### Hasta dónde perdona Scryfall (medido, no supuesto)
+
+En la primera versión de esta nota se dijo que la búsqueda difusa perdonaba
+los fallos del OCR. **Se midió y aguanta menos de lo que se dijo:**
+
+| Lo que se le pide | ¿Encuentra «Lightning Bolt»? |
+|---|---|
+| `Lightnig Bolt` (falta una letra) | **sí** |
+| `Lightning Bol` (falta una letra) | **sí** |
+| `L1ghtning Bolt` (una letra cambiada) | **sí** |
+| `Lighming Bol` (dos fallos) | **no** |
+| `Liqhtninq Bolt` (dos `g` por `q`) | **no** |
+
+**Aguanta un fallo, no dos.** Y `rn`→`m` o `g`→`q` son justo las confusiones
+que comete un OCR. Otra razón para preferir el número de colección, que da
+resultado exacto.
 
 ### Lo que pesa (medido el 27/10/2026, no de memoria)
 
@@ -562,16 +604,45 @@ nombre de una carta es texto grande, limpio y con mucho contraste.
 - **Perspectiva:** la cámara mira en ángulo y el texto sale inclinado.
   Tesseract quiere texto horizontal.
 
-### La alternativa barata, por si basta
+### Las tres vías, y las tres se montan
 
-Tocar la carta, escribir tres o cuatro letras y que Scryfall autocomplete.
-**Dos segundos, infalible y cero megas.** Para dos amigos que preguntan «¿qué
-hace esa?» cinco veces por partida, puede que gane al OCR.
+Héctor, 27/10/2026: *«tu solución no la deseches, añádela»*. Ninguna sobra,
+porque cada una cubre el hueco de las otras.
 
-**Recomendación:** en la fase 6, primero el recorte ampliado y el buscador
-manual, que son baratos y seguros. El OCR encima, **midiendo si acierta lo
-suficiente**. Si acierta poco, se queda como está y no se ha perdido casi
-nada.
+| Vía | Para qué | Resultado |
+|---|---|---|
+| **A · Número de colección** | Cualquier idioma, incluido japonés | **Exacto** |
+| **B · Nombre** | Inglés y español; cartas viejas sin número | Aproximado, un fallo |
+| **C · A mano** | Cuando las dos fallan | Infalible, cero megas |
+
+Y **por debajo de las tres, siempre, la foto ampliada**. Si ninguna
+identifica la carta, la foto sigue ahí y se lee. Nunca te quedas a cero.
+
+**Lo único que no tiene solución:** una carta japonesa, sin número legible y
+que no conocéis. Ahí solo queda la ilustración ampliada. Hay que decirlo y no
+prometer magia.
+
+### El lateral de consultas (Héctor, 27/10/2026)
+
+> «Molaría que cada usuario tenga sus consultas en un lateral.»
+
+Una columna al lado con las cartas que **tú** has consultado en esta partida,
+la última arriba. Tocar una la vuelve a abrir grande.
+
+**Privado para cada uno, y no es solo por simplificar:** si tu rival ve qué
+cartas consultas, sabe cuáles no conoces y cuáles te preocupan. **Eso es
+información de partida.** Privado por defecto es lo correcto también para
+jugar.
+
+Con un **botón de compartir** una consulta concreta: «mira, es esta», y le
+aparece a él. Voluntario, nunca automático.
+
+**En el móvil va como cajón deslizable, no como columna.** La pantalla ya
+lleva dos vídeos y el panel de contadores; una columna fija se come lo que
+importa.
+
+Se guarda en el navegador mientras dura la partida. Guardarlas para siempre
+sería base de datos, y se puede añadir después sin rehacer nada.
 
 Scryfall es gratis y sin clave, pero pide identificarse con un
 `User-Agent` propio y dejar 50–100 ms entre peticiones. Se respeta.
