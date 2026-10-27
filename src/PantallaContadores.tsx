@@ -1,12 +1,9 @@
 import { FASES, useContadores, type Contadores } from './contadores'
 
-/** Los contadores pequeños, los que casi nunca se usan pero hacen falta. */
+/** Los contadores pequeños. Son pocos a propósito: ver `contadores.ts`. */
 const MENUDOS: { clave: keyof Contadores; nombre: string }[] = [
   { clave: 'veneno', nombre: 'Veneno' },
   { clave: 'energia', nombre: 'Energía' },
-  { clave: 'experiencia', nombre: 'Experiencia' },
-  { clave: 'mano', nombre: 'Mano' },
-  { clave: 'cementerio', nombre: 'Cementerio' },
 ]
 
 function Menudo({

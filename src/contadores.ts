@@ -10,22 +10,25 @@ import { useCallback, useEffect, useState } from 'react'
 // de los dos tocando el mismo número a la vez: no hay nada que resolver,
 // porque de cada número manda uno solo.
 
+// QUÉ NO LLEVA ESTO, Y POR QUÉ (Héctor, 27/10/2026): no hay contador de
+// cartas en la mano ni en el cementerio. Habría que sumar y restar en cada
+// robo y en cada carta que se juega, o sea en cada acción de la partida, y
+// eso no lo lleva nadie al día: «sería una tortura jugar». Lo que se cuenta
+// solo mirando la mesa por la cámara no hace falta apuntarlo.
+//
+// Tampoco hay contador de experiencia, que es cosa de Commander, y aquí se
+// juega de dos.
+
 export interface Contadores {
   vidas: number
   veneno: number
   energia: number
-  experiencia: number
-  mano: number
-  cementerio: number
 }
 
 export const CONTADORES_NUEVOS: Contadores = {
   vidas: 20,
   veneno: 0,
   energia: 0,
-  experiencia: 0,
-  mano: 0,
-  cementerio: 0,
 }
 
 /** Las fases del turno, en el orden en que van. */

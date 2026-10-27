@@ -413,10 +413,33 @@ Cómo se leen estos números, que no es evidente:
 
 ## Fase 4: los contadores (27/10/2026)
 
-Vidas, veneno, energía, experiencia, cartas en mano y en el cementerio, más
-el turno y la fase. Van **por el canal de datos del enlace**, el mismo
-camino directo que el vídeo. Ni base de datos ni Worker: si Supabase está
-dormida, los números siguen funcionando.
+**Vidas, veneno y energía**, más el turno y la fase. Y nada más. Van **por
+el canal de datos del enlace**, el mismo camino directo que el vídeo. Ni
+base de datos ni Worker: si Supabase está dormida, los números siguen
+funcionando.
+
+### ⚠ Lo que se quitó el mismo día, y por qué
+
+La primera versión traía además **cartas en mano**, **cementerio** y
+**experiencia**. Héctor las tiró en cuanto las vio:
+
+> «No vamos a estar sumando y restando cartas cada vez que jugamos,
+> robamos… sería una tortura jugar.»
+
+Tiene toda la razón, y es una regla que vale para todo lo que venga
+después: **un contador que hay que corregir en cada acción de la partida no
+lo lleva nadie al día**. Las cartas de la mano cambian al robar y al jugar,
+o sea constantemente; el cementerio igual. Y lo que no se lleva al día deja
+de ser información: es un número que miente.
+
+Regla, entonces: **si se puede contar mirando la mesa por la cámara, no se
+apunta.** Las cartas de la mano y las del cementerio se ven.
+
+La experiencia se fue por otra razón: **es de Commander**, y aquí se juega
+de dos.
+
+Se quedan las tres que cambian **solo cuando una carta lo dice**: vidas,
+veneno y energía. Son pocas veces por partida y son deliberadas.
 
 ### La decisión que ordena todo: cada uno lleva SUS números
 
@@ -465,6 +488,8 @@ contadores funcionan sin que nadie encienda la cámara**.
   contadores de veneno; dos casillas distintas serían dos sitios donde
   apuntar lo mismo, que es justo lo que prohíbe la regla 9.
 - **Nada de daño de comandante ni nada de Commander**: aquí se juega de dos.
+- **Antes de añadir un contador nuevo, la pregunta es cuántas veces hay que
+  tocarlo en una partida.** Si la respuesta es «en cada turno», sobra.
 
 ### Probado el 27/10/2026
 
@@ -1109,6 +1134,14 @@ mira».
   **Cómo se encontró:** comparando el nombre del archivo publicado con el
   recién compilado. Si no coinciden, no se ha desplegado, y hay que ir al
   registro antes de seguir esperando.
+
+- **27/10/2026 — Un contador que hay que corregir en cada acción no lo
+  lleva nadie.** Se metieron cartas en mano y en cementerio porque estaban
+  en la lista de lo pedido, sin preguntarse cuántas veces habría que
+  tocarlos. Héctor lo vio al primer vistazo: «sería una tortura jugar». La
+  pregunta que había que hacerse antes de escribirlo: **¿cuántas veces se
+  toca esto en una partida?** Si es en cada turno, sobra. Y si además se
+  puede contar mirando la mesa por la cámara, sobra dos veces.
 
 - **26/10/2026 — La puerta no puede ir al final.** El plan tenía las cuentas
   en la última fase, como suele hacerse. Héctor pidió que la webcam fuera
