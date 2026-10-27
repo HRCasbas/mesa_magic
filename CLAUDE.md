@@ -72,7 +72,11 @@ textos que ve el usuario, con sus acentos puestos.
 6. **La aplicación nunca declara un ganador.** Uno lo declara y el otro
    acepta. Estar a 0 vidas no es perder: hay cartas que lo impiden, y Magic
    tiene demasiadas casuísticas para adivinar.
-7. **Un mazo no lleva lista de cartas.** Nombre, formato, portada y notas.
+7. **Un mazo lleva lista de cartas, pero no se teclea: se importa.** Nombre,
+   formato, portada, notas y la lista, sacada del fichero que exporta otra
+   aplicación. Y **el rival ve el mazo entero durante la partida**: lo
+   decidió Héctor el 27/10/2026, porque en torneos las listas son públicas y
+   entre ellos acaban preguntándoselas igual.
 8. **El historial guarda el nombre y la portada del mazo tal como estaban el
    día de la partida**, para que borrar un mazo no deje las partidas viejas
    en blanco.

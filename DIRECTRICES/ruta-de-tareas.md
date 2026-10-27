@@ -350,18 +350,46 @@ en un ordenador con dos webcams. Ojo: **las cámaras no se pueden contar
 hasta que hay permiso dado**, así que el botón solo aparece después de
 encender.
 
-### ⚠ Lo que NO se ha podido probar
+### Probado y funcionando (Héctor, 27/10/2026)
 
-**El vídeo de verdad.** Hace falta dos sesiones distintas con cámara, y
-Claude no puede iniciar sesión porque eso es escribir contraseñas. Probado
-lo que se podía: que compila, que el endpoint de servidores responde bien
-sin credenciales, y que el resto del Worker sigue en pie.
+Con el arreglo puesto, PC contra móvil. Lo que marcó el panel:
 
-**Y por eso el bloqueo de arriba llegó a producción.** Lo encontró Héctor en
-la primera prueba de verdad. La lección está apuntada al final: *una
-fontanería que no se puede probar entera se entrega diciéndolo*, y el
-arreglo tampoco está probado por Claude. Queda que Héctor lo pruebe con sus
-dos cuentas y diga qué ve en el panel de diagnóstico.
+| Dato | Medido |
+|---|---|
+| Camino | **directo** |
+| Estado | `connected` |
+| Imagen que envía el PC | 1920 × 1080 |
+| Imagen que recibe del móvil | **1080 × 1920** |
+| Fotogramas | 14 por segundo |
+| Calidad | 2521 kbps |
+| Ida y vuelta | **5 ms** |
+
+Cómo se leen estos números, que no es evidente:
+
+- **5 ms no es la cifra real de una partida.** Los dos aparatos estaban en
+  la misma casa, así que ni salió a internet. Con el amigo lejos lo normal
+  serán entre 20 y 60 ms. Sigue siendo diez veces menos que una emisión
+  normal, que es de lo que se trataba.
+- **1080 × 1920 es el móvil en vertical**, no un fallo. Se pide
+  `1920 × 1080` y la cámara da esa cantidad de píxeles, pero girados. Para
+  una mesa hay que **poner el móvil de lado**: en vertical cabe un tercio
+  de mesa y las cartas salen más pequeñas.
+- **14 fotogramas en vez de 24** es la cámara defendiéndose de la poca luz:
+  con poca luz alarga la exposición y da menos imágenes. Aquí da igual,
+  porque lo que se mira está quieto, pero **más luz sobre la mesa da más
+  nitidez**, y la nitidez sí importa.
+- **2521 kbps** está justo por debajo del tope de 3000 que se puso. O sea
+  que el tope manda y no se dispara el gasto.
+
+### ⚠ Lo que sigue sin probarse
+
+- **Una partida de verdad, con el amigo lejos.** Lo de arriba fue dentro de
+  la misma casa. Falta saber si la conexión directa aguanta entre dos casas
+  distintas, que es justo el caso en el que haría falta el relé.
+- **El relé**, que no tiene credenciales puestas todavía.
+- Claude no puede probar nada de esto: hace falta iniciar sesión, y eso es
+  escribir contraseñas. **Por eso el bloqueo de arriba llegó a producción**
+  y lo encontró Héctor. La lección está apuntada al final.
 
 ---
 
@@ -394,21 +422,27 @@ llevarlo a mano, porque **sale solo del historial**.
 
 - Nombre, formato (Modern, Standard, Limited, Pioneer, Casual…), notas.
 - **Carta de portada**, para reconocerlo de un vistazo.
+- **Lista de cartas** (decidido el 27/10/2026, ver abajo).
 - Activo o retirado.
 
-**Sin lista de cartas** (Héctor, 26/10/2026). Mantener a mano sesenta cartas
-por mazo es justo el trabajo que nadie hace dos veces, y el mazo aquí solo
-tiene que servir para **reconocerlo y apuntar con qué jugaste**. De paso
-desaparece el problema de privacidad: sin lista no hay nada que esconder, y
-el rival puede ver el mazo entero, que son tres datos.
+**El 26/10/2026 se decidió que NO llevara lista de cartas**, con un
+argumento que sigue siendo verdad: mantener a mano sesenta cartas por mazo
+es justo el trabajo que nadie hace dos veces.
 
-Si algún día hace falta, se añade sin romper nada de lo que haya.
+**El 27/10/2026 Héctor lo cambió, y con una salida para ese problema:** la
+lista no se escribe, **se importa del fichero que exporta otra aplicación**
+que él ya usa. Si no hay que teclearla, el argumento de arriba desaparece.
 
-> **⚠ 27/10/2026: Héctor cambió de idea.** «Un usuario tendrá mazos y las
-> cartas que van en esos mazos» y «molaría que en plena partida se pueda
-> examinar el mazo del oponente». Eso **sí es lista de cartas**, y deshace
-> la regla 7 de `CLAUDE.md`. Está pendiente de decidir cómo (ver abajo), y
-> hasta entonces la regla 7 sigue escrita como estaba.
+> «Si la idea es tener un export de una aplicación que ya te daré en su
+> momento y que la web lo traduzca al mazo.»
+
+**⚠ El fichero todavía no lo ha dado.** Hasta verlo no se sabe el formato,
+así que la importación **no se puede diseñar de verdad todavía**. Lo que sí
+se sabe: sea cual sea el formato, al final hay que convertir cada línea en
+una carta de Scryfall, y eso ya está medido más abajo («Hasta dónde perdona
+Scryfall»). Conviene además dejar siempre la vía de **pegar texto a mano**,
+que funciona con cualquier aplicación del mundo y no depende de un formato
+concreto.
 
 ### La portada: se guarda el identificador, no la imagen
 
@@ -899,23 +933,28 @@ Guardar el avatar: igual que la portada del mazo, **el archivo no va en la
 base de datos**. Supabase Storage da 1 GB en el plan gratis, que para dos
 avatares sobra de largo. Se decide en la fase 7.
 
-### Cartas dentro del mazo, y examinar el mazo del rival en partida
+### Cartas dentro del mazo, y ver el mazo del rival en partida
 
 > «Un usuario tendrá mazos y las cartas que van en esos mazos.»
 > «Molaría que en plena partida se pueda examinar el mazo del oponente.»
 
-Dos avisos antes de montar esto:
+Las dos pegas que se pusieron, y cómo quedaron las dos **decididas el
+27/10/2026**:
 
-1. **Meter las cartas a mano es el trabajo que mata la aplicación.** Sesenta
-   cartas por mazo, escritas una por una, y nadie lo hace dos veces. Si se
-   hace, tiene que ser **pegando una lista de texto de golpe** («4 Lightning
-   Bolt», una por línea) y que Scryfall las reconozca sola. Eso ya está
-   medido más arriba: `/cards/named?fuzzy=` perdona **una** errata, no dos.
-2. **En Magic de verdad no ves el mazo del rival.** Verlo entero en plena
-   partida cambia el juego: sabes si le queda el remate en la biblioteca.
-   Entre amigos puede dar igual, pero hay que elegirlo a propósito y no de
-   rebote. Punto medio posible: verlo **al terminar la partida**, o que cada
-   uno marque su mazo como abierto o cerrado.
+1. **Meter las cartas a mano es el trabajo que mata la aplicación.**
+   Resuelto: **se importan de un export**, no se teclean. Ver «Un mazo».
+2. **En Magic de verdad no ves el mazo del rival**, y verlo cambia el juego:
+   sabes si le queda el remate en la biblioteca. **Héctor lo elige a
+   propósito, y con razones:**
+
+   > «En torneos se saben todas las cartas contra las que te enfrentas,
+   > además me los sé de memoria los mazos y al final terminamos
+   > preguntándonos y revelamos nuestras intenciones.»
+
+   Es cierto: en torneo las listas son públicas, y entre dos que juegan
+   siempre juntos la información oculta ya no existe. **El mazo del rival se
+   ve entero durante la partida**, y no hace falta ningún interruptor de
+   abierto/cerrado. Si algún día juegan con alguien de fuera, se añade.
 
 ### Estadísticas del jugador
 
@@ -927,10 +966,10 @@ mira».
 
 ## Pendiente de que Héctor decida
 
-- **Las cartas del mazo** (27/10/2026). Si los mazos llevan lista de cartas,
-  ¿se pega la lista de texto de golpe o se van buscando una a una? Y **¿el
-  rival puede ver el mazo entero en plena partida, o solo al acabar?** Las
-  dos respuestas cambian la fase 7 entera.
+- **El fichero de export de los mazos** (27/10/2026). Héctor dijo que lo
+  daría «en su momento». **Sin verlo no se puede escribir la importación**,
+  así que hay que pedírselo antes de empezar la fase 7. Lo demás de las
+  cartas ya está decidido: se importan y el rival las ve.
 - **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
   0 tuviera título. La dirección ya sí está elegida: `magic-mesa.pages.dev`.
 - **Cloudflare Access** (gratis hasta 50 usuarios) pondría una puerta en el
