@@ -6,10 +6,12 @@ function Imagen({
   media,
   mio,
   etiqueta,
+  vacia,
 }: {
   media: MediaStream | null
   mio: boolean
   etiqueta: string
+  vacia: string
 }) {
   const elemento = useRef<HTMLVideoElement>(null)
 
@@ -27,7 +29,7 @@ function Imagen({
         // y es insoportable.
         muted={mio}
       />
-      {!media && <p className="imagen__vacia">{etiqueta}</p>}
+      {!media && <p className="imagen__vacia">{vacia}</p>}
       <span className="imagen__etiqueta">{etiqueta}</span>
     </div>
   )
@@ -41,7 +43,9 @@ function PanelDiagnostico({ datos }: { datos: Diagnostico }) {
         {datos.camino !== '—' && (
           <span
             className={
-              datos.camino === 'directo' ? 'diagnostico__via' : 'diagnostico__via diagnostico__via--rele'
+              datos.camino === 'directo'
+                ? 'diagnostico__via'
+                : 'diagnostico__via diagnostico__via--rele'
             }
           >
             {datos.camino}
@@ -63,6 +67,10 @@ function PanelDiagnostico({ datos }: { datos: Diagnostico }) {
         <div>
           <dt>Estado</dt>
           <dd>{datos.conexion}</dd>
+        </div>
+        <div>
+          <dt>Imagen que envías</dt>
+          <dd>{datos.enviada ?? '—'}</dd>
         </div>
         <div>
           <dt>Imagen que recibes</dt>
@@ -100,9 +108,11 @@ export function PantallaVideo({
   diagnostico,
   videoCortado,
   micCortado,
+  variasCamaras,
   nombreDelOtro,
   encender,
   apagar,
+  cambiarCamara,
   alternarVideo,
   alternarMicrofono,
 }: {
@@ -113,37 +123,46 @@ export function PantallaVideo({
   diagnostico: Diagnostico
   videoCortado: boolean
   micCortado: boolean
-  nombreDelOtro: string
+  variasCamaras: boolean
+  /** Null mientras estés solo en la mesa. */
+  nombreDelOtro: string | null
   encender: () => void
   apagar: () => void
+  cambiarCamara: () => void
   alternarVideo: () => void
   alternarMicrofono: () => void
 }) {
-  if (estado === 'apagado' || estado === 'fallo') {
+  if (estado === 'pidiendo') {
+    return (
+      <section className="tarjeta">
+        <h2>El vídeo</h2>
+        <p className="cargando">Pidiendo permiso para la cámara…</p>
+        <p className="aviso">
+          Si no sale el aviso del navegador, búscalo en el candado de la barra de direcciones: puede
+          que el permiso esté denegado de antes.
+        </p>
+      </section>
+    )
+  }
+
+  // Nada encendido por ninguno de los dos: la invitación.
+  if (!miMedia && !suMedia) {
     return (
       <section className="tarjeta">
         <h2>El vídeo</h2>
         <p>
-          Apunta la cámara a tu mesa. {nombreDelOtro} verá lo mismo que tú veas en el recuadro
-          pequeño, así que úsalo para encuadrar.
+          <strong>Cada uno enciende la suya.</strong> Tu cámara solo manda tu mesa; la mesa de{' '}
+          {nombreDelOtro ?? 'tu rival'} no se ve hasta que la enciendan desde el otro lado. Apunta a
+          la mesa y usa el recuadro pequeño para encuadrar.
         </p>
         {fallo && <p className="recado recado--mal">{fallo}</p>}
         <button type="button" className="boton boton--principal" onClick={encender}>
           Encender la cámara
         </button>
         <p className="aviso">
-          La cámara se enciende <strong>solo cuando pulsas</strong>, y se apaga del todo al salir
-          de aquí. El vídeo va cifrado y directo: no pasa por ningún servidor nuestro.
+          La cámara se enciende <strong>solo cuando pulsas</strong>, y se apaga del todo al salir de
+          aquí. El vídeo va cifrado y directo: no pasa por ningún servidor nuestro.
         </p>
-      </section>
-    )
-  }
-
-  if (estado === 'pidiendo') {
-    return (
-      <section className="tarjeta">
-        <h2>El vídeo</h2>
-        <p className="cargando">Pidiendo permiso para la cámara…</p>
       </section>
     )
   }
@@ -153,25 +172,49 @@ export function PantallaVideo({
       <h2>El vídeo</h2>
 
       <div className="imagenes">
-        <Imagen media={suMedia} mio={false} etiqueta={`Mesa de ${nombreDelOtro}`} />
-        <Imagen media={miMedia} mio etiqueta="Tu mesa" />
+        <Imagen
+          media={suMedia}
+          mio={false}
+          etiqueta={nombreDelOtro ? `Mesa de ${nombreDelOtro}` : 'La otra mesa'}
+          vacia={
+            nombreDelOtro
+              ? `${nombreDelOtro} todavía no ha encendido su cámara.`
+              : 'Esperando a tu rival.'
+          }
+        />
+        <Imagen media={miMedia} mio etiqueta="Tu mesa" vacia="Tu cámara está apagada." />
       </div>
 
       <div className="controles">
-        <button type="button" className="boton boton--plano" onClick={alternarVideo}>
-          {videoCortado ? 'Volver a mostrar' : 'Cortar imagen'}
-        </button>
-        <button type="button" className="boton boton--plano" onClick={alternarMicrofono}>
-          {micCortado ? 'Abrir micrófono' : 'Silenciar micrófono'}
-        </button>
-        <button type="button" className="boton boton--plano" onClick={apagar}>
-          Apagar la cámara
-        </button>
+        {miMedia ? (
+          <>
+            <button type="button" className="boton boton--plano" onClick={alternarVideo}>
+              {videoCortado ? 'Volver a mostrar' : 'Cortar imagen'}
+            </button>
+            <button type="button" className="boton boton--plano" onClick={alternarMicrofono}>
+              {micCortado ? 'Abrir micrófono' : 'Silenciar micrófono'}
+            </button>
+            {variasCamaras && (
+              <button type="button" className="boton boton--plano" onClick={cambiarCamara}>
+                Cambiar de cámara
+              </button>
+            )}
+            <button type="button" className="boton boton--plano" onClick={apagar}>
+              Apagar la cámara
+            </button>
+          </>
+        ) : (
+          <button type="button" className="boton boton--principal" onClick={encender}>
+            Encender la cámara
+          </button>
+        )}
       </div>
+
+      {fallo && <p className="recado recado--mal">{fallo}</p>}
 
       {videoCortado && (
         <p className="recado recado--bien">
-          Tu imagen está cortada. {nombreDelOtro} no te ve, pero tú a él sí.
+          Tu imagen está cortada. {nombreDelOtro ?? 'Tu rival'} no ve tu mesa; tú la suya sí.
         </p>
       )}
 

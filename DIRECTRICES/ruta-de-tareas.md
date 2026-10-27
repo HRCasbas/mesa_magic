@@ -307,6 +307,49 @@ Se ha incluido micrófono, con cancelación de eco y botón de silenciar.
 teléfono al oído toda la partida. Si estorba, se quita quitando `audio` de
 `LO_QUE_SE_PIDE` en `src/video.ts`.
 
+### ⚠ El enlace se abre con la mesa, NO con la cámara (arreglado 27/10/2026)
+
+**El primer montaje estaba mal y dejaba a los dos colgados.** El enlace
+WebRTC solo se creaba cuando *tú* encendías la cámara. Lo que vio Héctor al
+probarlo: «en el móvil no me ha pedido nada de la cámara y no veo en el PC
+la recepción».
+
+Por qué pasaba: el que encendía primero mandaba su oferta a un lado que
+todavía no tenía nada escuchando, así que **se perdía sin más**. Cuando el
+otro encendía, mandaba la suya; el primero la recibía con su propia oferta a
+medias y, si le tocaba ser el «maleducado», la rechazaba por la regla del
+choque de ofertas. Pero su oferta ya se había perdido y nada le hacía volver
+a proponer. **Bloqueo seco y sin ningún error en pantalla.**
+
+Cómo queda:
+
+- **El enlace se abre en cuanto estáis los dos en la mesa**, encienda o no
+  alguien la cámara. Así no se pierde ninguna señal.
+- **Cada cámara se cuelga del enlace cuando su dueño la enciende**
+  (`addTrack`), y WebRTC renegocia solo. Se puede **recibir sin enviar**: si
+  uno enciende y el otro no, el que no ha encendido ve la mesa del otro.
+- Al abrir el enlace, cada lado manda un `{listo:true}`. El que lo recibe,
+  si ya tenía la cámara encendida, vuelve a proponer. Es el seguro contra la
+  carrera de antes.
+- **La tarjeta del vídeo se ve desde que entras en la mesa, aunque estés
+  solo.** Dos ventajas: puedes encuadrar mientras esperas, y puedes
+  comprobar que el navegador te da el permiso sin depender del otro.
+- El panel de diagnóstico añade **«Imagen que envías»** (de `outbound-rtp`).
+  Sin ese dato no se puede distinguir «no me llega su imagen» de «no sale la
+  mía», que es justo la duda que hubo aquí.
+
+### La cámara de atrás, en el móvil
+
+`facingMode: { ideal: 'environment' }`. En un teléfono la cámara de delante
+no sirve para nada aquí: lo que hay que apuntar es la mesa. Con `ideal` y no
+`exact`, un ordenador se queda con la única que tenga.
+
+Y un botón de **cambiar de cámara**, que recorre las del aparato por
+`deviceId`. Se hizo así y no con `facingMode: 'exact'` porque `exact` falla
+en un ordenador con dos webcams. Ojo: **las cámaras no se pueden contar
+hasta que hay permiso dado**, así que el botón solo aparece después de
+encender.
+
 ### ⚠ Lo que NO se ha podido probar
 
 **El vídeo de verdad.** Hace falta dos sesiones distintas con cámara, y
@@ -314,8 +357,11 @@ Claude no puede iniciar sesión porque eso es escribir contraseñas. Probado
 lo que se podía: que compila, que el endpoint de servidores responde bien
 sin credenciales, y que el resto del Worker sigue en pie.
 
-Queda que Héctor lo pruebe con sus dos cuentas y diga qué ve en el panel de
-diagnóstico.
+**Y por eso el bloqueo de arriba llegó a producción.** Lo encontró Héctor en
+la primera prueba de verdad. La lección está apuntada al final: *una
+fontanería que no se puede probar entera se entrega diciéndolo*, y el
+arreglo tampoco está probado por Claude. Queda que Héctor lo pruebe con sus
+dos cuentas y diga qué ve en el panel de diagnóstico.
 
 ---
 
@@ -357,6 +403,12 @@ desaparece el problema de privacidad: sin lista no hay nada que esconder, y
 el rival puede ver el mazo entero, que son tres datos.
 
 Si algún día hace falta, se añade sin romper nada de lo que haya.
+
+> **⚠ 27/10/2026: Héctor cambió de idea.** «Un usuario tendrá mazos y las
+> cartas que van en esos mazos» y «molaría que en plena partida se pueda
+> examinar el mazo del oponente». Eso **sí es lista de cartas**, y deshace
+> la regla 7 de `CLAUDE.md`. Está pendiente de decidir cómo (ver abajo), y
+> hasta entonces la regla 7 sigue escrita como estaba.
 
 ### La portada: se guarda el identificador, no la imagen
 
@@ -434,6 +486,10 @@ preguntarlo:
 - Rachas, y cuánto hace que no juegas con un mazo.
 
 ### El dado de quién empieza (Héctor, 26/10/2026)
+
+> **⚠ Sustituido el 27/10/2026 por una moneda con los dos avatares.** Lo de
+> abajo se deja porque el razonamiento sigue valiendo entero; solo cambia el
+> dibujo que se ve. Ver «Avatar del jugador, y la moneda en vez del dado».
 
 > «Al iniciar salen los dos usuarios y una mini animación de un dado de 6
 > caras, y si hay empate repite; si no, gana el dado más alto y directamente
@@ -819,8 +875,62 @@ Scryfall es gratis y sin clave, pero pide identificarse con un
 
 ---
 
+## Lo nuevo que pidió Héctor el 27/10/2026 (apuntado, sin implementar)
+
+Todo esto es de la fase 7 (los mazos) y la 8 (el historial). Se apunta aquí
+para no perderlo y para que la fase 7 se diseñe sabiéndolo.
+
+### Avatar del jugador, y la moneda en vez del dado
+
+> «Imagen de avatar, que podemos utilizar para decidir quién empieza en una
+> mini animación de una moneda y cada cara es el avatar de cada uno.»
+
+Esto **sustituye al dado de seis caras** de la idea del 26/10, y es mejor:
+una moneda con una cara por jugador es más corta, **no puede empatar** y se
+entiende sin explicarla. El dado obligaba a repetir las tiradas empatadas.
+
+Lo que no cambia: **el resultado se apunta como jugador inicial y la
+aplicación no hace nada más**. Y sigue en pie el problema de confianza de
+«Pendiente de que Héctor decida»: si la moneda la tira un navegador, el otro
+se lo tiene que creer. El truco de los dos números tapados sirve igual para
+la moneda.
+
+Guardar el avatar: igual que la portada del mazo, **el archivo no va en la
+base de datos**. Supabase Storage da 1 GB en el plan gratis, que para dos
+avatares sobra de largo. Se decide en la fase 7.
+
+### Cartas dentro del mazo, y examinar el mazo del rival en partida
+
+> «Un usuario tendrá mazos y las cartas que van en esos mazos.»
+> «Molaría que en plena partida se pueda examinar el mazo del oponente.»
+
+Dos avisos antes de montar esto:
+
+1. **Meter las cartas a mano es el trabajo que mata la aplicación.** Sesenta
+   cartas por mazo, escritas una por una, y nadie lo hace dos veces. Si se
+   hace, tiene que ser **pegando una lista de texto de golpe** («4 Lightning
+   Bolt», una por línea) y que Scryfall las reconozca sola. Eso ya está
+   medido más arriba: `/cards/named?fuzzy=` perdona **una** errata, no dos.
+2. **En Magic de verdad no ves el mazo del rival.** Verlo entero en plena
+   partida cambia el juego: sabes si le queda el remate en la biblioteca.
+   Entre amigos puede dar igual, pero hay que elegirlo a propósito y no de
+   rebote. Punto medio posible: verlo **al terminar la partida**, o que cada
+   uno marque su mazo como abierto o cerrado.
+
+### Estadísticas del jugador
+
+Ya estaba previsto y no cambia nada: **salen solas del historial**, no hay
+que llevarlas a mano. Ver «Lo que sale de ahí, que es lo que de verdad se
+mira».
+
+---
+
 ## Pendiente de que Héctor decida
 
+- **Las cartas del mazo** (27/10/2026). Si los mazos llevan lista de cartas,
+  ¿se pega la lista de texto de golpe o se van buscando una a una? Y **¿el
+  rival puede ver el mazo entero en plena partida, o solo al acabar?** Las
+  dos respuestas cambian la fase 7 entera.
 - **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
   0 tuviera título. La dirección ya sí está elegida: `magic-mesa.pages.dev`.
 - **Cloudflare Access** (gratis hasta 50 usuarios) pondría una puerta en el
@@ -834,6 +944,17 @@ Scryfall es gratis y sin clave, pero pide identificarse con un
 ---
 
 ## Lecciones
+
+- **27/10/2026 — Dos lados que se tienen que encontrar no pueden depender de
+  quién llegó primero.** El vídeo abría el enlace al encender la cámara, así
+  que la primera oferta se mandaba a un lado que todavía no escuchaba, se
+  perdía, y la regla del choque de ofertas remataba el bloqueo. Compilaba,
+  el lint estaba limpio y la fontanería era correcta pieza a pieza: **el
+  fallo estaba en el orden de llegada**, que es lo único que no se ve
+  mirando el código de un lado solo.
+  La forma de no repetirlo: **abrir el canal con el encuentro, no con el
+  dato**, y que cada lado avise de que ya escucha (`{listo:true}`) para que
+  el otro repita lo que se hubiera perdido.
 
 - **27/10/2026 — Lo que se ignora en git tiene que generarse en la
   compilación.** `worker-configuration.d.ts` (los tipos de Cloudflare) se

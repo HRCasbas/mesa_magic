@@ -151,22 +151,25 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
         </button>
       </section>
 
-      {estamosLosDos && (
-        <PantallaVideo
-          estado={video.estado}
-          fallo={video.fallo}
-          miMedia={video.miMedia}
-          suMedia={video.suMedia}
-          diagnostico={video.diagnostico}
-          videoCortado={video.videoCortado}
-          micCortado={video.micCortado}
-          nombreDelOtro={elOtro.nombre}
-          encender={video.encender}
-          apagar={video.apagar}
-          alternarVideo={video.alternarVideo}
-          alternarMicrofono={video.alternarMicrofono}
-        />
-      )}
+      {/* El vídeo se ve desde que estás en la mesa, aunque estés solo: así
+          puedes encender y encuadrar mientras esperas, y comprobar que el
+          navegador te da el permiso sin depender del otro. */}
+      <PantallaVideo
+        estado={video.estado}
+        fallo={video.fallo}
+        miMedia={video.miMedia}
+        suMedia={video.suMedia}
+        diagnostico={video.diagnostico}
+        videoCortado={video.videoCortado}
+        micCortado={video.micCortado}
+        variasCamaras={video.variasCamaras}
+        nombreDelOtro={elOtro?.nombre ?? null}
+        encender={video.encender}
+        apagar={video.apagar}
+        cambiarCamara={video.cambiarCamara}
+        alternarVideo={video.alternarVideo}
+        alternarMicrofono={video.alternarMicrofono}
+      />
     </>
   )
 }

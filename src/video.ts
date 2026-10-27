@@ -8,6 +8,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 //
 // La mesa solo sirve para que los dos navegadores se pasen las primeras
 // cartas de presentación. En cuanto se encuentran, se quitan de en medio.
+//
+// REGLA QUE COSTÓ UN RATO: el enlace entre los dos se abre en cuanto estáis
+// los dos en la mesa, ENCIENDA O NO ALGUIEN LA CÁMARA. Al principio solo se
+// abría al encender la cámara, y eso dejaba a los dos colgados: el primero
+// que encendía mandaba su oferta al vacío, porque el otro todavía no tenía
+// nada escuchando, y luego ninguno de los dos volvía a proponer nada. Cada
+// cámara se cuelga del enlace cuando su dueño la enciende, y así además se
+// puede recibir la imagen del otro sin haber encendido la propia.
 
 export type EstadoVideo = 'apagado' | 'pidiendo' | 'encendido' | 'fallo'
 
@@ -16,6 +24,8 @@ export interface Diagnostico {
   camino: 'directo' | 'relé' | '—'
   conexion: RTCPeerConnectionState | '—'
   resolucion: string | null
+  /** La resolución de lo que TÚ mandas. Sirve para saber si sales de casa. */
+  enviada: string | null
   kbps: number | null
   fps: number | null
   /** Ida y vuelta real del vídeo, en milisegundos. */
@@ -28,9 +38,11 @@ export interface Diagnostico {
 type Senal =
   | { descripcion: RTCSessionDescriptionInit }
   | { candidato: RTCIceCandidateInit | null }
+  /** «Ya tengo el enlace abierto»: si tú tenías cámara, vuelve a proponer. */
+  | { listo: true }
 
 interface Opciones {
-  /** Solo se enciende nada cuando estáis los dos en la mesa. */
+  /** El enlace se abre cuando estáis los dos en la mesa. */
   activo: boolean
   /**
    * Si los dos hacen una oferta a la vez, uno tiene que ceder. El que cede
@@ -46,6 +58,7 @@ const DIAGNOSTICO_VACIO: Diagnostico = {
   camino: '—',
   conexion: '—',
   resolucion: null,
+  enviada: null,
   kbps: null,
   fps: null,
   idaYVuelta: null,
@@ -60,21 +73,47 @@ const DIAGNOSTICO_VACIO: Diagnostico = {
  * hay que leer es texto impreso quieto encima de una mesa, no movimiento:
  * con 24 imágenes por segundo sobra, y lo que se ahorra ahí se gasta en
  * nitidez, que es lo que hace falta para distinguir una carta de otra.
+ *
+ * `facingMode` pide la cámara de atrás, que es la que se puede apuntar a la
+ * mesa. En el móvil la de delante no sirve para nada aquí, y en un ordenador
+ * esto no existe y se queda con la única que hay.
  */
-const LO_QUE_SE_PIDE: MediaStreamConstraints = {
-  video: {
-    width: { ideal: 1920 },
-    height: { ideal: 1080 },
-    frameRate: { ideal: 24, max: 30 },
-  },
-  audio: {
-    echoCancellation: true,
-    noiseSuppression: true,
-  },
+const VIDEO_PEDIDO: MediaTrackConstraints = {
+  width: { ideal: 1920 },
+  height: { ideal: 1080 },
+  frameRate: { ideal: 24, max: 30 },
+  facingMode: { ideal: 'environment' },
+}
+
+const AUDIO_PEDIDO: MediaTrackConstraints = {
+  echoCancellation: true,
+  noiseSuppression: true,
 }
 
 /** Tope de calidad del vídeo que se envía. Por encima no mejora lo legible. */
 const TOPE_BITS_POR_SEGUNDO = 3_000_000
+
+/** Las cámaras de este aparato. Los nombres solo salen si ya hay permiso. */
+async function camarasDelAparato(): Promise<MediaDeviceInfo[]> {
+  try {
+    const todos = await navigator.mediaDevices.enumerateDevices()
+    return todos.filter((a) => a.kind === 'videoinput')
+  } catch {
+    return []
+  }
+}
+
+function razonDelFallo(error: unknown): string {
+  const nombre = (error as DOMException)?.name
+  if (nombre === 'NotAllowedError') {
+    return 'No has dado permiso para la cámara. Está en el candado de la barra de direcciones.'
+  }
+  if (nombre === 'NotFoundError') return 'No se ha encontrado ninguna cámara en este aparato.'
+  if (nombre === 'NotReadableError') {
+    return 'La cámara está ocupada por otro programa. Cierra el que la esté usando.'
+  }
+  return 'No se ha podido encender la cámara.'
+}
 
 export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Opciones) {
   const [estado, setEstado] = useState<EstadoVideo>('apagado')
@@ -84,12 +123,56 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
   const [diagnostico, setDiagnostico] = useState<Diagnostico>(DIAGNOSTICO_VACIO)
   const [videoCortado, setVideoCortado] = useState(false)
   const [micCortado, setMicCortado] = useState(false)
+  const [variasCamaras, setVariasCamaras] = useState(false)
 
   const enlace = useRef<RTCPeerConnection | null>(null)
   const miMediaRef = useRef<MediaStream | null>(null)
+  /** Lo que se le ha colgado al enlace, para no colgarlo dos veces. */
+  const emisores = useRef<RTCRtpSender[]>([])
   const haciendoOferta = useRef(false)
   const ignorandoOferta = useRef(false)
   const bytesPrevios = useRef<{ bytes: number; momento: number } | null>(null)
+
+  // ---- colgar y descolgar la cámara del enlace ----
+
+  /**
+   * Pone (o quita) tus pistas en el enlace ya abierto. Esto es lo que avisa
+   * al otro lado de que hay imagen nueva: WebRTC se encarga solo de
+   * renegociar cuando una pista entra o sale.
+   */
+  const colgarPistas = useCallback((pc: RTCPeerConnection, media: MediaStream | null) => {
+    if (!media) {
+      for (const emisor of emisores.current) {
+        try {
+          pc.removeTrack(emisor)
+        } catch {
+          // El enlace ya estaba cerrado. No hay nada que quitar.
+        }
+      }
+      emisores.current = []
+      return
+    }
+
+    for (const pista of media.getTracks()) {
+      const ya = emisores.current.find((e) => e.track?.kind === pista.kind)
+      if (ya) {
+        // Misma ranura, pista distinta: el otro no ve ni un parpadeo.
+        void ya.replaceTrack(pista)
+        continue
+      }
+      const emisor = pc.addTrack(pista, media)
+      emisores.current.push(emisor)
+      if (pista.kind !== 'video') continue
+      const ajustes = emisor.getParameters()
+      ajustes.encodings = [
+        { ...(ajustes.encodings?.[0] ?? {}), maxBitrate: TOPE_BITS_POR_SEGUNDO },
+      ]
+      emisor.setParameters(ajustes).catch(() => {
+        // Algún navegador puede no dejarlo. No es grave: solo significa
+        // que el vídeo irá a la calidad que decida él.
+      })
+    }
+  }, [])
 
   // ---- encender y apagar la cámara ----
 
@@ -97,7 +180,10 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
     setFallo(null)
     setEstado('pidiendo')
     try {
-      const media = await navigator.mediaDevices.getUserMedia(LO_QUE_SE_PIDE)
+      const media = await navigator.mediaDevices.getUserMedia({
+        video: VIDEO_PEDIDO,
+        audio: AUDIO_PEDIDO,
+      })
 
       // Decirle al códec que esto es DETALLE y no movimiento. Sin esto, al
       // mover una carta se emborrona el texto durante medio segundo.
@@ -106,17 +192,15 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
       miMediaRef.current = media
       setMiMedia(media)
       setEstado('encendido')
+      setVideoCortado(false)
+      setMicCortado(false)
+
+      // Los nombres de las cámaras solo se ven con el permiso ya dado, así
+      // que hasta aquí no se sabe si este aparato tiene más de una.
+      const camaras = await camarasDelAparato()
+      setVariasCamaras(camaras.length > 1)
     } catch (error) {
-      const nombre = (error as DOMException)?.name
-      setFallo(
-        nombre === 'NotAllowedError'
-          ? 'No has dado permiso para la cámara. Está en el candado de la barra de direcciones.'
-          : nombre === 'NotFoundError'
-            ? 'No se ha encontrado ninguna cámara en este aparato.'
-            : nombre === 'NotReadableError'
-              ? 'La cámara está ocupada por otro programa. Cierra el que la esté usando.'
-              : 'No se ha podido encender la cámara.',
-      )
+      setFallo(razonDelFallo(error))
       setEstado('fallo')
     }
   }, [])
@@ -129,6 +213,40 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
     setVideoCortado(false)
     setMicCortado(false)
   }, [])
+
+  /** Pasar a la siguiente cámara del aparato: delante, detrás, la que haya. */
+  const cambiarCamara = useCallback(async () => {
+    const media = miMediaRef.current
+    const vieja = media?.getVideoTracks()[0]
+    if (!media || !vieja) return
+
+    const camaras = await camarasDelAparato()
+    if (camaras.length < 2) {
+      setVariasCamaras(false)
+      return
+    }
+
+    try {
+      const puesta = vieja.getSettings().deviceId
+      const donde = camaras.findIndex((c) => c.deviceId === puesta)
+      const siguiente = camaras[(donde + 1) % camaras.length]
+
+      const traida = await navigator.mediaDevices.getUserMedia({
+        video: { ...VIDEO_PEDIDO, deviceId: { exact: siguiente.deviceId } },
+      })
+      const nueva = traida.getVideoTracks()[0]
+      nueva.contentHint = 'detail'
+      nueva.enabled = !videoCortado
+
+      const juntas = new MediaStream([nueva, ...media.getAudioTracks()])
+      vieja.stop()
+      miMediaRef.current = juntas
+      setMiMedia(juntas)
+      setFallo(null)
+    } catch {
+      setFallo('No se ha podido cambiar de cámara. Sigue puesta la de antes.')
+    }
+  }, [videoCortado])
 
   /** Cortar la imagen sin apagar la cámara: vuelve al instante. */
   const alternarVideo = useCallback(() => {
@@ -147,15 +265,34 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
     setMicCortado(nuevo)
   }, [micCortado])
 
-  // ---- la conexión entre los dos ----
+  // ---- el enlace entre los dos ----
 
   useEffect(() => {
-    if (!activo || !miMedia) return
+    if (!activo) return
 
     let vivo = true
     let pc: RTCPeerConnection | null = null
     let bajaDeSenales: (() => void) | null = null
     let reloj: ReturnType<typeof setInterval> | null = null
+
+    /**
+     * Proponer el enlace otra vez. Hace falta cuando el otro acaba de abrir
+     * el suyo y tú ya tenías la cámara encendida: tu primera oferta se
+     * perdió porque al otro lado no había nadie escuchando todavía.
+     */
+    async function proponer(enchufe: RTCPeerConnection) {
+      if (enchufe.signalingState !== 'stable') return
+      if (!enchufe.getSenders().some((e) => e.track)) return
+      try {
+        haciendoOferta.current = true
+        await enchufe.setLocalDescription()
+        enviarSenal({ descripcion: enchufe.localDescription!.toJSON() } satisfies Senal)
+      } catch {
+        // Si falla, el otro lado acabará proponiendo.
+      } finally {
+        haciendoOferta.current = false
+      }
+    }
 
     async function montar() {
       // Los servidores con los que buscarse. Si el relé no está configurado,
@@ -182,17 +319,7 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
 
       pc = new RTCPeerConnection({ iceServers: servidores })
       enlace.current = pc
-
-      for (const pista of miMedia!.getTracks()) {
-        const emisor = pc.addTrack(pista, miMedia!)
-        if (pista.kind !== 'video') continue
-        const ajustes = emisor.getParameters()
-        ajustes.encodings = [{ ...(ajustes.encodings?.[0] ?? {}), maxBitrate: TOPE_BITS_POR_SEGUNDO }]
-        emisor.setParameters(ajustes).catch(() => {
-          // Algún navegador puede no dejarlo. No es grave: solo significa
-          // que el vídeo irá a la calidad que decida él.
-        })
-      }
+      emisores.current = []
 
       pc.ontrack = (evento) => {
         if (vivo) setSuMedia(evento.streams[0] ?? null)
@@ -224,7 +351,9 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
         const senal = carga as Senal
 
         try {
-          if ('descripcion' in senal) {
+          if ('listo' in senal) {
+            await proponer(pc)
+          } else if ('descripcion' in senal) {
             const esOferta = senal.descripcion.type === 'offer'
             const ocupado = haciendoOferta.current || pc.signalingState !== 'stable'
             const choque = esOferta && ocupado
@@ -252,6 +381,12 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
         }
       })
 
+      // Si la cámara ya estaba encendida antes de que llegara el otro, se
+      // cuelga ahora. Y se avisa de que este lado ya escucha, para que el
+      // otro vuelva a proponer si le pasó lo mismo.
+      colgarPistas(pc, miMediaRef.current)
+      enviarSenal({ listo: true } satisfies Senal)
+
       // ---- el panel de diagnóstico ----
       reloj = setInterval(async () => {
         if (!pc || !vivo) return
@@ -260,6 +395,7 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
         let camino: Diagnostico['camino'] = '—'
         let idaYVuelta: number | null = null
         let resolucion: string | null = null
+        let enviada: string | null = null
         let fps: number | null = null
         let kbps: number | null = null
 
@@ -288,6 +424,13 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
                 : 'directo'
           }
 
+          if (dato.type === 'outbound-rtp' && (dato as RTCOutboundRtpStreamStats).kind === 'video') {
+            const saliente = dato as RTCOutboundRtpStreamStats
+            if (saliente.frameWidth && saliente.frameHeight) {
+              enviada = `${saliente.frameWidth} × ${saliente.frameHeight}`
+            }
+          }
+
           if (dato.type === 'inbound-rtp' && (dato as RTCInboundRtpStreamStats).kind === 'video') {
             const entrante = dato as RTCInboundRtpStreamStats
             if (entrante.frameWidth && entrante.frameHeight) {
@@ -311,7 +454,7 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
         })
 
         if (vivo) {
-          setDiagnostico((d) => ({ ...d, camino, idaYVuelta, resolucion, fps, kbps }))
+          setDiagnostico((d) => ({ ...d, camino, idaYVuelta, resolucion, enviada, fps, kbps }))
         }
       }, 2000)
     }
@@ -324,11 +467,20 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
       bajaDeSenales?.()
       pc?.close()
       enlace.current = null
+      emisores.current = []
       bytesPrevios.current = null
       setSuMedia(null)
       setDiagnostico((d) => ({ ...DIAGNOSTICO_VACIO, hayRele: d.hayRele, motivoRele: d.motivoRele }))
     }
-  }, [activo, miMedia, soyEducado, enviarSenal, alRecibirSenal])
+  }, [activo, soyEducado, enviarSenal, alRecibirSenal, colgarPistas])
+
+  // Cuando enciendes, apagas o cambias de cámara, hay que decírselo al
+  // enlace si ya estaba abierto. Si todavía no lo está, lo recoge él al
+  // abrirse, que para eso mira `miMediaRef`.
+  useEffect(() => {
+    const pc = enlace.current
+    if (pc) colgarPistas(pc, miMedia)
+  }, [miMedia, colgarPistas])
 
   // Al salir de la pantalla, apagar la cámara de verdad: el piloto no puede
   // quedarse encendido porque alguien haya cambiado de pestaña.
@@ -347,8 +499,10 @@ export function useVideo({ activo, soyEducado, enviarSenal, alRecibirSenal }: Op
     diagnostico,
     videoCortado,
     micCortado,
+    variasCamaras,
     encender,
     apagar,
+    cambiarCamara,
     alternarVideo,
     alternarMicrofono,
   }
