@@ -6,6 +6,7 @@ import {
   type Comprobacion,
   type Resultado,
 } from './comprobaciones'
+import { PantallaMesa } from './PantallaMesa'
 import type { Jugador } from './sesion'
 import { mensajeDeError, supabase } from './supabase'
 
@@ -15,7 +16,7 @@ const SIGNOS: Record<Resultado, string> = { bien: '✓', mal: '✕', duda: '?' }
 const FASES = [
   { numero: 0, nombre: 'El terreno', hecha: true },
   { numero: 1, nombre: 'La puerta', hecha: true },
-  { numero: 2, nombre: 'La mesa', hecha: false },
+  { numero: 2, nombre: 'La mesa', hecha: true },
   { numero: 3, nombre: 'El vídeo', hecha: false },
   { numero: 4, nombre: 'Los contadores', hecha: false },
   { numero: 5, nombre: 'Las pegatinas', hecha: false },
@@ -123,7 +124,7 @@ export function PantallaDentro({
   return (
     <main className="pagina">
       <header className="cabecera">
-        <p className="cabecera__fase">Fase 1 · La puerta</p>
+        <p className="cabecera__fase">Fase 2 · La mesa</p>
         <h1 className="cabecera__titulo">Mesa Magic</h1>
         <p className="cabecera__lema">Hola, {jugador.nombre}.</p>
         <button
@@ -135,15 +136,18 @@ export function PantallaDentro({
         </button>
       </header>
 
+      <PantallaMesa nombre={jugador.nombre} />
+
       <section className="tarjeta">
-        <h2>Estás dentro, pero esto todavía no juega</h2>
+        <h2>Todavía no hay vídeo</h2>
         <p>
-          La puerta ya funciona: sin entrar con tu correo y tu clave, esta pantalla no existe.
-          Falta la mesa, el vídeo y todo lo demás, que llega por orden.
+          La mesa ya sirve para encontraros, y eso es lo que hacía falta antes que nada. La
+          imagen llega en la fase 3, y entonces irá <strong>directa</strong> de tu navegador al
+          suyo, sin pasar por la mesa.
         </p>
         <p className="aviso">
           <strong>La cámara sigue sin encenderse.</strong> Abajo solo se pregunta al navegador si
-          existe alguna. Se encenderá en la fase 3, y solo con sesión y con mesa.
+          existe alguna.
         </p>
       </section>
 

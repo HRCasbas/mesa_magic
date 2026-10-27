@@ -1,21 +1,21 @@
 {
-  // Configuracion del Worker que sirve la web.
+  // El Worker de Cloudflare: sirve la web y hace de mesa donde los dos
+  // jugadores se encuentran.
   //
-  // Hoy este Worker no tiene codigo: solo reparte los archivos de `dist`,
-  // que es lo que deja Vite al compilar. Parece un rodeo frente a publicar
-  // la web a secas, pero no lo es: en la fase 2 hace falta un Durable Object
-  // para que los dos jugadores se encuentren en la misma mesa, y los Durable
-  // Objects solo existen en Workers, no en Pages. Asi la web y el servidor
-  // de la mesa viven en el mismo proyecto y en el mismo dominio, sin lios de
-  // permisos entre dominios.
+  // La mesa vive aqui y no en Supabase a proposito: encontrarse es justo lo
+  // que tiene que funcionar en el segundo en que el amigo esta esperando con
+  // las cartas en la mano, y un proyecto gratis de Supabase se pausa a los
+  // siete dias. Cloudflare no se pausa nunca.
   //
-  // En la fase 2 esto crecera con un `main` (el codigo del Worker) y un
-  // `durable_objects`. De momento, solo archivos.
+  // Y en cuanto los dos se encuentran, el video y los contadores van
+  // DIRECTOS de un navegador al otro. Esto se queda parado sin gastar.
 
   "$schema": "./node_modules/wrangler/config-schema.json",
 
-  // El nombre es la direccion: magic-mesa.<subdominio de la cuenta>.workers.dev
+  // El nombre es la direccion: magic-mesa.duelo.workers.dev
   "name": "magic-mesa",
+
+  "main": "worker/index.ts",
 
   // Fija como se comporta el entorno de Cloudflare. Se deja quieta: subirla
   // puede cambiar el comportamiento de cosas que ya funcionan.
@@ -23,10 +23,25 @@
 
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
 
     // Cuando se pida una direccion que no es un archivo, devolver el
     // index.html en vez de un error. Hace falta en cuanto la web tenga
     // direcciones por dentro, como /mesa/1234.
-    "not_found_handling": "single-page-application"
-  }
+    "not_found_handling": "single-page-application",
+
+    // Sin esto, lo de /api/ se lo comeria el index.html y el Worker no
+    // llegaria a ejecutarse nunca.
+    "run_worker_first": ["/api/*"]
+  },
+
+  "durable_objects": {
+    "bindings": [{ "name": "MESAS", "class_name": "Mesa" }]
+  },
+
+  // `new_sqlite_classes` y no `new_classes`: en el plan gratis los Durable
+  // Objects solo existen con almacenamiento SQLite.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Mesa"] }],
+
+  "observability": { "enabled": true }
 }

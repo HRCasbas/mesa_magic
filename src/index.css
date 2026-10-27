@@ -404,3 +404,105 @@ body {
   color: #93d9b1;
   border-left: 3px solid var(--bien);
 }
+
+/* ---- La mesa ---- */
+
+.mesa__opciones {
+  display: grid;
+  gap: 1rem;
+}
+
+.mesa__unirse {
+  display: grid;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--borde);
+}
+
+.campo__codigo {
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  font-size: 1.4rem !important;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.mesa__codigo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.mesa__codigo__etiqueta {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.mesa__codigo__valor {
+  flex: 1;
+  font-size: 1.9rem;
+  letter-spacing: 0.3em;
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+  /* El codigo se dicta por telefono: tiene que leerse de un vistazo. */
+  line-height: 1.1;
+}
+
+.mesa__jugadores {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mesa__jugador {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+}
+
+.mesa__jugador--hueco {
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+.mesa__jugador__punto {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--bien);
+  flex: none;
+}
+
+.mesa__jugador__punto--vacio {
+  background: transparent;
+  border: 1px solid var(--texto-suave);
+}
+
+.mesa__pruebas {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--borde);
+}
+
+.mesa__retardo {
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.mesa__retardo strong {
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}

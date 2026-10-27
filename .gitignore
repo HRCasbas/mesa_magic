@@ -26,3 +26,6 @@ dist-ssr
 # Cloudflare / wrangler
 .wrangler
 .dev.vars
+
+# Tipos generados por `npx wrangler types`
+worker-configuration.d.ts

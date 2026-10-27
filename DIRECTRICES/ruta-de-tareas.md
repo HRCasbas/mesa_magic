@@ -32,8 +32,8 @@ Tres cosas:
 |---|---|---|
 | **0** | El terreno: carpeta, repositorio, web vacía publicada en HTTPS, comprobaciones del aparato | **Hecha** (26/10/2026) |
 | **1** | La puerta: usuario y clave, registro cerrado, dos cuentas | **Hecha** (26/10/2026) |
-| **2** | La mesa: Worker de Cloudflare, señalización, credenciales TURN | |
-| **3** | El vídeo: WebRTC, cámara propia y del otro, cortar, diagnóstico | |
+| **2** | La mesa: Worker, Durable Object, encontrarse con un código | **Hecha** (27/10/2026) |
+| **3** | El vídeo: WebRTC, credenciales TURN, cortar, diagnóstico | |
 | **4** | Los contadores, por el canal de datos | |
 | **5** | Las pegatinas arrastrables | |
 | **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | |
@@ -146,6 +146,80 @@ habrían restaurado los permisos, que estaban apuntados.
   pensada para ir dentro de la web; lo que protege los datos es RLS. La que
   no puede salir de Supabase nunca es la de servicio (`service_role`), y esa
   no está ni va a estar.
+
+---
+
+## Fase 2: la mesa (27/10/2026)
+
+Uno crea la mesa, le dicta un código de cuatro caracteres al otro, y los dos
+aparecen ahí. **Todavía sin vídeo:** esto solo sirve para encontrarse.
+
+### Las credenciales TURN se mudan a la fase 3
+
+Estaban en la fase 2 y no pintan nada aquí: **un relé de vídeo no sirve de
+nada mientras no haya vídeo**. Van con la fase 3, que es cuando se pueden
+probar de verdad.
+
+### Cómo se comprueba la sesión, y por qué importa
+
+**Supabase firma los tokens de este proyecto con ES256 y publica la clave
+pública** en `/auth/v1/.well-known/jwks.json`. Así que el Worker comprueba la
+firma él solo:
+
+- **No guarda ningún secreto.** Nada que rotar, nada que se pueda filtrar.
+- **No le pregunta nada a Supabase** una vez tiene la clave en memoria (se
+  guarda una hora). O sea que **una partida en marcha no se cae si Supabase
+  se duerme**, que es justo la regla número 1 del proyecto.
+- Si no consigue refrescar las claves pero tiene unas viejas, las sigue
+  usando: más vale una clave de hace dos horas que dejar a los dos fuera.
+
+Se comprueban la firma, la caducidad (con 30 segundos de margen por los
+relojes) y **que el emisor sea este Supabase y no otro cualquiera**.
+
+### El token no viaja en la dirección
+
+Se manda en el **primer mensaje**, ya dentro del websocket, no como
+`?token=…`. Una dirección acaba en registros de servidor y en el historial
+del navegador, y una sesión no tiene por qué acabar ahí. La mesa no admite
+ningún otro mensaje hasta que te identificas.
+
+### Detalles que costaron tiempo y no hay que volver a descubrir
+
+- **`new_sqlite_classes`, no `new_classes`.** En el plan gratis los Durable
+  Objects solo existen con almacenamiento SQLite.
+- **`run_worker_first: ["/api/*"]` en `wrangler.jsonc`.** Sin eso, el
+  `not_found_handling: single-page-application` se come las rutas de `/api/`
+  y devuelve el `index.html`: el Worker no llegaría a ejecutarse nunca.
+- **El alfabeto del código no lleva `O`, `0`, `I` ni `1`.** El código se
+  dicta por teléfono.
+- **Hibernación** (`ctx.acceptWebSocket`): Cloudflare descarga la mesa de
+  memoria mientras nadie habla. Una partida de dos horas apenas gasta.
+- Si el mismo jugador vuelve a entrar (recargó, se le fue la cobertura), se
+  le cierra la conexión vieja en vez de dejarle dos plazas ocupadas.
+
+### Probado el 27/10/2026
+
+Con el Worker en local, cuatro intentos de colarse, **los cuatro
+rechazados**:
+
+| Intento | Resultado |
+|---|---|
+| Token inventado | rechazado, cierre 1008 |
+| **Token con forma de JWT, `kid` correcto y emisor correcto** | **rechazado: la firma no cuela** |
+| Hablar sin identificarse | rechazado |
+| Mandar una señal sin identificarse | rechazado |
+
+Y las rutas: `/` sirve la web, `/api/codigo` devuelve códigos, `/api/mesa/X`
+sin websocket da 426, lo que no existe da 404.
+
+### ⚠ Lo que NO se ha podido probar
+
+**Que los dos entren a la vez.** Hace falta **dos cuentas confirmadas
+distintas**, y ahora mismo solo existe la de Héctor y sin confirmar. La misma
+cuenta no vale: entrar dos veces con el mismo usuario cierra la conexión
+vieja a propósito, para que nadie ocupe las dos plazas sin querer.
+
+Queda pendiente de probar en cuanto haya dos cuentas.
 
 ---
 

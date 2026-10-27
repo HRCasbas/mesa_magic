@@ -82,10 +82,16 @@ src/
   App.tsx             decide si hay sesión y nada más
   PantallaEntrada.tsx la puerta: correo y clave
   PantallaDentro.tsx  lo que se ve con sesión
+  PantallaMesa.tsx    crear mesa, entrar con código, ver quién está
   sesion.ts           lleva la sesión y la ficha del jugador
+  mesa.ts             la conexión con la mesa
   supabase.ts         el cliente, y los errores en castellano
   comprobaciones.ts   si este aparato sirve para jugar
   index.css           hoja de estilo única; los colores en :root
+worker/
+  index.ts            rutas del Worker, y el paso a la mesa
+  mesa.ts             el Durable Object: una mesa de dos plazas
+  jwt.ts              comprobar la sesión sin preguntar a Supabase
 public/               lo que se copia tal cual
 DIRECTRICES/          la memoria del proyecto
 wrangler.jsonc        el Worker de Cloudflare que sirve la web
@@ -118,6 +124,13 @@ npm run dev
 # Comprobar antes de entregar
 npm run build
 npm run lint
+
+# Probar el Worker y la mesa en local (hay que compilar antes)
+npm run build
+npx wrangler dev
+
+# Si se toca wrangler.jsonc, regenerar los tipos
+npx wrangler types
 ```
 
 Node.js está en `C:\Users\hecso\develop\.tools\node` (portátil, v24.22.1 LTS)
