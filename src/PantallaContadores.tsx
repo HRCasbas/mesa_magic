@@ -1,4 +1,11 @@
-import { FASES, useContadores, type Contadores } from './contadores'
+import {
+  FASES,
+  deQuienEsElTurno,
+  numeroDeTurno,
+  turnosJugados,
+  useContadores,
+  type Contadores,
+} from './contadores'
 
 /** Los contadores pequeños. Son pocos a propósito: ver `contadores.ts`. */
 const MENUDOS: { clave: keyof Contadores; nombre: string }[] = [
@@ -91,37 +98,84 @@ function Columna({
 
 export function PantallaContadores({
   codigo,
+  tuId,
+  suId,
   nombreDelOtro,
   datosAbiertos,
   enviarDato,
   alRecibirDato,
 }: {
   codigo: string
+  tuId: string
+  /** Null mientras estés solo en la mesa. */
+  suId: string | null
   nombreDelOtro: string | null
   datosAbiertos: boolean
   enviarDato: (dato: unknown) => boolean
   alRecibirDato: (oyente: (dato: unknown) => void) => () => void
 }) {
   const contadores = useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato })
+  const { compartido } = contadores
+
+  const deQuien = suId ? deQuienEsElTurno(compartido, tuId, suId) : ''
+  const nombreDeQuienJuega = deQuien === tuId ? 'ti' : (nombreDelOtro ?? 'tu rival')
 
   return (
     <section className="tarjeta">
       <h2>Los contadores</h2>
 
-      <div className="turno">
-        <p className="turno__donde">
-          Turno <strong>{contadores.compartido.turno}</strong>
-          <span className="turno__fase">{FASES[contadores.compartido.fase]}</span>
-        </p>
-        <div className="turno__botones">
-          <button type="button" className="boton boton--plano" onClick={contadores.siguienteFase}>
-            Siguiente fase
-          </button>
-          <button type="button" className="boton boton--plano" onClick={contadores.pasarTurno}>
-            Pasar turno
-          </button>
+      {!compartido.empieza ? (
+        <div className="turno">
+          <p className="turno__donde">
+            {suId ? '¿Quién empieza?' : 'Cuando llegue tu rival se elige quién empieza.'}
+          </p>
+          {suId && (
+            <div className="turno__botones">
+              <button
+                type="button"
+                className="boton boton--plano"
+                onClick={() => contadores.elegirQuienEmpieza(tuId)}
+              >
+                Empiezo yo
+              </button>
+              <button
+                type="button"
+                className="boton boton--plano"
+                onClick={() => contadores.elegirQuienEmpieza(suId)}
+              >
+                Empieza {nombreDelOtro ?? 'tu rival'}
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="turno">
+          <p className="turno__donde">
+            Turno <strong>{numeroDeTurno(compartido)}</strong> de{' '}
+            <strong>{nombreDeQuienJuega}</strong>
+            <span className="turno__fase">{FASES[compartido.fase]}</span>
+          </p>
+          <div className="turno__botones">
+            <button type="button" className="boton boton--plano" onClick={contadores.siguienteFase}>
+              Siguiente fase
+            </button>
+            <button type="button" className="boton boton--principal" onClick={contadores.pasarTurno}>
+              Pasar turno
+            </button>
+            <button type="button" className="boton boton--plano" onClick={contadores.turnoAtras}>
+              Turno atrás
+            </button>
+          </div>
+        </div>
+      )}
+
+      {compartido.empieza && (
+        <p className="aviso aviso--suelto">
+          La <strong>barra espaciadora</strong> pasa turno. Van{' '}
+          <strong>{turnosJugados(compartido)}</strong>{' '}
+          {turnosJugados(compartido) === 1 ? 'turno jugado' : 'turnos jugados'}.
+        </p>
+      )}
 
       <div className="jugadores">
         <Columna titulo="Tú" valores={contadores.mios} cambiar={contadores.cambiar} />
@@ -144,8 +198,8 @@ export function PantallaContadores({
         <button type="button" className="boton boton--plano" onClick={contadores.reiniciarMios}>
           Reiniciar mis contadores
         </button>
-        <button type="button" className="boton boton--plano" onClick={contadores.reiniciarTurno}>
-          Volver al turno 1
+        <button type="button" className="boton boton--plano" onClick={contadores.partidaNueva}>
+          Partida nueva
         </button>
       </div>
     </section>

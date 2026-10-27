@@ -35,23 +35,57 @@ export const CONTADORES_NUEVOS: Contadores = {
 export const FASES = ['Inicio', 'Principal 1', 'Combate', 'Principal 2', 'Final'] as const
 
 /**
- * Lo que es de los dos: el turno y la fase.
+ * Lo que es de los dos: quién empieza, qué turno se juega y en qué fase va.
+ *
+ * CÓMO SE CUENTAN LOS TURNOS (Héctor, 27/10/2026). En Magic un turno es de
+ * UNO, no de los dos: turno 1 de A, turno 1 de B, turno 2 de A… Así que
+ * aquí se guarda **un solo número**, `turnoEnJuego`, que cuenta los turnos
+ * de los dos seguidos: 1, 2, 3, 4… De ahí sale todo lo demás sin guardar
+ * nada más:
+ *
+ * - de quién es: del que empieza si es impar, del otro si es par;
+ * - qué número es para él: `turnoEnJuego` partido por dos, redondeando
+ *   hacia arriba;
+ * - cuántos turnos lleva la partida: `turnoEnJuego - 1` enteros.
+ *
+ * Un solo número, y ninguna forma de que las dos cuentas se descuadren.
  *
  * `secuencia` es el número de cambios que lleva. Al recibir uno, se acepta
  * solo si trae más cambios que el que tienes. Sin esto, dos pulsaciones a
  * la vez se devuelven el turno una a otra sin parar.
  */
 export interface Compartido {
-  turno: number
+  /** Id del jugador que empezó. Vacío mientras no se haya decidido. */
+  empieza: string
+  /** El turno que se está jugando, contando los de los dos: 1, 2, 3… */
+  turnoEnJuego: number
   fase: number
   secuencia: number
 }
 
-const COMPARTIDO_NUEVO: Compartido = { turno: 1, fase: 0, secuencia: 0 }
+const COMPARTIDO_NUEVO: Compartido = { empieza: '', turnoEnJuego: 1, fase: 0, secuencia: 0 }
+
+/** De quién es el turno que se juega ahora. */
+export function deQuienEsElTurno(c: Compartido, tuId: string, suId: string): string {
+  const esDelQueEmpieza = (c.turnoEnJuego - 1) % 2 === 0
+  if (esDelQueEmpieza) return c.empieza
+  // El otro es el que no empezó, mirado desde cualquiera de los dos lados.
+  return c.empieza === tuId ? suId : tuId
+}
+
+/** Qué número de turno es para quien lo juega. */
+export function numeroDeTurno(c: Compartido): number {
+  return Math.ceil(c.turnoEnJuego / 2)
+}
+
+/** Turnos enteros ya jugados. Es lo que irá al historial en la fase 8. */
+export function turnosJugados(c: Compartido): number {
+  return Math.max(0, c.turnoEnJuego - 1)
+}
 
 type Mensaje =
   | { que: 'contadores'; valores: Contadores }
-  | { que: 'compartido'; turno: number; fase: number; secuencia: number }
+  | { que: 'compartido'; empieza: string; turnoEnJuego: number; fase: number; secuencia: number }
   /** «Acabo de llegar, cuéntame cómo va». */
   | { que: 'hola' }
 
@@ -108,17 +142,54 @@ export function useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato
       const siguiente = c.fase + 1
       return siguiente < FASES.length
         ? { ...c, fase: siguiente, secuencia: c.secuencia + 1 }
-        : { turno: c.turno + 1, fase: 0, secuencia: c.secuencia + 1 }
+        : { ...c, turnoEnJuego: c.turnoEnJuego + 1, fase: 0, secuencia: c.secuencia + 1 }
     })
   }, [])
 
   const pasarTurno = useCallback(() => {
-    setCompartido((c) => ({ turno: c.turno + 1, fase: 0, secuencia: c.secuencia + 1 }))
+    setCompartido((c) =>
+      c.empieza
+        ? { ...c, turnoEnJuego: c.turnoEnJuego + 1, fase: 0, secuencia: c.secuencia + 1 }
+        : c,
+    )
   }, [])
 
-  const reiniciarTurno = useCallback(() => {
+  /** Para el espacio pulsado sin querer, que es fácil. */
+  const turnoAtras = useCallback(() => {
+    setCompartido((c) => ({
+      ...c,
+      turnoEnJuego: Math.max(1, c.turnoEnJuego - 1),
+      fase: 0,
+      secuencia: c.secuencia + 1,
+    }))
+  }, [])
+
+  const elegirQuienEmpieza = useCallback((id: string) => {
+    setCompartido((c) => ({ empieza: id, turnoEnJuego: 1, fase: 0, secuencia: c.secuencia + 1 }))
+  }, [])
+
+  const partidaNueva = useCallback(() => {
     setCompartido((c) => ({ ...COMPARTIDO_NUEVO, secuencia: c.secuencia + 1 }))
   }, [])
+
+  // El espacio pasa turno. Es la tecla que más se usa en una partida, y
+  // así no hay que soltar las cartas para buscar el botón con el ratón.
+  useEffect(() => {
+    function alPulsar(evento: KeyboardEvent) {
+      if (evento.code !== 'Space' || evento.repeat) return
+      // Dentro de un campo de texto el espacio es un espacio, y punto.
+      const donde = document.activeElement
+      if (donde instanceof HTMLInputElement || donde instanceof HTMLTextAreaElement) return
+      // En cambio sobre un botón sí se le quita: un botón se pulsa con el
+      // espacio al soltarlo, y cortarlo aquí evita que «Turno atrás», que
+      // se queda con el foco después de pulsarlo, siga mandando. El espacio
+      // significa pasar turno SIEMPRE, mire donde mire el foco.
+      evento.preventDefault()
+      pasarTurno()
+    }
+    window.addEventListener('keydown', alPulsar)
+    return () => window.removeEventListener('keydown', alPulsar)
+  }, [pasarTurno])
 
   // ---- lo que viaja ----
 
@@ -130,7 +201,12 @@ export function useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato
       } else if (mensaje?.que === 'compartido') {
         setCompartido((c) =>
           mensaje.secuencia > c.secuencia
-            ? { turno: mensaje.turno, fase: mensaje.fase, secuencia: mensaje.secuencia }
+            ? {
+                empieza: mensaje.empieza,
+                turnoEnJuego: mensaje.turnoEnJuego,
+                fase: mensaje.fase,
+                secuencia: mensaje.secuencia,
+              }
             : c,
         )
       } else if (mensaje?.que === 'hola') {
@@ -171,6 +247,8 @@ export function useContadores({ codigo, datosAbiertos, enviarDato, alRecibirDato
     reiniciarMios,
     siguienteFase,
     pasarTurno,
-    reiniciarTurno,
+    turnoAtras,
+    elegirQuienEmpieza,
+    partidaNueva,
   }
 }

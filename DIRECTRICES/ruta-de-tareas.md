@@ -441,6 +441,9 @@ de dos.
 Se quedan las tres que cambian **solo cuando una carta lo dice**: vidas,
 veneno y energía. Son pocas veces por partida y son deliberadas.
 
+La energía se quedó por mi cuenta, por si acaso, y acertó: **Héctor tiene un
+mazo de energía.**
+
 ### La decisión que ordena todo: cada uno lleva SUS números
 
 Los del rival se ven pero **no se tocan**. Así se juega en una mesa de
@@ -456,6 +459,55 @@ Lo único que es de los dos es **el turno y la fase**, porque ahí sí hay una
 sola verdad. Eso lleva un contador de cambios (`secuencia`) y se acepta lo
 que llega solo si trae más cambios que lo que tienes. **Sin eso, dos
 pulsaciones casi a la vez se devuelven el turno una a otra sin parar.**
+
+### Los turnos son de uno, no de los dos (Héctor, 27/10/2026)
+
+> «Hay que tener en cuenta que los turnos no son 1 - 2 - 3 - 4… Es turno 1
+> usuario A, turno 1 usuario B, turno 2 usuario A…»
+
+Exacto, y es la forma de contar de Magic: un turno **es de alguien**. Se
+guarda **un solo número**, `turnoEnJuego`, que cuenta los turnos de los dos
+seguidos: 1, 2, 3, 4… Y de ahí sale todo sin guardar nada más:
+
+| Quieres saber | Se saca así |
+|---|---|
+| De quién es el turno | del que empieza si `turnoEnJuego` es impar, del otro si es par |
+| Qué número es **para él** | `turnoEnJuego / 2`, redondeando hacia arriba |
+| Cuántos turnos lleva la partida | `turnoEnJuego - 1` |
+
+**Un solo número y ninguna forma de que las dos cuentas se descuadren.** La
+alternativa era llevar un contador por jugador y quién juega, que son tres
+cosas que hay que mantener de acuerdo entre dos navegadores.
+
+Esto es además lo que pidió Héctor para el historial: **los turnos jugados
+salen de aquí**, sin apuntar nada aparte. Fase 8.
+
+### Quién empieza: dos botones, de momento
+
+Hace falta saberlo para contar los turnos, así que hay dos botones
+(«Empiezo yo» / «Empieza X») hasta que esté la **moneda con los avatares**,
+que es lo que lo decidirá de verdad en la fase 7. El botón de «Partida
+nueva» lo borra, para volver a elegir.
+
+### La barra espaciadora pasa turno
+
+Es la tecla que más se usa en una partida, y así no hay que soltar las
+cartas para buscar el ratón.
+
+Dos detalles que costaron una vuelta:
+
+- **Se le quita el espacio a los botones.** Un botón se activa con el
+  espacio, así que si acabas de pulsar «Turno atrás» con el ratón, ese
+  botón se queda con el foco y el siguiente espacio volvería a ir atrás.
+  Cortando el espacio en `keydown` se evita, porque el botón se activa al
+  soltar. **El espacio significa pasar turno siempre, mire donde mire el
+  foco.** Comprobado en el navegador.
+- **Dentro de un campo de texto el espacio es un espacio**, y punto.
+- Mientras estés en una mesa, el espacio **ya no baja la página**. Es el
+  precio, y con la pantalla de la fase 9 (todo a la vista, sin desplazar)
+  dejará de notarse.
+
+Y hay **«Turno atrás»**, porque una barra espaciadora se pulsa sin querer.
 
 ### El canal de datos lo abre uno solo
 
@@ -620,6 +672,17 @@ aplicación solo lo apunta.
 
 **Si el otro no acepta**, la partida queda pendiente y quien la declaró puede
 retirarla o corregirla. **No se inventa un resultado nunca.**
+
+### Los turnos jugados (Héctor, 27/10/2026)
+
+Se apuntan en el historial, y **no hay que llevar nada aparte**: salen del
+contador compartido de la fase 4 (`turnoEnJuego - 1`). Al dar la partida por
+terminada se guarda ese número y ya está.
+
+Cuidado con una cosa al contarlos: un turno de A y un turno de B son **dos
+turnos**, no uno. Si en el historial se quiere «vueltas de mesa», se parte
+por dos; pero lo que se guarda es el número de turnos, que es lo que no
+necesita explicación.
 
 ### Lo que sí se apunta solo
 

@@ -682,6 +682,7 @@ body {
 
 .turno__botones {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
@@ -792,4 +793,10 @@ body {
   .jugadores {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* Un aviso que va suelto, no pegado debajo de un boton. */
+.aviso--suelto {
+  margin-top: 0;
+  margin-bottom: 1rem;
 }

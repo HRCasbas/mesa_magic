@@ -175,10 +175,12 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
       {/* La `key` hace que cada mesa empiece con sus propios números: al
           cambiar de código, el panel se monta de cero y lee lo guardado de
           esa mesa, no lo de la anterior. */}
-      {mesa.codigo && (
+      {mesa.codigo && mesa.tuId && (
         <PantallaContadores
           key={mesa.codigo}
           codigo={mesa.codigo}
+          tuId={mesa.tuId}
+          suId={elOtro?.id ?? null}
           nombreDelOtro={elOtro?.nombre ?? null}
           datosAbiertos={enlace.datosAbiertos}
           enviarDato={enlace.enviarDato}
