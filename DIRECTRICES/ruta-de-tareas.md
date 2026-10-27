@@ -212,6 +212,17 @@ rechazados**:
 Y las rutas: `/` sirve la web, `/api/codigo` devuelve códigos, `/api/mesa/X`
 sin websocket da 426, lo que no existe da 404.
 
+**Y repetido contra la web publicada**, no solo en local: el websocket de
+`wss://magic-mesa.duelo.workers.dev/api/mesa/…` acepta la conexión y rechaza
+un token falso con el mismo mensaje en castellano. **Los Durable Objects
+funcionan en el plan gratis**, que era la duda.
+
+> **Cuidado al comprobar un despliegue: Cloudflare cachea el `index.html`.**
+> Nada más desplegar, la página puede seguir dando el archivo anterior
+> durante un rato. Para ver la de verdad hay que pedirla con algo que salte
+> la caché (`?v=<lo que sea>`). Se perdió un rato creyendo que el despliegue
+> no había llegado cuando sí.
+
 ### ⚠ Lo que NO se ha podido probar
 
 **Que los dos entren a la vez.** Hace falta **dos cuentas confirmadas
