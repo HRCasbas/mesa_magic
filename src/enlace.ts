@@ -307,6 +307,27 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
     let reloj: ReturnType<typeof setInterval> | null = null
 
     /**
+     * Todo lo que se le ha mandado al otro, en orden.
+     *
+     * POR QUÉ SE GUARDA (27/10/2026). Los dos lados tardan lo suyo en abrir
+     * su enlace, porque antes preguntan por los servidores y eso es una ida
+     * y vuelta a la red. El que termina primero **habla solo**: su oferta y
+     * sus candidatos llegan a una mesa donde todavía no hay nadie
+     * escuchando, y se pierden. Y como después se queda esperando una
+     * respuesta, ya no vuelve a proponer nada: los dos en la misma mesa y
+     * sin verse, «como si fueran mesas diferentes con el mismo código».
+     *
+     * Así que se guarda lo dicho y, cuando el otro avisa de que ya escucha,
+     * se le repite entero.
+     */
+    const mandado: Senal[] = []
+
+    function mandar(senal: Senal) {
+      mandado.push(senal)
+      enviarSenal(senal)
+    }
+
+    /**
      * Proponer el enlace otra vez. Hace falta cuando el otro acaba de abrir
      * el suyo y tú ya tenías la cámara encendida: tu primera oferta se
      * perdió porque al otro lado no había nadie escuchando todavía.
@@ -323,7 +344,7 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
       try {
         haciendoOferta.current = true
         await enchufe.setLocalDescription()
-        enviarSenal({ descripcion: enchufe.localDescription!.toJSON() } satisfies Senal)
+        mandar({ descripcion: enchufe.localDescription!.toJSON() })
       } catch {
         // Si falla, el otro lado acabará proponiendo.
       } finally {
@@ -392,7 +413,7 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
       }
 
       pc.onicecandidate = ({ candidate }) => {
-        enviarSenal({ candidato: candidate ? candidate.toJSON() : null } satisfies Senal)
+        mandar({ candidato: candidate ? candidate.toJSON() : null })
       }
 
       pc.onconnectionstatechange = () => {
@@ -404,7 +425,7 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
         try {
           haciendoOferta.current = true
           await pc.setLocalDescription()
-          enviarSenal({ descripcion: pc.localDescription!.toJSON() } satisfies Senal)
+          mandar({ descripcion: pc.localDescription!.toJSON() })
         } catch {
           // Si falla, el otro lado acabará proponiendo.
         } finally {
@@ -412,13 +433,26 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
         }
       }
 
-      bajaDeSenales = alRecibirSenal(async (carga) => {
+      /**
+       * Atender una señal. Van de una en una y en orden, nunca a la vez:
+       * un candidato que se adelante a la descripción a la que pertenece
+       * se pierde, y al repetir lo mandado llegan varias de golpe.
+       */
+      async function atender(carga: unknown) {
         if (!pc) return
         const senal = carga as Senal
 
         try {
           if ('listo' in senal) {
-            await proponer(pc)
+            // El otro acaba de abrir su enlace. Si no nos ha contestado
+            // nunca, es que todo lo nuestro llegó antes que él: se le
+            // repite entero y en orden. Si ya hubo conversación, basta con
+            // volver a proponer.
+            if (!pc.currentRemoteDescription && mandado.length > 0) {
+              for (const vieja of mandado) enviarSenal(vieja)
+            } else {
+              await proponer(pc)
+            }
           } else if ('descripcion' in senal) {
             const esOferta = senal.descripcion.type === 'offer'
             const ocupado = haciendoOferta.current || pc.signalingState !== 'stable'
@@ -432,7 +466,7 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
             await pc.setRemoteDescription(senal.descripcion)
             if (esOferta) {
               await pc.setLocalDescription()
-              enviarSenal({ descripcion: pc.localDescription!.toJSON() } satisfies Senal)
+              mandar({ descripcion: pc.localDescription!.toJSON() })
             }
           } else if (senal.candidato) {
             try {
@@ -445,6 +479,12 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
           // Una señal suelta que no encaja no tiene por qué tirar la
           // conexión: WebRTC reintenta por su cuenta.
         }
+      }
+
+      // La cola: cada señal espera a que termine la anterior.
+      let cola: Promise<void> = Promise.resolve()
+      bajaDeSenales = alRecibirSenal((carga) => {
+        cola = cola.then(() => atender(carga)).catch(() => {})
       })
 
       // Si la cámara ya estaba encendida antes de que llegara el otro, se

@@ -210,12 +210,17 @@ export function PantallaContadores({
         en una mesa: le dices «te quito tres» y los baja él.
       </p>
 
-      {!contadores.enlazados && (
-        <p className="recado recado--mal">
-          Todavía no hay camino directo con {nombreDelOtro ?? 'tu rival'}. Tus números funcionan,
-          pero no los está viendo.
-        </p>
-      )}
+      {suId &&
+        (contadores.enlazados ? (
+          <p className="recado recado--bien">
+            Conectado con {nombreDelOtro ?? 'tu rival'}: lo que toques lo ve al momento.
+          </p>
+        ) : (
+          <p className="recado recado--mal">
+            Todavía no hay camino directo con {nombreDelOtro ?? 'tu rival'}. Tus números funcionan,
+            pero no los está viendo.
+          </p>
+        ))}
 
       <div className="controles">
         <button type="button" className="boton boton--plano" onClick={contadores.reiniciarMios}>

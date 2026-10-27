@@ -531,6 +531,48 @@ Dos detalles que costaron una vuelta:
 
 Y hay **«Turno atrás»**, porque una barra espaciadora se pulsa sin querer.
 
+### ⚠⚠ El que llega primero habla solo (arreglado 27/10/2026)
+
+**Este es el fallo de verdad, y se había arreglado mal dos veces antes.**
+Héctor: «no veo la imagen del contrario, y solo puedo pasar el 1º turno y
+el otro no lo ve, **es como si fueran mesas diferentes con el mismo
+código**».
+
+La causa, por fin entera: **los dos lados tardan lo suyo en abrir su
+enlace**, porque antes preguntan a `/api/servidores`, que es una ida y
+vuelta a la red. El que termina primero manda su oferta y sus candidatos a
+una mesa donde todavía no hay nadie escuchando. Se pierden. Y como después
+se queda esperando respuesta (`have-local-offer`), **ya no vuelve a
+proponer**: los seguros que había miraban `signalingState === 'stable'`, y
+el suyo ya no lo estaba.
+
+Hasta la fase 3 esto no se notaba porque **la oferta solo se creaba al
+pulsar «Encender la cámara»**, mucho después de que los dos estuvieran
+montados. En la fase 4 el canal de datos hace que la oferta salga sola, al
+instante: justo cuando la carrera está más apretada.
+
+Cómo queda arreglado, de una vez:
+
+- **Se guarda todo lo que se le manda al otro**, en orden. Cuando llega su
+  `{listo:true}`, si no nos ha contestado nunca (`currentRemoteDescription`
+  vacío) **se le repite entero**. No importa quién llegó primero ni cuánto
+  tardó.
+- **Las señales que llegan se atienden de una en una**, encadenadas. Antes
+  cada una corría por su cuenta y un candidato podía adelantarse a la
+  descripción a la que pertenece, que es justo lo que pasa al repetir
+  varias de golpe.
+
+**Probado de verdad, no supuesto** (27/10/2026): dos enlaces en la misma
+página, con uno montándose **800 ms más tarde a propósito** para reproducir
+la carrera. Con el código de antes los dos se quedaban en `—` y el canal
+cerrado después de cuatro segundos. Con el arreglo, los dos llegan a
+`connected`, el canal se abre y los datos viajan en los dos sentidos.
+
+**Cómo se prueba esto sin dos sesiones:** `useEnlace` recibe el envío y la
+recepción de señales como parámetros, así que se le pueden poner dos
+instancias en una página y un relé de mentira entre ellas. Los
+`RTCPeerConnection` son de verdad y se conectan por candidatos locales.
+
 ### ⚠ El canal de datos no se abría (arreglado 27/10/2026)
 
 Héctor lo vio en la primera prueba: los dos en la mesa, pero «no se ven las
@@ -607,9 +649,13 @@ vidas de uno salen en el panel del otro, el turno se ve igual en los dos,
 los botones de turno se apagan en el lado al que no le toca y la barra
 espaciadora solo mueve el turno de quien lo juega.
 
-**Lo que sigue sin probarse: que el canal de datos de verdad se abra entre
-dos navegadores.** Eso hace falta sesión en dos sitios, y es justo donde se
-escondieron los dos fallos que han llegado a producción.
+**Y el canal de datos de verdad también está probado** (27/10/2026): dos
+`RTCPeerConnection` reales en una página, uno llegando tarde a propósito,
+llegan a `connected` y se pasan datos en los dos sentidos. Ver «El que llega
+primero habla solo».
+
+**Lo único que sigue sin probarse es entre dos máquinas distintas**, con la
+mesa de Cloudflare de por medio. Eso hace falta sesión en dos sitios.
 
 ### Truco al probar en el navegador
 
@@ -1253,6 +1299,17 @@ mira».
   **Cómo se encontró:** comparando el nombre del archivo publicado con el
   recién compilado. Si no coinciden, no se ha desplegado, y hay que ir al
   registro antes de seguir esperando.
+
+- **27/10/2026 — Tres parches al mismo fallo valen menos que entenderlo una
+  vez.** El mismo problema (una señal que se pierde porque el otro todavía
+  no escucha) se arregló tres veces: primero abriendo el enlace con la mesa,
+  luego añadiendo `{listo:true}`, luego ampliando qué se consideraba «algo
+  que ofrecer». Las tres eran ciertas y las tres se quedaban cortas, porque
+  **ninguna miraba el caso de quien ya había hablado y se quedó esperando**.
+  Lo que lo cerró fue dejar de parchear condiciones y **guardar lo dicho
+  para poder repetirlo**: así da igual quién llegue antes.
+  Y lo que lo demostró fue **montar la carrera a propósito** en una página
+  de prueba, en vez de razonar sobre ella.
 
 - **27/10/2026 — Un seguro solo protege lo que existía cuando se escribió.**
   El seguro contra la oferta perdida de la fase 3 preguntaba «¿tengo alguna
