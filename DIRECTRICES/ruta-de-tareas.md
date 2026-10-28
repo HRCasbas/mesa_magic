@@ -411,6 +411,83 @@ Cómo se leen estos números, que no es evidente:
 
 ---
 
+## La puerta, completa (28/10/2026)
+
+Héctor: *«Haz lo del login completo: registrarse, iniciar sesión, he
+olvidado la contraseña»*. Eso **cambia la regla 3**, que decía registro
+cerrado y cuentas a mano, y la escribió él mismo. Se le dijo antes de
+hacerlo, y aun así se hace, porque es su decisión.
+
+### Lo que había y por qué no valía
+
+Lo de antes tenía un agujero que no se veía hasta usarlo: **entrar no es
+tener clave**.
+
+- A `troil` lo metió por **invitación**. Ese enlace identifica, pero no deja
+  clave puesta. El día que cerrara sesión, fuera de su propia cuenta.
+- Y el botón de **«he olvidado la clave»** mandaba el correo, el enlace
+  metía dentro… y no había ninguna pantalla donde escribir la clave nueva.
+  **Prometía algo que no cumplía**, que es peor que no estar.
+
+### Lo que hay ahora
+
+- **Entrar**, **crear cuenta** y **he olvidado la clave**, en tres pestañas
+  de la misma puerta.
+- **`PantallaClave`**, que faltaba, y sirve para los dos casos: vienes del
+  correo, o entraste por invitación y nunca pusiste una. Desde dentro está
+  en «Tu cuenta».
+- Al crear cuenta: clave de **ocho** mínimo, repetida, y **código de
+  invitación**.
+
+### El código de invitación: hasta dónde llega
+
+Se dice en `src/registro.ts` y aquí, porque es fácil creerse más protegido
+de lo que uno está: **el código para a quien pase por delante, y no para a
+quien sepa mirar el código de la página.** Viaja al navegador como todo lo
+demás. El cierre de verdad es el interruptor de Supabase (*Authentication →
+Sign In / Providers → Allow new users to sign up*), y si se apaga, esta
+pantalla lo dice sola, porque el error ya está traducido.
+
+Lo que sí protege del todo, pase lo que pase: **sin el código de la mesa**,
+que se dicta y cambia cada partida, una cuenta de más no ve vuestra partida
+ni enciende nada vuestro.
+
+### ⚠ Dos cosas que hay que tocar en Supabase
+
+1. **Abrir el registro**: *Authentication → Sign In / Providers → Allow new
+   users to sign up*. Sin esto, «crear cuenta» contesta que está cerrado.
+2. **Permitir la vuelta de los correos**: *Authentication → URL
+   Configuration → Redirect URLs* → añadir
+   `https://magic-mesa.duelo.workers.dev/**`. Sin esto, el enlace de
+   confirmar y el de clave nueva **no vuelven a la web** y no sirven de
+   nada.
+
+Y un aviso que conviene no olvidar: **este proyecto de Supabase lo comparte
+con la web de Pokémon**. Abrir el registro abre cuentas en el proyecto
+entero. No es grave —ya se comprobó el 26/10 que `authenticated` no tiene
+ningún permiso ni política sobre `marcas` ni `puntos`, así que una cuenta
+nueva no puede tocar nada de Pokémon—, pero hay que saberlo.
+
+### Detalles pensados
+
+- Al pedir clave nueva se contesta **lo mismo exista o no la cuenta**.
+  Decir «ese correo no está» le cuenta a cualquiera quién tiene cuenta aquí.
+- `VENIMOS_DE_RECUPERAR` se mira **antes de crear el cliente** de Supabase,
+  arriba del todo de `supabase.ts`. Al crearse, Supabase lee ese trozo de la
+  dirección y lo borra; mirarlo después sería mirar un sitio vacío.
+- Al **salir** se olvida que veníamos a recuperar, o el siguiente que entre
+  en ese navegador se encontraría la pantalla de poner clave sin pedirla.
+
+### Probado el 28/10/2026
+
+Las tres pestañas pintan lo suyo; el código equivocado, la clave corta y las
+dos claves distintas dan cada uno su recado; el código vale en minúsculas; y
+la pantalla de clave nueva se ve bien. **Sin probar: crear una cuenta de
+verdad y los dos correos**, que dependen de los dos ajustes de Supabase de
+arriba.
+
+---
+
 ## Fase 4: los contadores (27/10/2026)
 
 **Vidas, veneno y energía**, más el turno y la fase. Y nada más. Van **por

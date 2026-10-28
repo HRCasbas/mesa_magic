@@ -11,6 +11,16 @@ import { createClient } from '@supabase/supabase-js'
 const DIRECCION = 'https://jwumnclmdsvcdkbsvikq.supabase.co'
 const CLAVE_PUBLICABLE = 'sb_publishable_dtVvuYMqKCN-omXiBQrEZg_M3hUrA_K'
 
+/**
+ * Si hemos llegado pulsando el enlace de «clave nueva» del correo.
+ *
+ * Se mira AQUI ARRIBA, antes de crear el cliente, y no mas tarde: al
+ * crearse, Supabase lee ese trozo de la direccion y lo borra. Si se mirara
+ * despues ya no habria nada que mirar, y no sabriamos que la persona viene
+ * a cambiar la clave.
+ */
+export const VENIMOS_DE_RECUPERAR = window.location.hash.includes('type=recovery')
+
 // Este proyecto de Supabase lo comparte Magic con la web de Pokemon de
 // Hector. Lo de Magic vive en el esquema `magic`; `public` es de Pokemon y
 // no se toca. Fijando el esquema aqui, ninguna consulta se despista.
@@ -35,7 +45,22 @@ export function mensajeDeError(error: { message?: string } | null): string {
     return 'Falta confirmar el correo. Mira el mensaje que te mandamos.'
   }
   if (texto.includes('signups not allowed') || texto.includes('signup_disabled')) {
-    return 'El registro está cerrado. Las cuentas se crean a mano.'
+    return 'El registro está cerrado en el servidor. Hay que abrirlo en Supabase.'
+  }
+  if (texto.includes('user already registered') || texto.includes('already been registered')) {
+    return 'Ese correo ya tiene cuenta. Entra con él, o pide una clave nueva.'
+  }
+  if (texto.includes('password should be at least') || texto.includes('weak password')) {
+    return 'La clave es demasiado corta. Pon al menos seis letras o números.'
+  }
+  if (texto.includes('new password should be different')) {
+    return 'Esa es la clave que ya tenías. Pon una distinta.'
+  }
+  if (texto.includes('unable to validate email') || texto.includes('invalid email')) {
+    return 'Ese correo no tiene buena pinta. Míralo otra vez.'
+  }
+  if (texto.includes('same_password')) {
+    return 'Esa es la clave que ya tenías. Pon una distinta.'
   }
   if (texto.includes('email rate limit') || texto.includes('too many requests')) {
     return 'Demasiados intentos seguidos. Espera un minuto y vuelve a probar.'

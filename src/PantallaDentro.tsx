@@ -6,6 +6,7 @@ import {
   type Comprobacion,
   type Resultado,
 } from './comprobaciones'
+import { PantallaClave } from './PantallaClave'
 import { PantallaMesa } from './PantallaMesa'
 import type { Jugador } from './sesion'
 import { mensajeDeError, supabase } from './supabase'
@@ -103,6 +104,7 @@ export function PantallaDentro({
   recargarJugador: () => void
 }) {
   const [comprobaciones, setComprobaciones] = useState<Comprobacion[] | null>(null)
+  const [cambiandoClave, setCambiandoClave] = useState(false)
 
   useEffect(() => {
     let vigente = true
@@ -137,6 +139,29 @@ export function PantallaDentro({
       </header>
 
       <PantallaMesa nombre={jugador.nombre} />
+
+      {cambiandoClave ? (
+        <PantallaClave
+          recuperando={false}
+          hecho={() => setCambiandoClave(false)}
+          cancelar={() => setCambiandoClave(false)}
+        />
+      ) : (
+        <section className="tarjeta">
+          <h2>Tu cuenta</h2>
+          <p>
+            Si entraste con un enlace de invitación, <strong>todavía no tienes clave puesta</strong>{' '}
+            y no podrías volver a entrar. Ponla ahora y te la ahorras.
+          </p>
+          <button
+            type="button"
+            className="boton boton--plano"
+            onClick={() => setCambiandoClave(true)}
+          >
+            Poner o cambiar mi clave
+          </button>
+        </section>
+      )}
 
       <section className="tarjeta">
         <h2>Lo que falta</h2>

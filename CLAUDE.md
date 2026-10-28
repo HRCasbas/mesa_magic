@@ -64,7 +64,13 @@ textos que ve el usuario, con sus acentos puestos.
    igual.
 2. **La cámara no se enciende sin sesión y sin mesa**, y siempre con un botón
    de cortar a la vista.
-3. **El registro va cerrado.** Las cuentas se crean a mano.
+3. **El registro va con código de invitación** (Héctor, 28/10/2026, cambia
+   la regla anterior de «registro cerrado»). Cualquiera no se crea una
+   cuenta: hace falta el código de `src/registro.ts`, que él reparte. Ese
+   código **para a quien pase por delante, no a quien sepa mirar el código
+   de la página**; el cierre de verdad sigue siendo el interruptor de
+   Supabase. Lo que sí protege del todo: sin el código de la mesa, que se
+   dicta y cambia cada partida, una cuenta de más no ve ni enciende nada.
 4. **Las pegatinas en coordenadas normalizadas**, nunca en píxeles.
 5. **No se empieza una partida sin que los dos hayan elegido mazo.** Es lo
    único que hace que el historial valga algo. **No hay series:** hay un
@@ -90,7 +96,9 @@ textos que ve el usuario, con sus acentos puestos.
 src/
   main.tsx            arranque de React
   App.tsx             decide si hay sesión y nada más
-  PantallaEntrada.tsx la puerta: correo y clave
+  PantallaEntrada.tsx la puerta: entrar, crear cuenta, clave olvidada
+  PantallaClave.tsx   poner una clave nueva: del correo o desde dentro
+  registro.ts         el código de invitación, y hasta dónde protege
   PantallaDentro.tsx  lo que se ve con sesión
   PantallaMesa.tsx    crear mesa, entrar con código, ver quién está
   PantallaVideo.tsx   las dos imágenes, los cortes y el diagnóstico

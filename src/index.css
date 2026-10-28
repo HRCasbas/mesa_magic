@@ -1079,3 +1079,14 @@ body {
   border-radius: 0.6rem;
   border: 1px solid var(--borde);
 }
+
+/* Las pestanas de la puerta: entrar o crear cuenta. */
+.entrada__pestanas {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.entrada__pestanas .boton {
+  flex: 1;
+}
