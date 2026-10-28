@@ -3,6 +3,7 @@ import { useRef, type CSSProperties, type PointerEvent as EventoPuntero } from '
 import { CLASES, type ManejoPegatinas, type Pegatina } from './pegatinas'
 
 const CORTAS = new Map(CLASES.map((c) => [c.clase, c.corta]))
+const DIBUJOS = new Map(CLASES.map((c) => [c.clase, c.dibujo]))
 const CUENTAN = new Map(CLASES.map((c) => [c.clase, c.cuenta]))
 
 function Pegada({
@@ -53,13 +54,30 @@ function Pegada({
     evento.stopPropagation()
   }
 
+  // La libre lleva tu texto; las demás, dibujo (salvo +1/+1 y −1/−1, que
+  // su texto ya es su símbolo).
+  const dibujo = dato.clase === 'libre' ? '' : DIBUJOS.get(dato.clase)
+
   return (
     <div
       className={`pegada pegada--${dato.clase}`}
       style={{ left: `${dato.x * 100}%`, top: `${dato.y * 100}%` }}
       onPointerDown={alBajar}
+      // Borrar con el botón derecho, que lo pidió Héctor: una × en cada
+      // pegatina es una × tapando la carta todo el rato.
+      onContextMenu={(evento) => {
+        evento.preventDefault()
+        manejo.borrar(dato.id)
+      }}
+      title="Arrastra para moverla · botón derecho para quitarla"
     >
-      <span className="pegada__que">{CORTAS.get(dato.clase)}</span>
+      {dibujo ? (
+        <svg className="pegada__dibujo" viewBox="0 0 24 24" aria-hidden="true">
+          <path d={dibujo} />
+        </svg>
+      ) : (
+        <span className="pegada__que">{dato.texto ?? CORTAS.get(dato.clase)}</span>
+      )}
 
       {CUENTAN.get(dato.clase) && (
         <>
@@ -84,16 +102,6 @@ function Pegada({
           </button>
         </>
       )}
-
-      <button
-        type="button"
-        className="pegada__tecla pegada__tecla--quitar"
-        onPointerDown={soloElBoton}
-        onClick={() => manejo.borrar(dato.id)}
-        aria-label="Quitar esta pegatina"
-      >
-        ×
-      </button>
     </div>
   )
 }

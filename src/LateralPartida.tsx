@@ -44,7 +44,7 @@ export function LateralPartida({
   alRecibirDato: (oyente: (dato: unknown) => void) => () => void
   moverTodas: boolean
   alternarMoverTodas: () => void
-  pegar: (clase: ClasePegatina, mesa: string) => void
+  pegar: (clase: ClasePegatina, mesa: string, texto?: string) => void
   quitarTodas: (mesa: string) => void
   apuntando: boolean
   alternarApuntar: () => void
@@ -102,41 +102,19 @@ export function LateralPartida({
             </section>
           </>
         ) : (
-          <>
-            <section className="tarjeta">
-              <h2>Ver de cerca</h2>
-              <button
-                type="button"
-                className={apuntando ? 'boton boton--principal' : 'boton boton--plano'}
-                onClick={alternarApuntar}
-              >
-                {apuntando ? 'Encuadra la carta…' : 'Ampliar un trozo'}
-              </button>
-              {apuntando && (
-                <p className="aviso aviso--suelto">
-                  Arrastra un recuadro alrededor de la carta.
-                </p>
-              )}
-              {esperandoFoto && <p className="cargando">Pidiéndola…</p>}
-              {falloFoto && <p className="recado recado--mal">{falloFoto}</p>}
-              {foto && (
-                <div className="foto">
-                  <img className="foto__imagen" src={foto} alt="La carta, de cerca" />
-                  <button type="button" className="boton boton--plano" onClick={cerrarFoto}>
-                    Quitar
-                  </button>
-                </div>
-              )}
-            </section>
-
-            <PantallaConsultas
-              codigo={codigo}
-              enlazado={enlazado}
-              nombreDelOtro={nombreDelOtro}
-              enviarDato={enviarDato}
-              alRecibirDato={alRecibirDato}
-            />
-          </>
+          <PantallaConsultas
+            codigo={codigo}
+            enlazado={enlazado}
+            nombreDelOtro={nombreDelOtro}
+            enviarDato={enviarDato}
+            alRecibirDato={alRecibirDato}
+            apuntando={apuntando}
+            alternarApuntar={alternarApuntar}
+            foto={foto}
+            esperandoFoto={esperandoFoto}
+            falloFoto={falloFoto}
+            cerrarFoto={cerrarFoto}
+          />
         )}
       </div>
     </aside>

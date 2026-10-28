@@ -22,6 +22,8 @@ export interface Carta {
   edicionNombre: string
   numero: string
   idioma: string
+  /** El identificador de la carta como concepto, igual en todos los idiomas. */
+  oraculo: string | null
   /** La página de Scryfall, por si quieres leerla entera. */
   pagina: string
 }
@@ -36,11 +38,37 @@ export interface Carta {
  */
 const PARECE_NUMERO = /^([A-Za-z0-9]{3,5})\s+([0-9]+[a-z★]?)$/
 
-export async function buscar(escrito: string): Promise<Carta> {
+export async function buscar(escrito: string, idioma: string): Promise<Carta> {
   const limpio = escrito.trim()
   const comoNumero = PARECE_NUMERO.exec(limpio)
-  if (comoNumero) return porNumero(comoNumero[1], comoNumero[2])
-  return porNombre(limpio)
+  const encontrada = comoNumero
+    ? await porNumero(comoNumero[1], comoNumero[2], idioma)
+    : await porNombre(limpio)
+  return enTuIdioma(encontrada, idioma)
+}
+
+/**
+ * La misma carta, impresa en el idioma que tengas puesto.
+ *
+ * ES LO QUE DE VERDAD HACÍA FALTA: una carta japonesa no se entiende
+ * ampliándola, se entiende **traducida**. Si esa carta nunca se imprimió en
+ * tu idioma, se devuelve la que hay y punto; es mejor enseñar la inglesa
+ * que no enseñar nada.
+ */
+async function enTuIdioma(carta: Carta, idioma: string): Promise<Carta> {
+  if (!idioma || carta.idioma === idioma || !carta.oraculo) return carta
+  try {
+    const busca = `/cards/search?q=${encodeURIComponent(`oracleid:${carta.oraculo} lang:${idioma}`)}&unique=prints`
+    const respuesta = await enLaCola(async () => {
+      const r = await fetch(`${DIRECCION}${busca}`)
+      if (!r.ok) return null
+      return (await r.json()) as { data?: Cruda[] }
+    })
+    const primera = respuesta?.data?.[0]
+    return primera ? ordenar(primera) : carta
+  } catch {
+    return carta
+  }
 }
 
 let cola: Promise<unknown> = Promise.resolve()
@@ -58,6 +86,7 @@ function enLaCola<T>(trabajo: () => Promise<T>): Promise<T> {
 /** Lo que devuelve Scryfall, de lo que solo se usa un puñado de campos. */
 interface Cruda {
   id: string
+  oracle_id?: string
   name: string
   printed_name?: string
   lang: string
@@ -82,6 +111,7 @@ function ordenar(cruda: Cruda): Carta {
     edicionNombre: cruda.set_name,
     numero: cruda.collector_number,
     idioma: cruda.lang,
+    oraculo: cruda.oracle_id ?? null,
     pagina: cruda.scryfall_uri,
   }
 }

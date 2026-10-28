@@ -17,7 +17,7 @@ export function Paleta({
   nombreDelOtro: string | null
   moverTodas: boolean
   alternarMoverTodas: () => void
-  pegar: (clase: ClasePegatina, mesa: string) => void
+  pegar: (clase: ClasePegatina, mesa: string, texto?: string) => void
   quitarTodas: (mesa: string) => void
 }) {
   const [enLaSuya, setEnLaSuya] = useState(false)
@@ -45,14 +45,28 @@ export function Paleta({
       )}
 
       <div className="paleta__clases">
-        {CLASES.map(({ clase, nombre }) => (
+        {CLASES.map(({ clase, nombre, corta, dibujo }) => (
           <button
             key={clase}
             type="button"
-            className="boton boton--plano paleta__clase"
-            onClick={() => pegar(clase, mesa)}
+            className="paleta__clase"
+            title={nombre}
+            onClick={() => {
+              if (clase !== 'libre') {
+                pegar(clase, mesa)
+                return
+              }
+              const escrito = window.prompt('¿Qué quieres que ponga?')?.trim()
+              if (escrito) pegar('libre', mesa, escrito.slice(0, 24))
+            }}
           >
-            {nombre}
+            {dibujo ? (
+              <svg className="paleta__dibujo" viewBox="0 0 24 24" aria-hidden="true">
+                <path d={dibujo} />
+              </svg>
+            ) : (
+              <span className="paleta__texto">{corta}</span>
+            )}
           </button>
         ))}
       </div>

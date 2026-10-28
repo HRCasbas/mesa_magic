@@ -7,6 +7,7 @@ import {
   type Resultado,
 } from './comprobaciones'
 import { MenuCuenta } from './MenuCuenta'
+import { PantallaAjustes } from './PantallaAjustes'
 import { PantallaClave } from './PantallaClave'
 import { PantallaMesa } from './PantallaMesa'
 import type { Jugador } from './sesion'
@@ -106,6 +107,7 @@ export function PantallaDentro({
 }) {
   const [comprobaciones, setComprobaciones] = useState<Comprobacion[] | null>(null)
   const [cambiandoClave, setCambiandoClave] = useState(false)
+  const [enAjustes, setEnAjustes] = useState(false)
 
   useEffect(() => {
     let vigente = true
@@ -131,8 +133,14 @@ export function PantallaDentro({
           <h1 className="cabecera__titulo">Mesa Magic</h1>
           <p className="cabecera__lema">Magic a distancia, mesa contra mesa.</p>
         </div>
-        <MenuCuenta nombre={jugador.nombre} cambiarClave={() => setCambiandoClave(true)} />
+        <MenuCuenta
+          nombre={jugador.nombre}
+          cambiarClave={() => setCambiandoClave(true)}
+          abrirAjustes={() => setEnAjustes(true)}
+        />
       </header>
+
+      {enAjustes && <PantallaAjustes cerrar={() => setEnAjustes(false)} />}
 
       {cambiandoClave && (
         <PantallaClave

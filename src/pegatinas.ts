@@ -18,6 +18,8 @@ export type ClasePegatina =
   | 'mortal'
   | 'vinculo'
   | 'esta'
+  /** La que escribes tú. Para todo lo que no cabe en una lista cerrada. */
+  | 'libre'
 
 export interface Pegatina {
   id: string
@@ -29,25 +31,86 @@ export interface Pegatina {
   y: number
   /** Solo lo usan las que cuentan algo. */
   valor: number
+  /** Solo la libre: lo que escribiste. */
+  texto?: string
 }
 
+/**
+ * Las pegatinas, con su dibujo.
+ *
+ * Eran etiquetas de texto y Héctor las llamó «muy simples» el 28/10/2026.
+ * Un dibujo se reconoce de un vistazo encima de una carta; una palabra hay
+ * que leerla, y encima tapa más. Las dos que llevan número (`+1/+1` y
+ * `−1/−1`) se quedan en texto a propósito: ese texto **es** su símbolo en
+ * Magic, y dibujarlas sería inventarse un idioma nuevo.
+ */
 export const CLASES: {
   clase: ClasePegatina
-  /** Lo que pone en el botón de la paleta. */
   nombre: string
-  /** Lo que pone encima del vídeo, que tiene que ser corto. */
+  /** El texto que va encima del vídeo. Vacío si lleva dibujo. */
   corta: string
+  /** El dibujo, en una sola línea de SVG. */
+  dibujo: string
   cuenta: boolean
 }[] = [
-  { clase: 'mas', nombre: '+1/+1', corta: '+1/+1', cuenta: true },
-  { clase: 'menos', nombre: '−1/−1', corta: '−1/−1', cuenta: true },
-  { clase: 'ficha', nombre: 'Ficha', corta: 'Ficha', cuenta: true },
-  { clase: 'tapada', nombre: 'Tapada', corta: 'Tapada', cuenta: false },
-  { clase: 'volar', nombre: 'Vuela', corta: 'Vuela', cuenta: false },
-  { clase: 'arrolla', nombre: 'Arrolla', corta: 'Arrolla', cuenta: false },
-  { clase: 'mortal', nombre: 'Toque mortal', corta: 'Mortal', cuenta: false },
-  { clase: 'vinculo', nombre: 'Vínculo vital', corta: 'Vínculo', cuenta: false },
-  { clase: 'esta', nombre: 'Esta carta', corta: 'Esta', cuenta: false },
+  { clase: 'mas', nombre: '+1/+1', corta: '+1/+1', dibujo: '', cuenta: true },
+  { clase: 'menos', nombre: '−1/−1', corta: '−1/−1', dibujo: '', cuenta: true },
+  {
+    clase: 'ficha',
+    nombre: 'Ficha',
+    corta: '',
+    dibujo: 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 4.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7Z',
+    cuenta: true,
+  },
+  {
+    clase: 'tapada',
+    nombre: 'Tapada',
+    corta: '',
+    dibujo: 'M3 8h18v8H3zM7 11l-2 1 2 1',
+    cuenta: false,
+  },
+  {
+    clase: 'volar',
+    nombre: 'Vuela',
+    corta: '',
+    dibujo: 'M3 15c5-7 11-9 18-10-1 8-7 13-13 13-2 0-4-1-5-3Z',
+    cuenta: false,
+  },
+  {
+    clase: 'arrolla',
+    nombre: 'Arrolla',
+    corta: '',
+    dibujo: 'M3 12h11m0 0-4-4m4 4-4 4M18 4v16',
+    cuenta: false,
+  },
+  {
+    clase: 'mortal',
+    nombre: 'Toque mortal',
+    corta: '',
+    dibujo: 'M12 3a7 7 0 0 1 7 7v3l-2 2v3H7v-3l-2-2v-3a7 7 0 0 1 7-7Zm-3 8h0m6 0h0',
+    cuenta: false,
+  },
+  {
+    clase: 'vinculo',
+    nombre: 'Vínculo vital',
+    corta: '',
+    dibujo: 'M12 20S5 15.5 5 11a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.5-7 9-7 9Z',
+    cuenta: false,
+  },
+  {
+    clase: 'esta',
+    nombre: 'Esta carta',
+    corta: '',
+    dibujo: 'M12 3v3m0 12v3M3 12h3m12 0h3M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z',
+    cuenta: false,
+  },
+  {
+    clase: 'libre',
+    nombre: 'Escribir',
+    corta: '',
+    dibujo: 'M12 5v14M5 12h14',
+    cuenta: false,
+  },
 ]
 
 /** Lo que necesita la capa de pegatinas para pintarlas y dejarlas tocar. */
@@ -92,10 +155,13 @@ export function usePegatinas({ datosAbiertos, enviarDato, alRecibirDato }: Opcio
 
   // ---- lo que se toca ----
 
-  const pegar = useCallback((clase: ClasePegatina, mesa: string) => {
+  const pegar = useCallback((clase: ClasePegatina, mesa: string, texto?: string) => {
     setTablero((t) => ({
       // En medio del vídeo, que es donde se ve seguro. De ahí se arrastra.
-      lista: [...t.lista, { id: crypto.randomUUID(), mesa, clase, x: 0.5, y: 0.5, valor: 1 }],
+      lista: [
+        ...t.lista,
+        { id: crypto.randomUUID(), mesa, clase, x: 0.5, y: 0.5, valor: 1, texto },
+      ],
       secuencia: t.secuencia + 1,
     }))
   }, [])

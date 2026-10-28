@@ -910,17 +910,56 @@ se distinguen por el borde.
 
 Se guardan en el navegador mientras dura la partida.
 
-### ⚠ Lo que falta: el OCR
+### El OCR, puesto el 28/10/2026
 
-Tesseract **no está puesto**. La foto se ve, y el número y el nombre se
-escriben a mano. Lo que falta es que el OCR lea el número de la foto y
-rellene el hueco solo, que es **un acelerador, no una vía nueva**: todo lo
-que hace ya se puede hacer a mano.
+Encuadras una carta, llega la foto, **se lee el nombre y se busca sola**.
 
-Cuando se monte, lo que ya está medido y no hay que volver a mirar: unos
-4–5 MB la primera vez, cargar solo al pulsar, versión rápida del inglés, y
-`tessedit_char_whitelist` con dígitos, barra y mayúsculas, que es lo que
-dispara el acierto sobre el número.
+- Corre sobre **la franja de arriba del recorte** (el 16 %), que es donde
+  está el nombre, no sobre la carta entera.
+- La franja se dibuja **al triple de tamaño y en blanco y negro duro**
+  antes de pasarla por Tesseract.
+- `tessedit_char_whitelist` con solo letras y `pageseg_mode 7` (una sola
+  línea), que es lo que dispara el acierto.
+- **Se carga al usarlo, no al abrir la web.** Son unos 4-5 MB la primera
+  vez y queda en caché. En la compilación va en su propio trozo.
+
+**Si falla no pasa nada, y eso es parte del diseño**: la foto sigue ahí y
+el buscador está justo debajo. Es un acelerador, no una vía.
+
+**Probado el 28/10/2026** con una cámara de mentira que pinta cartas con su
+banda de nombre: encuadrando la segunda llega la foto, lee *Hinterland
+Harbor* y devuelve **«Puerto interior»**, la impresión española. Todo el
+camino, de un arrastre.
+
+### El idioma se elige una vez (Héctor, 28/10/2026)
+
+> «En la sección de cartas nunca preguntes el idioma, siempre español y
+> punto. Como mucho, en ajustes de cuenta, preferencia de idioma. Pero el
+> idioma se elige una vez, no decenas de veces.»
+
+Es la regla 9 otra vez: **una pregunta que hay que contestar cada vez es
+una pregunta mal puesta.** Está en el menú de la cuenta → Ajustes, por
+defecto español, guardado en el navegador.
+
+Y resuelve lo que de verdad hacía falta con las cartas en idiomas raros:
+**no es ampliarlas, es traducirlas.** Sea como sea como se encuentre la
+carta (por nombre, por número o leyéndola de la foto), después se pide su
+impresión en tu idioma por `oracleid`, que es el identificador que no
+cambia de un idioma a otro. Si esa carta nunca se imprimió así, se enseña
+la que haya: mejor la inglesa que nada.
+
+### ⚠ Lo que sigue sin probarse del OCR
+
+**Una carta de verdad, por una cámara de verdad.** Lo probado es una carta
+pintada: letras perfectas, de frente y con todo el contraste del mundo. En
+una mesa hay ángulo, sombras y la carta puede estar girada. Las dos trampas
+apuntadas arriba (carta tapada y perspectiva) **siguen sin resolver**, y es
+posible que el acierto baje mucho.
+
+Si baja, la salida no es pelearse con Tesseract: es **el número de
+colección**, que ya está medido y es ASCII puro. Entonces se lee la franja
+de abajo en vez de la de arriba y se busca por número, que además da
+resultado exacto.
 
 ### Una corrección a lo que estaba escrito
 

@@ -1525,3 +1525,57 @@ body {
   font-family: inherit;
   font-size: 0.95rem;
 }
+
+/* ---- Pegatinas con dibujo ---- */
+
+.pegada__dibujo {
+  width: 1.15rem;
+  height: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paleta__clases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.paleta__clase {
+  display: grid;
+  place-items: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  background: var(--fondo);
+  color: var(--texto-suave);
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.paleta__clase:hover {
+  color: var(--texto);
+  border-color: var(--acento);
+}
+
+.paleta__dibujo {
+  width: 1.3rem;
+  height: 1.3rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.paleta__texto {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}

@@ -12,9 +12,11 @@ import { supabase } from './supabase'
 export function MenuCuenta({
   nombre,
   cambiarClave,
+  abrirAjustes,
 }: {
   nombre: string
   cambiarClave: () => void
+  abrirAjustes: () => void
 }) {
   const [abierto, setAbierto] = useState(false)
   const caja = useRef<HTMLDivElement>(null)
@@ -48,6 +50,16 @@ export function MenuCuenta({
           <button type="button" className="cuenta__opcion" disabled>
             Mis mazos
             <span className="cuenta__pronto">pronto</span>
+          </button>
+          <button
+            type="button"
+            className="cuenta__opcion"
+            onClick={() => {
+              setAbierto(false)
+              abrirAjustes()
+            }}
+          >
+            Ajustes
           </button>
           <button
             type="button"
