@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 
 import { valeElCodigo } from './registro'
-import { mensajeDeError, supabase } from './supabase'
+import { FALLO_DEL_ENLACE, mensajeDeError, supabase } from './supabase'
 
 type Puerta = 'entrar' | 'crear' | 'olvidada'
 
@@ -20,7 +20,10 @@ export function PantallaEntrada() {
   const [repetida, setRepetida] = useState('')
   const [codigo, setCodigo] = useState('')
   const [trabajando, setTrabajando] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  // Si vienes de un enlace que no valia, se dice nada mas abrir, sin que
+  // tengas que pulsar nada: es la unica pista que tienes de por que has
+  // acabado otra vez en la puerta.
+  const [error, setError] = useState<string | null>(FALLO_DEL_ENLACE)
   const [aviso, setAviso] = useState<string | null>(null)
 
   function cambiarA(cual: Puerta) {

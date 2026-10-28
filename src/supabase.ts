@@ -19,7 +19,32 @@ const CLAVE_PUBLICABLE = 'sb_publishable_dtVvuYMqKCN-omXiBQrEZg_M3hUrA_K'
  * despues ya no habria nada que mirar, y no sabriamos que la persona viene
  * a cambiar la clave.
  */
-export const VENIMOS_DE_RECUPERAR = window.location.hash.includes('type=recovery')
+const LO_QUE_TRAE_LA_DIRECCION = `${window.location.hash.slice(1)}&${window.location.search.slice(1)}`
+
+export const VENIMOS_DE_RECUPERAR = LO_QUE_TRAE_LA_DIRECCION.includes('type=recovery')
+
+/**
+ * El fallo que trae el enlace del correo, si lo trae.
+ *
+ * Supabase, cuando un enlace no vale, NO avisa: devuelve a la web con el
+ * motivo escondido en la direccion. Sin leerlo aqui, la persona pulsa el
+ * enlace del correo y acaba en la pantalla de entrada sin que nadie le
+ * diga por que. Paso de verdad el 28/10/2026.
+ */
+export const FALLO_DEL_ENLACE: string | null = (() => {
+  const trozos = new URLSearchParams(LO_QUE_TRAE_LA_DIRECCION)
+  const codigo = trozos.get('error_code') ?? ''
+  const explicacion = trozos.get('error_description') ?? trozos.get('error') ?? ''
+  if (!codigo && !explicacion) return null
+
+  if (codigo.includes('otp_expired') || explicacion.toLowerCase().includes('expired')) {
+    return 'Ese enlace ya no vale: ha caducado o se ha usado antes. Pide otro y pulsalo cuanto antes.'
+  }
+  if (codigo.includes('access_denied')) {
+    return 'Ese enlace no vale. Pide otro correo y pulsa el enlace nuevo.'
+  }
+  return `El enlace del correo ha fallado: ${explicacion || codigo}`
+})()
 
 // Este proyecto de Supabase lo comparte Magic con la web de Pokemon de
 // Hector. Lo de Magic vive en el esquema `magic`; `public` es de Pokemon y
@@ -30,6 +55,17 @@ export const supabase = createClient(DIRECCION, CLAVE_PUBLICABLE, {
     // Que la sesion aguante un cierre de navegador: no se entra cada vez.
     persistSession: true,
     autoRefreshToken: true,
+    // POR QUE `implicit` Y NO EL DE FABRICA (28/10/2026). El moderno (PKCE)
+    // guarda media llave en el navegador DESDE EL QUE SE PIDIO el correo, y
+    // el enlace solo funciona en ese mismo navegador. Pero un enlace de un
+    // correo se abre donde le pille a uno: en el movil, en otro navegador,
+    // en el visor del correo. Cuando eso pasa, el enlace no vale y
+    // Supabase te devuelve a la puerta sin decir nada.
+    // Con `implicit`, el enlace se basta solo y funciona abra donde se
+    // abra, que es lo que hace falta aqui. A cambio, la llave viaja en la
+    // direccion; para esta web, con dos cuentas, es un cambio que merece
+    // la pena.
+    flowType: 'implicit',
   },
 })
 
