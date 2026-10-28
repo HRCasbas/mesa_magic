@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
 
+import { PantallaConsultas } from './PantallaConsultas'
 import { PantallaContadores } from './PantallaContadores'
 import { PantallaVideo } from './PantallaVideo'
 import { useEnlace } from './enlace'
+import { useFotos } from './fotos'
 import { useMesa } from './mesa'
 import { usePegatinas } from './pegatinas'
 
@@ -39,6 +41,13 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
     enviarDato: enlace.enviarDato,
     alRecibirDato: enlace.alRecibirDato,
   })
+
+  const fotos = useFotos({
+    miMedia: enlace.miMedia,
+    enviarDato: enlace.enviarDato,
+    alRecibirDato: enlace.alRecibirDato,
+  })
+  const [apuntando, setApuntando] = useState(false)
 
   async function unirse(evento: FormEvent) {
     evento.preventDefault()
@@ -179,6 +188,18 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
         alternarMoverTodas={() => pegatinas.setMoverTodas((v) => !v)}
         pegar={pegatinas.pegar}
         quitarTodas={pegatinas.quitarTodas}
+        apuntando={apuntando}
+        alternarApuntar={() => setApuntando((v) => !v)}
+        tocarCarta={(x, y) => {
+          // Un toque, una foto: el modo se apaga solo para que el siguiente
+          // clic en el vídeo no pida otra sin querer.
+          setApuntando(false)
+          fotos.pedir(x, y)
+        }}
+        foto={fotos.foto?.imagen ?? null}
+        esperandoFoto={fotos.esperando}
+        falloFoto={fotos.fallo}
+        cerrarFoto={fotos.cerrar}
         encender={enlace.encender}
         apagar={enlace.apagar}
         cambiarCamara={enlace.cambiarCamara}
@@ -198,6 +219,17 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
           tuNombre={nombre}
           nombreDelOtro={elOtro?.nombre ?? null}
           datosAbiertos={enlace.datosAbiertos}
+          enviarDato={enlace.enviarDato}
+          alRecibirDato={enlace.alRecibirDato}
+        />
+      )}
+
+      {mesa.codigo && (
+        <PantallaConsultas
+          key={mesa.codigo}
+          codigo={mesa.codigo}
+          enlazado={enlace.datosAbiertos}
+          nombreDelOtro={elOtro?.nombre ?? null}
           enviarDato={enlace.enviarDato}
           alRecibirDato={enlace.alRecibirDato}
         />

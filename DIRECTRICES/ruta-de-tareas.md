@@ -36,7 +36,7 @@ Tres cosas:
 | **3** | El vídeo: WebRTC, credenciales TURN, cortar, diagnóstico | **Hecha** (27/10/2026), falta el relé |
 | **4** | Los contadores, por el canal de datos | **Hecha** (27/10/2026) |
 | **5** | Las pegatinas arrastrables | **Hecha** (27/10/2026) |
-| **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | |
+| **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | **Hecha** (28/10/2026), falta el OCR |
 | **7** | Mazos: zona propia, portada, elegir mazo para jugar | |
 | **8** | Historial: declarar ganador, aceptar, y qué sale del registro | |
 | **9** | El remate: PWA, pantalla que no se apaga, atajos | |
@@ -721,6 +721,72 @@ con la paleta, comprobando que cada pegatina cae en la mesa elegida.
 
 **Sin probar:** con dos navegadores de verdad y con cámara encendida, que es
 donde se ve si el fotograma calculado cuadra con la imagen.
+
+---
+
+## Fase 6: leer las cartas (28/10/2026)
+
+Tres cosas, y las tres hechas: **la foto de cerca**, **buscar por nombre** y
+**buscar por número de colección**, con el lateral de consultas.
+
+### La foto: se le pide al otro, no se amplía la que te llega
+
+Pulsas «Tocar una carta» y tocas la carta en la mesa del rival. Su navegador
+recorta **ese trozo de su imagen a resolución nativa** y te lo manda.
+
+Ampliar el vídeo que te llega no serviría de nada: ya viene comprimido y
+reducido. La imagen buena solo existe en el otro lado, y por eso la foto se
+pide allí. **Esto es lo que gana la partida, antes que ningún OCR.**
+
+- Recorte: **26 % del ancho** del fotograma, y el alto sale de la proporción
+  real de una carta (63 × 88 mm), no de un número inventado. Con eso cabe la
+  carta entera aunque hayas tocado descentrado.
+- Va **en trozos de 16 000 letras** por el canal de datos, porque un mensaje
+  no puede ser tan grande como una foto, y se vuelve a juntar al llegar.
+- Si el otro tiene la cámara apagada, lo dice; si no contesta en diez
+  segundos, también. Nunca se queda girando.
+
+**Probado el 28/10/2026** con un lienzo de 1920 × 1080 haciendo de cámara:
+pidiendo el punto (0,6, 0,52) llega un recorte de **499 × 697** centrado
+justo en la carta que se pidió, repartido en dos trozos. Así se prueba todo
+el camino sin encender ninguna cámara.
+
+### Las dos búsquedas
+
+- **Por número de colección** (`NEO 123`): exacta, y vale para una carta
+  japonesa aunque no sepas cómo se llama, porque el número es el mismo en
+  todos los idiomas. Probado: `NEO 123` en japonés devuelve *Tatsunari, Toad
+  Rider* y, debajo, el nombre impreso `カエル乗り、達成`.
+- **Por nombre**: perdona **un** fallo al escribir, no dos. Está medido más
+  arriba y en la pantalla se dice tal cual, sin prometer de más.
+
+### El lateral de consultas, privado
+
+Lo que miras **no viaja**. Si el rival viera tus consultas sabría qué cartas
+no conoces y cuáles te preocupan, y eso es información de partida. Para
+enseñarle una hay un botón, **una por una y a mano**. Las que te enseña él
+se distinguen por el borde.
+
+Se guardan en el navegador mientras dura la partida.
+
+### ⚠ Lo que falta: el OCR
+
+Tesseract **no está puesto**. La foto se ve, y el número y el nombre se
+escriben a mano. Lo que falta es que el OCR lea el número de la foto y
+rellene el hueco solo, que es **un acelerador, no una vía nueva**: todo lo
+que hace ya se puede hacer a mano.
+
+Cuando se monte, lo que ya está medido y no hay que volver a mirar: unos
+4–5 MB la primera vez, cargar solo al pulsar, versión rápida del inglés, y
+`tessedit_char_whitelist` con dígitos, barra y mayúsculas, que es lo que
+dispara el acierto sobre el número.
+
+### Una corrección a lo que estaba escrito
+
+Las notas decían que Scryfall pide identificarse con un `User-Agent` propio.
+**Desde un navegador eso no se puede cumplir**: es una de las cabeceras que
+el navegador no deja tocar. Lo que sí está en nuestra mano es el ritmo, y se
+respeta: las peticiones van en cola, de una en una, con 120 ms entre ellas.
 
 ---
 

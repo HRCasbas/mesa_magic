@@ -99,6 +99,12 @@ src/
   mesa.ts             la conexión con la mesa
   enlace.ts           el camino directo entre los dos: vídeo y datos
   contadores.ts       los números de la partida, y cómo viajan
+  pegatinas.ts        las pegatinas sobre el vídeo, en coordenadas 0-1
+  CapaPegatinas.tsx   la capa que las pinta y deja arrastrarlas
+  fotos.ts            pedirle al otro una foto de una carta, a su resolución
+  scryfall.ts         preguntar qué carta es: por nombre o por número
+  consultas.ts        lo que has mirado, privado, y compartir una
+  PantallaConsultas.tsx  buscar una carta y la lista de lo mirado
   supabase.ts         el cliente, y los errores en castellano
   comprobaciones.ts   si este aparato sirve para jugar
   index.css           hoja de estilo única; los colores en :root

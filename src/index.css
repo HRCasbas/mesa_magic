@@ -920,3 +920,162 @@ body {
   gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
+
+/* ---- Las consultas de cartas ---- */
+
+.consultas__modos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.consultas__forma {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.consultas__forma .campo {
+  flex: 1 1 12rem;
+  margin: 0;
+}
+
+.campo--corto {
+  flex: 0 1 7rem !important;
+}
+
+.consultas__forma select {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.carta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+}
+
+.carta__imagen {
+  width: 100%;
+  max-width: 15rem;
+  border-radius: 0.75rem;
+  display: block;
+}
+
+.carta__sinimagen {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.carta__datos {
+  flex: 1 1 12rem;
+}
+
+.carta__nombre {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.carta__impreso,
+.carta__edicion {
+  margin: 0 0 0.35rem;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.carta__botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.consultas__cabecera {
+  margin: 1.25rem 0 0.75rem;
+  font-size: 1rem;
+}
+
+.consultas {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.consulta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.5rem;
+}
+
+/* Las que te ha enseñado el otro se distinguen sin leer. */
+.consulta--suya {
+  border-color: var(--acento);
+}
+
+.consulta__abrir {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.consulta__miniatura {
+  width: 2.4rem;
+  border-radius: 0.2rem;
+  display: block;
+}
+
+.consulta__nombre {
+  display: flex;
+  flex-direction: column;
+}
+
+.consulta__quien {
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+/* ---- La foto de cerca ---- */
+
+.imagen--apuntando {
+  cursor: crosshair;
+  outline: 2px solid var(--acento);
+}
+
+.foto {
+  margin: 0.75rem 0;
+}
+
+.foto__imagen {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--borde);
+}

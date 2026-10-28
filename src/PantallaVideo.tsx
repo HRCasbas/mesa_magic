@@ -4,6 +4,14 @@ import { CapaPegatinas } from './CapaPegatinas'
 import type { Diagnostico, EstadoVideo } from './enlace'
 import { CLASES, type ClasePegatina, type ManejoPegatinas } from './pegatinas'
 
+/** Dónde cae la imagen de verdad dentro de la caja, en píxeles. */
+interface Marco {
+  izquierda: number
+  arriba: number
+  ancho: number
+  alto: number
+}
+
 /** Mientras no se sepa el tamaño del fotograma, la capa ocupa toda la caja. */
 const TODA_LA_CAJA: CSSProperties = { inset: 0 }
 
@@ -14,6 +22,8 @@ function Imagen({
   vacia,
   pegatinas,
   manejo,
+  apuntando,
+  alTocar,
 }: {
   media: MediaStream | null
   mio: boolean
@@ -21,10 +31,13 @@ function Imagen({
   vacia: string
   pegatinas: ManejoPegatinas['lista']
   manejo: ManejoPegatinas
+  /** Puesto, el siguiente toque pide la foto de esa carta. */
+  apuntando?: boolean
+  alTocar?: (x: number, y: number) => void
 }) {
   const elemento = useRef<HTMLVideoElement>(null)
   const caja = useRef<HTMLDivElement>(null)
-  const [marco, setMarco] = useState<CSSProperties>(TODA_LA_CAJA)
+  const [marco, setMarco] = useState<Marco | null>(null)
 
   useEffect(() => {
     if (elemento.current) elemento.current.srcObject = media
@@ -42,7 +55,7 @@ function Imagen({
       if (!video || !fuera) return
       const sitio = fuera.getBoundingClientRect()
       if (!video.videoWidth || !video.videoHeight || !sitio.width || !sitio.height) {
-        setMarco(TODA_LA_CAJA)
+        setMarco(null)
         return
       }
       const deLaImagen = video.videoWidth / video.videoHeight
@@ -50,10 +63,10 @@ function Imagen({
       const ancho = deLaImagen > deLaCaja ? sitio.width : sitio.height * deLaImagen
       const alto = deLaImagen > deLaCaja ? sitio.width / deLaImagen : sitio.height
       setMarco({
-        left: (sitio.width - ancho) / 2,
-        top: (sitio.height - alto) / 2,
-        width: ancho,
-        height: alto,
+        izquierda: (sitio.width - ancho) / 2,
+        arriba: (sitio.height - alto) / 2,
+        ancho,
+        alto,
       })
     }
 
@@ -71,8 +84,34 @@ function Imagen({
     }
   }, [media])
 
+  // De dónde has tocado a «qué punto del fotograma es eso», que es lo que
+  // entiende el otro navegador para recortar su imagen buena.
+  function tocado(evento: React.MouseEvent<HTMLDivElement>) {
+    if (!apuntando || !alTocar) return
+    const fuera = caja.current?.getBoundingClientRect()
+    if (!fuera) return
+    const izquierda = marco ? marco.izquierda : 0
+    const arriba = marco ? marco.arriba : 0
+    const ancho = marco ? marco.ancho : fuera.width
+    const alto = marco ? marco.alto : fuera.height
+    if (!ancho || !alto) return
+    const x = (evento.clientX - fuera.left - izquierda) / ancho
+    const y = (evento.clientY - fuera.top - arriba) / alto
+    // Tocar la franja negra de al lado no es tocar ninguna carta.
+    if (x < 0 || x > 1 || y < 0 || y > 1) return
+    alTocar(x, y)
+  }
+
+  const estilo: CSSProperties = marco
+    ? { left: marco.izquierda, top: marco.arriba, width: marco.ancho, height: marco.alto }
+    : TODA_LA_CAJA
+
   return (
-    <div className={mio ? 'imagen imagen--mia' : 'imagen'} ref={caja}>
+    <div
+      className={`imagen${mio ? ' imagen--mia' : ''}${apuntando ? ' imagen--apuntando' : ''}`}
+      ref={caja}
+      onClick={tocado}
+    >
       <video
         ref={elemento}
         autoPlay
@@ -82,7 +121,7 @@ function Imagen({
         muted={mio}
       />
       {!media && <p className="imagen__vacia">{vacia}</p>}
-      <CapaPegatinas lista={pegatinas} estilo={marco} manejo={manejo} />
+      <CapaPegatinas lista={pegatinas} estilo={estilo} manejo={manejo} />
       <span className="imagen__etiqueta">{etiqueta}</span>
     </div>
   )
@@ -253,6 +292,13 @@ export function PantallaVideo({
   alternarMoverTodas,
   pegar,
   quitarTodas,
+  apuntando,
+  alternarApuntar,
+  tocarCarta,
+  foto,
+  esperandoFoto,
+  falloFoto,
+  cerrarFoto,
   encender,
   apagar,
   cambiarCamara,
@@ -276,6 +322,13 @@ export function PantallaVideo({
   alternarMoverTodas: () => void
   pegar: (clase: ClasePegatina, mesa: string) => void
   quitarTodas: (mesa: string) => void
+  apuntando: boolean
+  alternarApuntar: () => void
+  tocarCarta: (x: number, y: number) => void
+  foto: string | null
+  esperandoFoto: boolean
+  falloFoto: string | null
+  cerrarFoto: () => void
   encender: () => void
   apagar: () => void
   cambiarCamara: () => void
@@ -333,6 +386,8 @@ export function PantallaVideo({
           }
           pegatinas={mesaSuya ? pegatinas.lista.filter((p) => p.mesa === mesaSuya) : []}
           manejo={pegatinas}
+          apuntando={apuntando}
+          alTocar={tocarCarta}
         />
         <Imagen
           media={miMedia}
@@ -370,6 +425,48 @@ export function PantallaVideo({
       </div>
 
       {fallo && <p className="recado recado--mal">{fallo}</p>}
+
+      <h3 className="paleta__cabecera">Ver una carta de cerca</h3>
+      <div className="controles">
+        <button
+          type="button"
+          className={apuntando ? 'boton boton--principal' : 'boton boton--plano'}
+          onClick={alternarApuntar}
+          disabled={!suMedia}
+        >
+          {apuntando ? 'Toca la carta…' : 'Tocar una carta'}
+        </button>
+        {foto && (
+          <button type="button" className="boton boton--plano" onClick={cerrarFoto}>
+            Quitar la foto
+          </button>
+        )}
+      </div>
+
+      <p className="aviso aviso--suelto">
+        {suMedia ? (
+          <>
+            Pulsa el botón y toca la carta en la mesa de {nombreDelOtro ?? 'tu rival'}. Su navegador
+            manda <strong>una foto de ese trozo a resolución completa</strong>, que es mucho más
+            nítida que el vídeo. Ampliar el vídeo no serviría: ya te llega reducido.
+          </>
+        ) : (
+          <>Hasta que {nombreDelOtro ?? 'tu rival'} no encienda su cámara no hay nada que tocar.</>
+        )}
+      </p>
+
+      {esperandoFoto && <p className="cargando">Pidiéndole la foto…</p>}
+      {falloFoto && <p className="recado recado--mal">{falloFoto}</p>}
+      {foto && (
+        <div className="foto">
+          <img className="foto__imagen" src={foto} alt="La carta, de cerca" />
+          <p className="aviso">
+            Si aun así no se lee, busca la carta por su número de colección ahí abajo, en{' '}
+            <strong>Las cartas</strong>: abajo a la izquierda de la carta están el número y las
+            letras de la edición, y son los mismos en todos los idiomas.
+          </p>
+        </div>
+      )}
 
       {videoCortado && (
         <p className="recado recado--bien">
