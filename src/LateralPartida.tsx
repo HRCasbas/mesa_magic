@@ -104,26 +104,26 @@ export function LateralPartida({
         ) : (
           <>
             <section className="tarjeta">
-              <h2>Ver una carta de cerca</h2>
+              <h2>Ver de cerca</h2>
               <button
                 type="button"
                 className={apuntando ? 'boton boton--principal' : 'boton boton--plano'}
                 onClick={alternarApuntar}
               >
-                {apuntando ? 'Toca la carta…' : 'Tocar una carta'}
+                {apuntando ? 'Encuadra la carta…' : 'Ampliar un trozo'}
               </button>
-              <p className="aviso aviso--suelto">
-                Toca la carta en la mesa de {nombreDelOtro ?? 'tu rival'}: su navegador manda una
-                foto de ese trozo <strong>a resolución completa</strong>, mucho más nítida que el
-                vídeo.
-              </p>
-              {esperandoFoto && <p className="cargando">Pidiéndole la foto…</p>}
+              {apuntando && (
+                <p className="aviso aviso--suelto">
+                  Arrastra un recuadro alrededor de la carta.
+                </p>
+              )}
+              {esperandoFoto && <p className="cargando">Pidiéndola…</p>}
               {falloFoto && <p className="recado recado--mal">{falloFoto}</p>}
               {foto && (
                 <div className="foto">
                   <img className="foto__imagen" src={foto} alt="La carta, de cerca" />
                   <button type="button" className="boton boton--plano" onClick={cerrarFoto}>
-                    Quitar la foto
+                    Quitar
                   </button>
                 </div>
               )}

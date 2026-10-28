@@ -26,14 +26,22 @@ export interface Carta {
   pagina: string
 }
 
-/** Los idiomas que tiene sentido ofrecer, con el código que usa Scryfall. */
-export const IDIOMAS = [
-  { codigo: '', nombre: 'Como salga' },
-  { codigo: 'es', nombre: 'Español' },
-  { codigo: 'en', nombre: 'Inglés' },
-  { codigo: 'ja', nombre: 'Japonés' },
-  { codigo: 'zhs', nombre: 'Chino' },
-]
+/**
+ * Un solo sitio para buscar (Héctor, 28/10/2026: «no quiero una sección
+ * para cada cosa»).
+ *
+ * Si lo escrito son **tres o cuatro letras, un espacio y un número**, es un
+ * número de colección: `NEO 123`. Lo demás es un nombre. No hay que elegir
+ * nada: se mira lo escrito y ya.
+ */
+const PARECE_NUMERO = /^([A-Za-z0-9]{3,5})\s+([0-9]+[a-z★]?)$/
+
+export async function buscar(escrito: string): Promise<Carta> {
+  const limpio = escrito.trim()
+  const comoNumero = PARECE_NUMERO.exec(limpio)
+  if (comoNumero) return porNumero(comoNumero[1], comoNumero[2])
+  return porNombre(limpio)
+}
 
 let cola: Promise<unknown> = Promise.resolve()
 
@@ -115,7 +123,7 @@ export async function porNombre(nombre: string): Promise<Carta> {
  * una carta japonesa que no sabes ni cómo se llama. Y el resultado es
  * exacto, no aproximado.
  */
-export async function porNumero(edicion: string, numero: string, idioma: string): Promise<Carta> {
+export async function porNumero(edicion: string, numero: string, idioma = ''): Promise<Carta> {
   const codigo = edicion.trim().toLowerCase()
   const cual = numero.trim().toLowerCase()
   if (!codigo || !cual) throw new Error('Hacen falta la edición y el número.')

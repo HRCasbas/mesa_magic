@@ -48,6 +48,7 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
     alRecibirDato: enlace.alRecibirDato,
   })
   const [apuntando, setApuntando] = useState(false)
+  const [miMesaGrande, setMiMesaGrande] = useState(false)
 
   // Dentro de la partida la pantalla no se mueve (Héctor, 28/10/2026). La
   // partida es una capa fija encima de todo; sin esto, la rueda del ratón
@@ -131,33 +132,44 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
       />
 
       <div className="tapete">
+        {/* La de abajo es la que manda: va grande. Pulsando la pequeña se
+            cambian de sitio, que es la única forma de poner pegatinas en
+            tu propia mesa: en el recuadro de la esquina no se ve nada
+            (Héctor, 28/10/2026). */}
         <Mesa
-          media={enlace.suMedia}
-          mia={false}
-          etiqueta={elOtro ? elOtro.nombre : 'Esperando…'}
+          media={miMesaGrande ? enlace.miMedia : enlace.suMedia}
+          mia={miMesaGrande}
+          etiqueta={miMesaGrande ? 'Tu mesa' : (elOtro?.nombre ?? 'Esperando…')}
           vacia={
-            elOtro
-              ? `${elOtro.nombre} todavía no ha encendido su cámara.`
-              : `Dicta el código ${mesa.codigo} y tu rival entrará aquí mismo.`
+            miMesaGrande
+              ? 'Tu cámara está apagada.'
+              : elOtro
+                ? `${elOtro.nombre} todavía no ha encendido su cámara.`
+                : `Dicta el código ${mesa.codigo} y tu rival entrará aquí mismo.`
           }
-          pegatinas={elOtro ? pegatinas.manejo.lista.filter((p) => p.mesa === elOtro.id) : []}
+          pegatinas={pegatinas.manejo.lista.filter(
+            (p) => p.mesa === (miMesaGrande ? mesa.tuId : elOtro?.id),
+          )}
           manejo={pegatinas.manejo}
-          apuntando={apuntando}
-          alTocar={(x, y) => {
-            // Un toque, una foto: el modo se apaga solo para que el
-            // siguiente clic no pida otra sin querer.
+          apuntando={apuntando && !miMesaGrande}
+          alSeleccionar={(recuadro) => {
+            // Un recuadro, una foto: el modo se apaga solo.
             setApuntando(false)
-            fotos.pedir(x, y)
+            fotos.pedir(recuadro)
           }}
         />
 
         <Mesa
-          media={enlace.miMedia}
-          mia
-          etiqueta="Tu mesa"
-          vacia="Tu cámara está apagada."
-          pegatinas={pegatinas.manejo.lista.filter((p) => p.mesa === mesa.tuId)}
+          media={miMesaGrande ? enlace.suMedia : enlace.miMedia}
+          mia={!miMesaGrande}
+          etiqueta={miMesaGrande ? (elOtro?.nombre ?? 'Esperando…') : 'Tu mesa'}
+          vacia=""
+          pegatinas={pegatinas.manejo.lista.filter(
+            (p) => p.mesa === (miMesaGrande ? elOtro?.id : mesa.tuId),
+          )}
+          pequena
           manejo={pegatinas.manejo}
+          alPulsar={() => setMiMesaGrande((v) => !v)}
         />
 
         {(mesa.motivo || enlace.fallo) && (

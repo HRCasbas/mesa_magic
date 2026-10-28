@@ -66,14 +66,9 @@ export function Paleta({
           {moverTodas ? 'Moviendo todas' : 'Mover todas'}
         </button>
         <button type="button" className="boton boton--plano" onClick={() => quitarTodas(mesa)}>
-          Quitar las de esa mesa
+          Quitar todas
         </button>
       </div>
-
-      <p className="aviso aviso--suelto">
-        Sale en medio de la imagen y se arrastra hasta la carta. Si alguien mueve la cámara,{' '}
-        <strong>Mover todas</strong> recoloca el grupo entero de un arrastre.
-      </p>
     </div>
   )
 }

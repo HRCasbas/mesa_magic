@@ -19,15 +19,15 @@ export interface Foto {
 }
 
 /**
- * Cuánto se recorta alrededor del dedo.
+ * Lo más pequeño que puede ser un recuadro para tomárselo en serio.
  *
- * Una carta ocupa alrededor del 10 % del ancho del tapete encuadrado, así
- * que con un 26 % se coge la carta entera y un margen por si has tocado
- * algo descentrado. El alto sale de la proporción de una carta de Magic
- * (63 × 88 mm), no de un número inventado.
+ * ANTES ERA UNA PULSACIÓN y se recortaba un trozo fijo alrededor del dedo.
+ * No valía: Héctor lo probó el 28/10/2026 y «solo amplía una sección
+ * aleatoria». Con la cámara a un metro de la mesa, acertar una carta con
+ * un dedo es imposible. Ahora se arrastra un recuadro y se amplía lo que
+ * hayas encuadrado, que es lo único que no falla.
  */
-const PARTE_DEL_ANCHO = 0.26
-const PROPORCION_CARTA = 63 / 88
+const RECUADRO_MINIMO = 0.02
 
 /** Lo que cabe cómodamente en un mensaje del canal de datos. */
 const TROZO = 16000
@@ -35,13 +35,21 @@ const TROZO = 16000
 /** Si no contesta en este tiempo, se avisa en vez de dejarlo girando. */
 const PACIENCIA = 10000
 
+/** Un recuadro sobre el fotograma, de 0 a 1. Nunca en píxeles. */
+export interface Recuadro {
+  x: number
+  y: number
+  ancho: number
+  alto: number
+}
+
 type Mensaje =
-  | { que: 'pideFoto'; id: string; x: number; y: number }
+  | { que: 'pideFoto'; id: string; recuadro: Recuadro }
   | { que: 'trozoFoto'; id: string; i: number; cuantos: number; dato: string }
   | { que: 'sinFoto'; id: string; motivo: string }
 
 /** Saca un recorte a resolución nativa de tu propia cámara. */
-async function recortar(media: MediaStream, x: number, y: number): Promise<string | null> {
+async function recortar(media: MediaStream, recuadro: Recuadro): Promise<string | null> {
   // Un elemento de vídeo suelto, solo para pintar un fotograma. El de la
   // pantalla se ve pequeño, pero eso es tamaño en pantalla: al dibujarlo en
   // un lienzo sale a su resolución de verdad.
@@ -62,10 +70,10 @@ async function recortar(media: MediaStream, x: number, y: number): Promise<strin
     const altoTotal = tele.videoHeight
     if (!anchoTotal || !altoTotal) return null
 
-    const ancho = Math.round(anchoTotal * PARTE_DEL_ANCHO)
-    const alto = Math.min(altoTotal, Math.round(ancho / PROPORCION_CARTA))
-    const izquierda = Math.max(0, Math.min(anchoTotal - ancho, Math.round(x * anchoTotal - ancho / 2)))
-    const arriba = Math.max(0, Math.min(altoTotal - alto, Math.round(y * altoTotal - alto / 2)))
+    const ancho = Math.max(16, Math.round(recuadro.ancho * anchoTotal))
+    const alto = Math.max(16, Math.round(recuadro.alto * altoTotal))
+    const izquierda = Math.max(0, Math.min(anchoTotal - ancho, Math.round(recuadro.x * anchoTotal)))
+    const arriba = Math.max(0, Math.min(altoTotal - alto, Math.round(recuadro.y * altoTotal)))
 
     const lienzo = document.createElement('canvas')
     lienzo.width = ancho
@@ -103,11 +111,12 @@ export function useFotos({ miMedia, enviarDato, alRecibirDato }: Opciones) {
 
   /** Pedirle al otro una foto de donde has tocado. */
   const pedir = useCallback(
-    (x: number, y: number) => {
+    (recuadro: Recuadro) => {
+      if (recuadro.ancho < RECUADRO_MINIMO || recuadro.alto < RECUADRO_MINIMO) return
       const id = crypto.randomUUID()
       setFallo(null)
       setFoto(null)
-      if (!enviarDato({ que: 'pideFoto', id, x, y } satisfies Mensaje)) {
+      if (!enviarDato({ que: 'pideFoto', id, recuadro } satisfies Mensaje)) {
         setFallo('No hay camino directo con tu rival, así que no se le puede pedir la foto.')
         return
       }
@@ -136,7 +145,7 @@ export function useFotos({ miMedia, enviarDato, alRecibirDato }: Opciones) {
           enviarDato({ que: 'sinFoto', id: mensaje.id, motivo: 'sin cámara' } satisfies Mensaje)
           return
         }
-        void recortar(media, mensaje.x, mensaje.y).then((imagen) => {
+        void recortar(media, mensaje.recuadro).then((imagen) => {
           if (!imagen) {
             enviarDato({ que: 'sinFoto', id: mensaje.id, motivo: 'no ha salido' } satisfies Mensaje)
             return

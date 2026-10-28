@@ -70,6 +70,31 @@ Dos decisiones que no son de adorno:
 Y arriba a la derecha, fuera de la partida, **el menú de la cuenta**:
 mazos (pendiente, fase 7), cambiar la clave y cerrar sesión.
 
+### Lo que cambió después de jugar (Héctor, 28/10/2026)
+
+Cinco cosas que solo se ven jugando, y las cinco tenía razón:
+
+- **Encuadrar, no tocar.** Pulsar una carta «solo amplía una sección
+  aleatoria»: con la cámara a un metro de la mesa, acertar con un dedo es
+  imposible. Ahora **se arrastra un recuadro** y se amplía lo encuadrado.
+  Eso quita de en medio el problema de adivinar dónde está la carta, y deja
+  el OCR como lo que siempre fue: un acelerador, no una vía.
+- **Pulsar la imagen pequeña la cambia por la grande.** Era la única forma
+  de poner pegatinas en tu propia mesa: en el recuadro de la esquina no se
+  ve nada. Pegas, y vuelves a cambiar.
+- **Un solo buscador.** Nada de una casilla para el nombre y otra para el
+  número: se mira lo escrito. Si son tres o cuatro letras, un espacio y un
+  número, es `NEO 123`; lo demás es un nombre. El ejemplo va en el propio
+  hueco del campo.
+- **Fuera los párrafos de explicación.** «Cada uno lleva sus números…»,
+  «Conectado con…», «Sale en medio de la imagen…». Lo que hay que explicar
+  cada vez que se mira, sobra; el porqué vive aquí.
+- **Los botones, de una palabra:** «Scryfall» y «Enviar».
+
+La lección de fondo: **esto se diseñó sobre el papel y se cayó al primer
+contacto con una mesa de verdad.** Ninguno de los cinco se podía haber
+visto compilando.
+
 ### ⚠ Lo que se ve ahora NO es el aspecto final (Héctor, 27/10/2026)
 
 > «Entiendo que esta versión actual es de prueba, porque cambiaría
