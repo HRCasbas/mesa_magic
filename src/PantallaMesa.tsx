@@ -1,25 +1,25 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 
-import { PantallaConsultas } from './PantallaConsultas'
-import { PantallaContadores } from './PantallaContadores'
-import { PantallaVideo } from './PantallaVideo'
+import { BarraPartida } from './BarraPartida'
+import { LateralPartida } from './LateralPartida'
+import { Mesa } from './Tapete'
 import { useEnlace } from './enlace'
 import { useFotos } from './fotos'
 import { useMesa } from './mesa'
 import { usePegatinas } from './pegatinas'
 
 /**
- * La mesa y, cuando estáis los dos, el vídeo.
+ * La mesa: primero la puerta para encontraros, y luego la partida entera.
  *
- * El orden importa: la mesa solo sirve para encontraros y para pasaros las
- * primeras cartas de presentación. En cuanto los dos navegadores se
- * encuentran, la imagen va DIRECTA de uno a otro y la mesa se queda al
- * margen.
+ * La partida ocupa la pantalla y se reparte en tres: la imagen en medio y
+ * lo más grande posible, a la izquierda lo que NO es de la partida (cámara,
+ * micro, salir) y a la derecha lo que SÍ lo es (vidas, turno, cartas). Es
+ * el reparto de SpellTable, y lo pidió Héctor el 28/10/2026 después de
+ * jugar con el montaje anterior: lo que importa es ver las cartas.
  */
 export function PantallaMesa({ nombre }: { nombre: string }) {
   const mesa = useMesa(nombre)
   const [escrito, setEscrito] = useState('')
-  const [copiado, setCopiado] = useState(false)
 
   const elOtro = mesa.jugadores.find((j) => j.id !== mesa.tuId) ?? null
   const estamosLosDos = mesa.estado === 'dentro' && elOtro !== null
@@ -49,24 +49,34 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
   })
   const [apuntando, setApuntando] = useState(false)
 
+  // Dentro de la partida la pantalla no se mueve (Héctor, 28/10/2026). La
+  // partida es una capa fija encima de todo; sin esto, la rueda del ratón
+  // seguiría moviendo la página de debajo y la imagen bailaría.
+  const jugando = mesa.estado === 'dentro'
+  useEffect(() => {
+    if (!jugando) return
+    const comoEstaba = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = comoEstaba
+    }
+  }, [jugando])
+
   async function unirse(evento: FormEvent) {
     evento.preventDefault()
     await mesa.entrar(escrito)
   }
 
-  async function copiarCodigo() {
-    if (!mesa.codigo) return
-    try {
-      await navigator.clipboard.writeText(mesa.codigo)
-      setCopiado(true)
-      setTimeout(() => setCopiado(false), 2000)
-    } catch {
-      // Algunos navegadores no dejan copiar sin un gesto claro. No pasa
-      // nada: el código está en pantalla, se puede dictar.
-    }
+  if (mesa.estado === 'conectando') {
+    return (
+      <section className="tarjeta">
+        <h2>La mesa</h2>
+        <p className="cargando">Buscando la mesa…</p>
+      </section>
+    )
   }
 
-  if (mesa.estado === 'fuera' || mesa.estado === 'caida') {
+  if (mesa.estado !== 'dentro' || !mesa.codigo || !mesa.tuId) {
     return (
       <section className="tarjeta">
         <h2>La mesa</h2>
@@ -103,137 +113,79 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
     )
   }
 
-  if (mesa.estado === 'conectando') {
-    return (
-      <section className="tarjeta">
-        <h2>La mesa</h2>
-        <p className="cargando">Buscando la mesa…</p>
-      </section>
-    )
-  }
-
   return (
-    <>
-      <section className="tarjeta">
-        <h2>La mesa</h2>
-
-        <div className="mesa__codigo">
-          <span className="mesa__codigo__etiqueta">Código</span>
-          <strong className="mesa__codigo__valor">{mesa.codigo}</strong>
-          <button type="button" className="boton boton--plano" onClick={copiarCodigo}>
-            {copiado ? 'Copiado' : 'Copiar'}
-          </button>
-        </div>
-
-        <ul className="mesa__jugadores">
-          {mesa.jugadores.map((j) => (
-            <li key={j.id} className="mesa__jugador">
-              <span className="mesa__jugador__punto" aria-hidden="true" />
-              {j.nombre}
-              {j.id === mesa.tuId && <span className="mesa__jugador__tu">tú</span>}
-            </li>
-          ))}
-          {!elOtro && (
-            <li className="mesa__jugador mesa__jugador--hueco">
-              <span
-                className="mesa__jugador__punto mesa__jugador__punto--vacio"
-                aria-hidden="true"
-              />
-              Esperando a tu rival…
-            </li>
-          )}
-        </ul>
-
-        <p className={elOtro ? 'resumen resumen--bien' : 'resumen'}>
-          {elOtro
-            ? 'Estáis los dos. El camino entre vosotros está abierto.'
-            : 'Dícta­le el código y entrará aquí mismo.'}
-        </p>
-
-        <div className="mesa__pruebas">
-          <button type="button" className="boton boton--plano" onClick={mesa.medirRetardo}>
-            Probar el enlace
-          </button>
-          {mesa.retardo !== null && (
-            <span className="mesa__retardo">
-              Ida y vuelta hasta la mesa: <strong>{mesa.retardo} ms</strong>
-            </span>
-          )}
-        </div>
-
-        {mesa.motivo && <p className="recado recado--mal">{mesa.motivo}</p>}
-
-        <button type="button" className="boton boton--plano" onClick={mesa.cerrar}>
-          Salir de la mesa
-        </button>
-      </section>
-
-      {/* El vídeo se ve desde que estás en la mesa, aunque estés solo: así
-          puedes encender y encuadrar mientras esperas, y comprobar que el
-          navegador te da el permiso sin depender del otro. */}
-      <PantallaVideo
-        estado={enlace.estado}
-        fallo={enlace.fallo}
-        miMedia={enlace.miMedia}
-        suMedia={enlace.suMedia}
-        diagnostico={enlace.diagnostico}
+    <div className="partida">
+      <BarraPartida
+        codigo={mesa.codigo}
+        camaraEncendida={!!enlace.miMedia}
         videoCortado={enlace.videoCortado}
         micCortado={enlace.micCortado}
         variasCamaras={enlace.variasCamaras}
+        diagnostico={enlace.diagnostico}
+        encender={enlace.encender}
+        apagar={enlace.apagar}
+        alternarVideo={enlace.alternarVideo}
+        alternarMicrofono={enlace.alternarMicrofono}
+        cambiarCamara={enlace.cambiarCamara}
+        salir={mesa.cerrar}
+      />
+
+      <div className="tapete">
+        <Mesa
+          media={enlace.suMedia}
+          mia={false}
+          etiqueta={elOtro ? elOtro.nombre : 'Esperando…'}
+          vacia={
+            elOtro
+              ? `${elOtro.nombre} todavía no ha encendido su cámara.`
+              : `Dicta el código ${mesa.codigo} y tu rival entrará aquí mismo.`
+          }
+          pegatinas={elOtro ? pegatinas.manejo.lista.filter((p) => p.mesa === elOtro.id) : []}
+          manejo={pegatinas.manejo}
+          apuntando={apuntando}
+          alTocar={(x, y) => {
+            // Un toque, una foto: el modo se apaga solo para que el
+            // siguiente clic no pida otra sin querer.
+            setApuntando(false)
+            fotos.pedir(x, y)
+          }}
+        />
+
+        <Mesa
+          media={enlace.miMedia}
+          mia
+          etiqueta="Tu mesa"
+          vacia="Tu cámara está apagada."
+          pegatinas={pegatinas.manejo.lista.filter((p) => p.mesa === mesa.tuId)}
+          manejo={pegatinas.manejo}
+        />
+
+        {(mesa.motivo || enlace.fallo) && (
+          <p className="tapete__recado">{mesa.motivo ?? enlace.fallo}</p>
+        )}
+      </div>
+
+      <LateralPartida
+        key={mesa.codigo}
+        codigo={mesa.codigo}
+        tuId={mesa.tuId}
+        suId={elOtro?.id ?? null}
+        tuNombre={nombre}
         nombreDelOtro={elOtro?.nombre ?? null}
-        mesaMia={mesa.tuId ?? ''}
-        mesaSuya={elOtro?.id ?? null}
-        pegatinas={pegatinas.manejo}
+        enlazado={enlace.datosAbiertos}
+        enviarDato={enlace.enviarDato}
+        alRecibirDato={enlace.alRecibirDato}
         moverTodas={pegatinas.moverTodas}
         alternarMoverTodas={() => pegatinas.setMoverTodas((v) => !v)}
         pegar={pegatinas.pegar}
         quitarTodas={pegatinas.quitarTodas}
         apuntando={apuntando}
         alternarApuntar={() => setApuntando((v) => !v)}
-        tocarCarta={(x, y) => {
-          // Un toque, una foto: el modo se apaga solo para que el siguiente
-          // clic en el vídeo no pida otra sin querer.
-          setApuntando(false)
-          fotos.pedir(x, y)
-        }}
         foto={fotos.foto?.imagen ?? null}
         esperandoFoto={fotos.esperando}
         falloFoto={fotos.fallo}
         cerrarFoto={fotos.cerrar}
-        encender={enlace.encender}
-        apagar={enlace.apagar}
-        cambiarCamara={enlace.cambiarCamara}
-        alternarVideo={enlace.alternarVideo}
-        alternarMicrofono={enlace.alternarMicrofono}
       />
-
-      {/* La `key` hace que cada mesa empiece con sus propios números: al
-          cambiar de código, el panel se monta de cero y lee lo guardado de
-          esa mesa, no lo de la anterior. */}
-      {mesa.codigo && mesa.tuId && (
-        <PantallaContadores
-          key={mesa.codigo}
-          codigo={mesa.codigo}
-          tuId={mesa.tuId}
-          suId={elOtro?.id ?? null}
-          tuNombre={nombre}
-          nombreDelOtro={elOtro?.nombre ?? null}
-          datosAbiertos={enlace.datosAbiertos}
-          enviarDato={enlace.enviarDato}
-          alRecibirDato={enlace.alRecibirDato}
-        />
-      )}
-
-      {mesa.codigo && (
-        <PantallaConsultas
-          key={mesa.codigo}
-          codigo={mesa.codigo}
-          enlazado={enlace.datosAbiertos}
-          nombreDelOtro={elOtro?.nombre ?? null}
-          enviarDato={enlace.enviarDato}
-          alRecibirDato={enlace.alRecibirDato}
-        />
-      )}
-    </>
+    </div>
   )
 }

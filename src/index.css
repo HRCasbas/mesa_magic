@@ -41,7 +41,9 @@ body {
 /* ---- Cabecera ---- */
 
 .cabecera {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
@@ -1089,4 +1091,410 @@ body {
 
 .entrada__pestanas .boton {
   flex: 1;
+}
+
+/* =====================================================================
+   LA PARTIDA
+   Tres zonas: la imagen en medio y lo mas grande posible, a la izquierda
+   lo que NO es de la partida y a la derecha lo que SI lo es.
+   Es una capa fija encima de todo: dentro de la partida no se baja la
+   pagina, solo se desplaza el panel de la derecha por dentro.
+   ===================================================================== */
+
+.partida {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  background: #000;
+  overflow: hidden;
+}
+
+/* ---- El tapete: la imagen ---- */
+
+.tapete {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mesavideo {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.mesavideo video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* La propia, pequena y en una esquina: solo sirve para encuadrar. */
+.mesavideo--mia {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: 18%;
+  min-width: 9rem;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  z-index: 2;
+}
+
+.mesavideo--apuntando {
+  cursor: crosshair;
+  outline: 2px solid var(--acento);
+  outline-offset: -2px;
+}
+
+.mesavideo__vacia {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.mesavideo__etiqueta {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.3rem;
+  background: rgba(15, 17, 21, 0.75);
+  color: var(--texto);
+  font-size: 0.75rem;
+  z-index: 3;
+}
+
+.tapete__recado {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  background: var(--mal);
+  color: #fff;
+  font-size: 0.9rem;
+  z-index: 4;
+}
+
+/* ---- La barra de la izquierda ---- */
+
+.barra {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 3.25rem;
+  padding: 0.5rem 0.4rem;
+  background: var(--fondo);
+  border-right: 1px solid var(--borde);
+  transition: width 0.15s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.barra:hover,
+.barra:focus-within {
+  width: 14rem;
+}
+
+.barra__hueco {
+  flex: 1;
+}
+
+.barra__boton {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.5rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--texto-suave);
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.barra__boton:hover {
+  background: var(--fondo-tarjeta);
+  color: var(--texto);
+}
+
+.barra__icono {
+  flex: 0 0 auto;
+  width: 1.4rem;
+  height: 1.4rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.barra__texto {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.barra:hover .barra__texto,
+.barra:focus-within .barra__texto {
+  opacity: 1;
+}
+
+.barra__boton--llama {
+  color: var(--acento);
+}
+
+.barra__boton--cortado {
+  color: var(--mal);
+}
+
+.barra__boton--salir:hover {
+  color: var(--mal);
+}
+
+.conexion {
+  margin: 0.25rem 0;
+  padding: 0.5rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.conexion__datos {
+  margin: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.conexion__datos > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.conexion__datos dt {
+  color: var(--texto-suave);
+}
+
+.conexion__datos dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- El panel de la derecha ---- */
+
+.lateral {
+  flex: 0 0 22rem;
+  display: flex;
+  flex-direction: column;
+  background: var(--fondo);
+  border-left: 1px solid var(--borde);
+  min-height: 0;
+}
+
+.lateral__pestanas {
+  display: flex;
+  border-bottom: 1px solid var(--borde);
+}
+
+.lateral__pestana {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--texto-suave);
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.lateral__pestana--puesta {
+  color: var(--texto);
+  border-bottom-color: var(--acento);
+}
+
+/* Lo unico que se desplaza en toda la partida. */
+.lateral__dentro {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+/* Dentro del panel, las tarjetas van planas y apretadas. */
+.lateral .tarjeta {
+  margin: 0;
+  padding: 0.75rem;
+}
+
+.lateral .tarjeta h2 {
+  font-size: 0.95rem;
+  margin-bottom: 0.6rem;
+}
+
+.lateral .vidas__valor {
+  font-size: 2rem;
+}
+
+.lateral .jugadores {
+  grid-template-columns: 1fr;
+}
+
+/* ---- El menu de la cuenta ---- */
+
+.cuenta {
+  position: relative;
+}
+
+.cuenta__boton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem 0.35rem 0.35rem;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--fondo-tarjeta);
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.cuenta__boton:hover {
+  border-color: var(--acento);
+}
+
+.cuenta__avatar {
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background: var(--acento);
+  color: var(--fondo);
+  font-weight: 700;
+}
+
+.cuenta__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.4rem);
+  z-index: 30;
+  min-width: 12rem;
+  padding: 0.3rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  background: var(--fondo-tarjeta);
+  display: grid;
+  gap: 0.15rem;
+}
+
+.cuenta__opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.6rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cuenta__opcion:hover:not(:disabled) {
+  background: var(--fondo);
+}
+
+.cuenta__opcion:disabled {
+  color: var(--texto-suave);
+  cursor: default;
+}
+
+.cuenta__pronto {
+  font-size: 0.7rem;
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+  border-radius: 0.3rem;
+  padding: 0 0.3rem;
+}
+
+.cuenta__opcion--salir {
+  color: var(--mal);
+}
+
+.cabecera__titulos {
+  flex: 1;
+}
+
+/* En pantalla estrecha, el panel de la derecha se pone debajo. */
+@media (max-width: 52rem) {
+  .partida {
+    flex-direction: column;
+  }
+
+  .barra {
+    flex-direction: row;
+    width: auto;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--borde);
+  }
+
+  .barra:hover,
+  .barra:focus-within {
+    width: auto;
+  }
+
+  .barra__texto {
+    display: none;
+  }
+
+  .barra__hueco {
+    flex: 0;
+  }
+
+  .conexion {
+    display: none;
+  }
+
+  .tapete {
+    flex: 1 1 45%;
+    min-height: 0;
+  }
+
+  .lateral {
+    flex: 1 1 55%;
+    border-left: 0;
+    border-top: 1px solid var(--borde);
+  }
 }

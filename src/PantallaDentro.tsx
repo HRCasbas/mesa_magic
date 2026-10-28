@@ -6,6 +6,7 @@ import {
   type Comprobacion,
   type Resultado,
 } from './comprobaciones'
+import { MenuCuenta } from './MenuCuenta'
 import { PantallaClave } from './PantallaClave'
 import { PantallaMesa } from './PantallaMesa'
 import type { Jugador } from './sesion'
@@ -126,50 +127,22 @@ export function PantallaDentro({
   return (
     <main className="pagina">
       <header className="cabecera">
-        <p className="cabecera__fase">Fase 6 · Leer las cartas</p>
-        <h1 className="cabecera__titulo">Mesa Magic</h1>
-        <p className="cabecera__lema">Hola, {jugador.nombre}.</p>
-        <button
-          type="button"
-          className="boton boton--plano"
-          onClick={() => supabase.auth.signOut()}
-        >
-          Salir
-        </button>
+        <div className="cabecera__titulos">
+          <h1 className="cabecera__titulo">Mesa Magic</h1>
+          <p className="cabecera__lema">Magic a distancia, mesa contra mesa.</p>
+        </div>
+        <MenuCuenta nombre={jugador.nombre} cambiarClave={() => setCambiandoClave(true)} />
       </header>
 
-      <PantallaMesa nombre={jugador.nombre} />
-
-      {cambiandoClave ? (
+      {cambiandoClave && (
         <PantallaClave
           recuperando={false}
           hecho={() => setCambiandoClave(false)}
           cancelar={() => setCambiandoClave(false)}
         />
-      ) : (
-        <section className="tarjeta">
-          <h2>Tu cuenta</h2>
-          <p>
-            Si entraste con un enlace de invitación, <strong>todavía no tienes clave puesta</strong>{' '}
-            y no podrías volver a entrar. Ponla ahora y te la ahorras.
-          </p>
-          <button
-            type="button"
-            className="boton boton--plano"
-            onClick={() => setCambiandoClave(true)}
-          >
-            Poner o cambiar mi clave
-          </button>
-        </section>
       )}
 
-      <section className="tarjeta">
-        <h2>Lo que falta</h2>
-        <p>
-          Ya hay mesa, vídeo, contadores, pegatinas y se pueden mirar cartas. Faltan los mazos y el
-          historial de partidas.
-        </p>
-      </section>
+      <PantallaMesa nombre={jugador.nombre} />
 
       <section className="tarjeta">
         <h2>¿Sirve este aparato?</h2>

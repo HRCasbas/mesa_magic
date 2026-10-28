@@ -44,6 +44,32 @@ Tres cosas:
 **Supabase solo se toca en la fase 1 y en la 7.** De la 2 a la 6, todo
 Cloudflare.
 
+### La pantalla de partida, al estilo SpellTable (Héctor, 28/10/2026)
+
+Después de jugar de verdad con el andamio, Héctor pidió copiar el reparto
+de SpellTable, y tiene razón: **lo que importa es ver las cartas**, y las
+tarjetas apiladas dejaban el vídeo del tamaño de un sello.
+
+La partida es ahora **una capa fija que ocupa la pantalla**, en tres zonas:
+
+| Zona | Qué lleva |
+|---|---|
+| **Izquierda**, estrecha, se abre al pasar el ratón | Lo que **no** es de la partida: cámara, micrófono, cortar imagen, cambiar de cámara, el código y salir |
+| **Centro** | La imagen del rival, lo más grande posible. La tuya, pequeña en una esquina, solo para encuadrar |
+| **Derecha** | Lo que **sí** es de la partida, en dos pestañas: «Partida» (vidas, turno, pegatinas) y «Cartas» (ver de cerca y buscar) |
+
+Dos decisiones que no son de adorno:
+
+- **Dentro de la partida no se desplaza la página** (lo pidió él). La capa
+  es fija y se le quita el desplazamiento al cuerpo; lo único que se mueve
+  por dentro es el panel de la derecha. Si la página bailara con la rueda
+  del ratón, la imagen bailaría con ella.
+- **El panel de la derecha va en pestañas** porque la columna es estrecha:
+  con todo apilado, lo de abajo no se ve nunca.
+
+Y arriba a la derecha, fuera de la partida, **el menú de la cuenta**:
+mazos (pendiente, fase 7), cambiar la clave y cerrar sesión.
+
 ### ⚠ Lo que se ve ahora NO es el aspecto final (Héctor, 27/10/2026)
 
 > «Entiendo que esta versión actual es de prueba, porque cambiaría
