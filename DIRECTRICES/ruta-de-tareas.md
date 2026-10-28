@@ -452,15 +452,28 @@ Lo que sí protege del todo, pase lo que pase: **sin el código de la mesa**,
 que se dicta y cambia cada partida, una cuenta de más no ve vuestra partida
 ni enciende nada vuestro.
 
-### ⚠ Dos cosas que hay que tocar en Supabase
+### Los ajustes de Supabase: ya estaban (comprobado el 28/10/2026)
 
-1. **Abrir el registro**: *Authentication → Sign In / Providers → Allow new
-   users to sign up*. Sin esto, «crear cuenta» contesta que está cerrado.
-2. **Permitir la vuelta de los correos**: *Authentication → URL
-   Configuration → Redirect URLs* → añadir
-   `https://magic-mesa.duelo.workers.dev/**`. Sin esto, el enlace de
-   confirmar y el de clave nueva **no vuelven a la web** y no sirven de
-   nada.
+Se dijo que había dos cosas que tocar. **Se fue a mirar y las dos ya
+estaban bien**, de la fase 1:
+
+1. *Authentication → Sign In / Providers*: **«Allow new users to sign up»
+   encendido**, y «Confirm email» también.
+2. *Authentication → URL Configuration*: Site URL
+   `https://magic-mesa.duelo.workers.dev` y, en Redirect URLs,
+   `https://magic-mesa.duelo.workers.dev/**`.
+
+**Y eso deja una cosa clara que conviene no olvidar:** el registro de
+Supabase **nunca estuvo cerrado**. Lo único que faltaba era el botón. O
+sea que, desde la fase 1, cualquiera que supiera pedirlo podía crearse una
+cuenta en el proyecto. No ha pasado nada porque una cuenta suelta no puede
+tocar nada (ni Pokémon ni vuestras partidas), pero **«no hay botón» no es
+«está cerrado»**, y durante dos días se escribió como si lo fuera.
+
+⚠ Y un cabo suelto que se vio de paso: el **Site URL** del proyecto apunta
+a Magic, no a Pokémon. Si la web de Pokémon llegara a mandar correos de
+recuperar clave, volverían a Magic. Hoy no molesta; si algún día Pokémon
+usa esos correos, hay que mirarlo.
 
 Y un aviso que conviene no olvidar: **este proyecto de Supabase lo comparte
 con la web de Pokémon**. Abrir el registro abre cuentas en el proyecto
