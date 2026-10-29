@@ -12,7 +12,6 @@ export type ClasePegatina =
   | 'mas'
   | 'menos'
   | 'ficha'
-  | 'tapada'
   | 'volar'
   | 'arrolla'
   | 'mortal'
@@ -63,24 +62,22 @@ export const CLASES: {
     cuenta: true,
   },
   {
-    clase: 'tapada',
-    nombre: 'Tapada',
-    corta: '',
-    dibujo: 'M3 8h18v8H3zM7 11l-2 1 2 1',
-    cuenta: false,
-  },
-  {
     clase: 'volar',
     nombre: 'Vuela',
     corta: '',
-    dibujo: 'M3 15c5-7 11-9 18-10-1 8-7 13-13 13-2 0-4-1-5-3Z',
+    // Dos alas abiertas, una a cada lado. La primera version era «una
+    // mancha que no se distingue» (Héctor, 28/10/2026).
+    dibujo:
+      'M12 8v9M12 9c-1.5-2-4-3.5-7-3.5.5 2 1.5 3.5 3 4.5-1.5.3-2.5.8-3.5 1.5 2 1.5 4.5 2 7 1.3M12 9c1.5-2 4-3.5 7-3.5-.5 2-1.5 3.5-3 4.5 1.5.3 2.5.8 3.5 1.5-2 1.5-4.5 2-7 1.3',
     cuenta: false,
   },
   {
     clase: 'arrolla',
     nombre: 'Arrolla',
     corta: '',
-    dibujo: 'M3 12h11m0 0-4-4m4 4-4 4M18 4v16',
+    // La huella de un dinosaurio: tres dedos y la almohadilla.
+    dibujo:
+      'M8.6 5.6c.75 0 1.15.95 1.15 2.1s-.4 2.1-1.15 2.1-1.15-.95-1.15-2.1.4-2.1 1.15-2.1ZM12 4.2c.85 0 1.3 1.05 1.3 2.3s-.45 2.3-1.3 2.3-1.3-1.05-1.3-2.3.45-2.3 1.3-2.3ZM15.4 5.6c.75 0 1.15.95 1.15 2.1s-.4 2.1-1.15 2.1-1.15-.95-1.15-2.1.4-2.1 1.15-2.1ZM12 11.1c2.6 0 4.3 1.8 4.3 3.9 0 2.4-1.9 4.3-4.3 4.3s-4.3-1.9-4.3-4.3c0-2.1 1.7-3.9 4.3-3.9Z',
     cuenta: false,
   },
   {
@@ -101,7 +98,8 @@ export const CLASES: {
     clase: 'esta',
     nombre: 'Esta carta',
     corta: '',
-    dibujo: 'M12 3v3m0 12v3M3 12h3m12 0h3M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z',
+    // Una flecha hacia abajo: señala la carta que tiene debajo.
+    dibujo: 'M12 4v14m0 0-6-6m6 6 6-6',
     cuenta: false,
   },
   {

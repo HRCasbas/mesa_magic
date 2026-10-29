@@ -948,6 +948,33 @@ impresión en tu idioma por `oracleid`, que es el identificador que no
 cambia de un idioma a otro. Si esa carta nunca se imprimió así, se enseña
 la que haya: mejor la inglesa que nada.
 
+### ⚠⚠ La foto llegaba en negro (arreglado 28/10/2026)
+
+Héctor probó el OCR con una carta de verdad y no leyó nada. **Y no era el
+OCR: la foto llegaba completamente en negro**, con la imagen del vídeo
+perfecta al lado. No había nada que leer.
+
+La causa: para sacar el recorte se creaba un `<video>` suelto, **sin
+colgarlo de la página**, y se dibujaba en un lienzo. Un vídeo que no está
+en la página el navegador puede decidir no descodificarlo, y entonces
+`drawImage` pinta negro. Con el lienzo de las pruebas funcionaba —la
+imagen ya estaba hecha— y con una cámara de verdad no.
+
+Dos arreglos, los dos necesarios:
+
+1. **El vídeo se cuelga de la página**, fuera de la pantalla y de dos
+   píxeles, y se quita en cuanto se ha pintado el fotograma.
+2. **Se espera a un fotograma de verdad** con `requestVideoFrameCallback`,
+   no a `loadeddata`: eso solo dice que hay metadatos, no que haya imagen.
+
+**La lección:** una cámara de mentira hecha con un lienzo **no prueba el
+camino de una cámara de verdad**. Sirve para la lógica —el recorte, los
+trozos, el reensamblado—, y se quedó corta justo en el único punto donde
+el navegador decide por su cuenta si se molesta en descodificar.
+
+Comprobado después del arreglo: la foto llega con imagen (brillo medio
+143 sobre 255, no 0) y la carta sale identificada.
+
 ### ⚠ Lo que sigue sin probarse del OCR
 
 **Una carta de verdad, por una cámara de verdad.** Lo probado es una carta

@@ -57,15 +57,37 @@ async function recortar(media: MediaStream, recuadro: Recuadro): Promise<string 
   tele.srcObject = media
   tele.muted = true
   tele.playsInline = true
+  // METIDO EN LA PÁGINA, AUNQUE NO SE VEA (28/10/2026). Un vídeo suelto,
+  // sin colgar de la página, el navegador puede no molestarse en
+  // descodificarlo: se queda en negro y la foto sale negra. Pasó de verdad,
+  // con la cámara buena y la imagen perfecta. Se cuelga fuera de la
+  // pantalla y se quita en cuanto se ha pintado el fotograma.
+  tele.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0'
+  document.body.appendChild(tele)
 
   try {
     await tele.play()
-    if (tele.readyState < 2) {
-      await new Promise<void>((listo) => {
-        tele.onloadeddata = () => listo()
-        setTimeout(listo, 1500)
-      })
-    }
+    // Y SE ESPERA A UN FOTOGRAMA DE VERDAD. `loadeddata` dice que hay
+    // metadatos, no que haya imagen que pintar.
+    await new Promise<void>((listo) => {
+      let hecho = false
+      const acabar = () => {
+        if (hecho) return
+        hecho = true
+        listo()
+      }
+      const conFotograma = tele as HTMLVideoElement & {
+        requestVideoFrameCallback?: (f: () => void) => number
+      }
+      if (typeof conFotograma.requestVideoFrameCallback === 'function') {
+        conFotograma.requestVideoFrameCallback(acabar)
+      } else {
+        tele.addEventListener('loadeddata', acabar, { once: true })
+      }
+      // Por si el navegador no avisa nunca: mejor una foto regular que
+      // ninguna.
+      setTimeout(acabar, 2500)
+    })
     const anchoTotal = tele.videoWidth
     const altoTotal = tele.videoHeight
     if (!anchoTotal || !altoTotal) return null
@@ -85,7 +107,9 @@ async function recortar(media: MediaStream, recuadro: Recuadro): Promise<string 
   } catch {
     return null
   } finally {
+    tele.pause()
     tele.srcObject = null
+    tele.remove()
   }
 }
 

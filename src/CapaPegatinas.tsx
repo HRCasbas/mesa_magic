@@ -58,6 +58,14 @@ function Pegada({
   // su texto ya es su símbolo).
   const dibujo = dato.clase === 'libre' ? '' : DIBUJOS.get(dato.clase)
 
+  // Las de contadores se escriben como se dicen: +2/+2, −3/−3…
+  const etiqueta =
+    dato.clase === 'mas'
+      ? `+${dato.valor}/+${dato.valor}`
+      : dato.clase === 'menos'
+        ? `−${dato.valor}/−${dato.valor}`
+        : (dato.texto ?? CORTAS.get(dato.clase))
+
   return (
     <div
       className={`pegada pegada--${dato.clase}`}
@@ -76,31 +84,34 @@ function Pegada({
           <path d={dibujo} />
         </svg>
       ) : (
-        <span className="pegada__que">{dato.texto ?? CORTAS.get(dato.clase)}</span>
+        <span className="pegada__que">{etiqueta}</span>
       )}
 
+      {/* La ficha lleva el número aparte; las de +1/+1 y −1/−1 lo llevan
+          dentro del propio nombre, que es como se dice en Magic. */}
+      {dato.clase === 'ficha' && <strong className="pegada__valor">{dato.valor}</strong>}
+
       {CUENTAN.get(dato.clase) && (
-        <>
+        <span className="pegada__flechas">
           <button
             type="button"
-            className="pegada__tecla"
-            onPointerDown={soloElBoton}
-            onClick={() => manejo.cambiar(dato.id, -1)}
-            aria-label="Uno menos"
-          >
-            −
-          </button>
-          <strong className="pegada__valor">{dato.valor}</strong>
-          <button
-            type="button"
-            className="pegada__tecla"
+            className="pegada__flecha"
             onPointerDown={soloElBoton}
             onClick={() => manejo.cambiar(dato.id, 1)}
             aria-label="Uno más"
           >
-            +
+            ▴
           </button>
-        </>
+          <button
+            type="button"
+            className="pegada__flecha"
+            onPointerDown={soloElBoton}
+            onClick={() => manejo.cambiar(dato.id, -1)}
+            aria-label="Uno menos"
+          >
+            ▾
+          </button>
+        </span>
       )}
     </div>
   )

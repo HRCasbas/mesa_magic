@@ -135,7 +135,10 @@ export function Mesa({
       window.removeEventListener('pointermove', alArrastrar)
       window.removeEventListener('pointerup', alSoltar)
       const fin = dentro(suelto.clientX, suelto.clientY)
-      setDibujando(null)
+      // EL RECUADRO SE QUEDA PUESTO (Héctor, 28/10/2026). Si la carta no
+      // se reconoce, al menos ves qué encuadraste, y sabes si fallaste tú
+      // o falló la lectura. Desaparece al empezar el siguiente.
+      setDibujando({ x1: empezo.x, y1: empezo.y, x2: fin.x, y2: fin.y })
       alSeleccionar?.({
         x: Math.min(empezo.x, fin.x),
         y: Math.min(empezo.y, fin.y),
