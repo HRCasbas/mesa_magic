@@ -1151,16 +1151,55 @@ esté dormida**, que es la regla 1.
 > y viene de la fase 1, pero conviene saberlo y no tocarlo a la ligera:
 > este proyecto lo comparte con la web de Pokémon.
 
-### ⚠ Lo que falta para seguir: el fichero de export
+### El formato del export (visto el 29/10/2026)
 
-Sigue pendiente lo de siempre: **Héctor tiene que dar el fichero que
-exporta su aplicación de mazos**. Sin verlo no se puede escribir la
-importación, porque cada programa lo escribe a su manera.
+Héctor pasó sus quince mazos. El formato es el de Moxfield/Arena y es
+sencillo, pero tiene tres trampas:
 
-Mientras tanto se puede hacer todo lo demás —crear, editar, portada,
-notas, y **pegar una lista de texto**, que funciona con cualquier
-aplicación—, y la importación de su formato se añade después sin rehacer
-nada.
+```
+2 Ambrosia Whiteheart
+1 Counterspell (FCA) 4
+15 Island (EOE) 269
+
+// MAYBEBOARD
+1 Soul Swallower (tercera copia)
+```
+
+- **Una carta por línea: `cantidad nombre`.**
+- **La edición y el número son opcionales**, entre paréntesis y detrás:
+  `(FCA) 4`.
+- **`// MAYBEBOARD` separa** lo que no va en el mazo principal.
+- ⚠ **Trampa:** hay paréntesis que NO son la edición, como
+  `(tercera copia)`. Solo vale como edición si son **de dos a seis letras o
+  números entre paréntesis seguidos de un número**; lo demás es parte del
+  nombre o una nota.
+- Las líneas en blanco se ignoran.
+
+### ⚠ «Maybeboard» no es la reserva, y se ha guardado como tal
+
+En Moxfield el *maybeboard* es «cartas que me planteo meter», no el
+banquillo con el que se cambia entre partidas. Se ha metido en la columna
+`reserva` porque es lo más parecido que hay, **pero no es lo mismo**.
+Pendiente de preguntarle si quiere distinguirlos; para enseñarle el mazo al
+rival da igual, porque lo que cuenta es el mazo principal.
+
+### Los quince mazos, ya dentro (29/10/2026)
+
+Héctor pidió que se los metiera para ahorrárselo. Hecho con permisos de
+servidor, que es lo que se usa para una carga de una vez, igual que una
+migración; no sustituye a probar la importación de verdad cuando esté
+hecha.
+
+**Cómo se comprobó sin mirarlos uno a uno:** los quince mazos suman
+**exactamente 60 cartas** en el principal. Una línea mal leída habría roto
+alguno de esos sesenta.
+
+De la portada se ha guardado solo el nombre de una carta representativa,
+sin el identificador de Scryfall. **Quien pinte la portada tiene que
+buscarla por nombre cuando no haya identificador.**
+
+El formato quedó en `Casual` para todos, que es el valor por defecto:
+adivinarlo habría sido peor que dejarlo para que lo cambie él.
 
 ---
 
