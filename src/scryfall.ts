@@ -38,6 +38,43 @@ export interface Carta {
  */
 const PARECE_NUMERO = /^([A-Za-z0-9]{3,5})\s+([0-9]+[a-z★]?)$/
 
+/**
+ * Las imágenes de un mazo entero, de una vez.
+ *
+ * Un mazo son sesenta cartas, y pedirlas una a una serían sesenta
+ * peticiones con su pausa entre medias: más de siete segundos y un abuso
+ * de una API que es gratis. Scryfall tiene una entrada para pedir **hasta
+ * setenta y cinco de golpe**, así que un mazo cabe en una sola petición.
+ */
+export async function porLote(nombres: string[]): Promise<Map<string, Carta>> {
+  const encontradas = new Map<string, Carta>()
+  for (let i = 0; i < nombres.length; i += 75) {
+    const trozo = nombres.slice(i, i + 75)
+    try {
+      const datos = await enLaCola(async () => {
+        const respuesta = await fetch(`${DIRECCION}/cards/collection`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifiers: trozo.map((name) => ({ name })) }),
+        })
+        if (!respuesta.ok) return null
+        return (await respuesta.json()) as { data?: Cruda[] }
+      })
+      for (const cruda of datos?.data ?? []) {
+        const carta = ordenar(cruda)
+        encontradas.set(carta.nombre.toLowerCase(), carta)
+        // Las de dos caras vuelven como «Cara A // Cara B», y en el mazo
+        // están escritas solo con la primera.
+        const primeraCara = carta.nombre.split(' // ')[0]
+        if (primeraCara !== carta.nombre) encontradas.set(primeraCara.toLowerCase(), carta)
+      }
+    } catch {
+      // Sin imágenes se puede vivir: el mazo se ve igual, con los nombres.
+    }
+  }
+  return encontradas
+}
+
 /** Lo que Scryfall sugiere al escribir el principio de un nombre. */
 async function autocompletar(trozo: string): Promise<string[]> {
   try {

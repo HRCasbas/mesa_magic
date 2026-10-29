@@ -1175,13 +1175,41 @@ sencillo, pero tiene tres trampas:
   nombre o una nota.
 - Las líneas en blanco se ignoran.
 
-### ⚠ «Maybeboard» no es la reserva, y se ha guardado como tal
+### Tres zonas, no dos (Héctor, 29/10/2026)
 
-En Moxfield el *maybeboard* es «cartas que me planteo meter», no el
-banquillo con el que se cambia entre partidas. Se ha metido en la columna
-`reserva` porque es lo más parecido que hay, **pero no es lo mismo**.
-Pendiente de preguntarle si quiere distinguirlos; para enseñarle el mazo al
-rival da igual, porque lo que cuenta es el mazo principal.
+Se preguntó si el *maybeboard* era la reserva, y no lo es. Ahora una carta
+está en una de tres:
+
+| Zona | Qué es |
+|---|---|
+| `principal` | El mazo con el que juegas |
+| `banquillo` | El *sideboard*: lo que cambias entre partidas |
+| `posibles` | El *maybeboard*: lo que te planteas meter y no está |
+
+Migración `magic_003_tres_zonas_del_mazo`. Los quince mazos importados
+venían del `// MAYBEBOARD` del export, así que esos pasaron a `posibles`.
+
+### Ver un mazo: las cartas apiladas
+
+Héctor lo pidió con una foto: de cada copia **solo asoma la banda del
+nombre**, y la última se ve entera. Se cuenta cuántas llevas sin leer un
+número, y ocupa una fracción de lo que ocuparían cuatro cartas sueltas.
+
+Son dos reglas de CSS: cada copia después de la primera sube
+`asoma − alto`, y el orden del HTML ya pone las de abajo por encima.
+
+**Las imágenes, de una sola petición.** Un mazo son sesenta cartas, y
+pedirlas una a una serían sesenta peticiones con su pausa: más de siete
+segundos y un abuso de una API gratis. Scryfall tiene una entrada que
+admite **setenta y cinco identificadores de golpe**, así que un mazo entra
+en una sola.
+
+⚠ Esas imágenes salen **en inglés**, no en el idioma elegido: esa entrada
+no admite pedir idioma. Para las cartas de un mazo da igual —se miran para
+reconocerlas—, y pedir sesenta en español serían sesenta peticiones.
+
+**Probado el 29/10/2026** con el mazo de Dinosaurios: 17 pilas, 60
+imágenes, todas cargadas, y la apilada igual que en la foto que mandó.
 
 ### Los quince mazos, ya dentro (29/10/2026)
 

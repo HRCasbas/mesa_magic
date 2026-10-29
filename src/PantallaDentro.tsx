@@ -8,6 +8,7 @@ import {
 } from './comprobaciones'
 import { MenuCuenta } from './MenuCuenta'
 import { PantallaAjustes } from './PantallaAjustes'
+import { PantallaMazos } from './PantallaMazos'
 import { PantallaClave } from './PantallaClave'
 import { PantallaMesa } from './PantallaMesa'
 import type { Jugador } from './sesion'
@@ -108,6 +109,7 @@ export function PantallaDentro({
   const [comprobaciones, setComprobaciones] = useState<Comprobacion[] | null>(null)
   const [cambiandoClave, setCambiandoClave] = useState(false)
   const [enAjustes, setEnAjustes] = useState(false)
+  const [enMazos, setEnMazos] = useState(false)
 
   useEffect(() => {
     let vigente = true
@@ -137,10 +139,12 @@ export function PantallaDentro({
           nombre={jugador.nombre}
           cambiarClave={() => setCambiandoClave(true)}
           abrirAjustes={() => setEnAjustes(true)}
+          abrirMazos={() => setEnMazos(true)}
         />
       </header>
 
       {enAjustes && <PantallaAjustes cerrar={() => setEnAjustes(false)} />}
+      {enMazos && <PantallaMazos cerrar={() => setEnMazos(false)} />}
 
       {cambiandoClave && (
         <PantallaClave

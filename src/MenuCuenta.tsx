@@ -13,10 +13,12 @@ export function MenuCuenta({
   nombre,
   cambiarClave,
   abrirAjustes,
+  abrirMazos,
 }: {
   nombre: string
   cambiarClave: () => void
   abrirAjustes: () => void
+  abrirMazos: () => void
 }) {
   const [abierto, setAbierto] = useState(false)
   const caja = useRef<HTMLDivElement>(null)
@@ -47,9 +49,15 @@ export function MenuCuenta({
 
       {abierto && (
         <div className="cuenta__menu">
-          <button type="button" className="cuenta__opcion" disabled>
+          <button
+            type="button"
+            className="cuenta__opcion"
+            onClick={() => {
+              setAbierto(false)
+              abrirMazos()
+            }}
+          >
             Mis mazos
-            <span className="cuenta__pronto">pronto</span>
           </button>
           <button
             type="button"

@@ -1628,3 +1628,152 @@ body {
   color: var(--texto);
   border-color: var(--acento);
 }
+
+/* ---- Los mazos ---- */
+
+.mazo__cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.mazo__nombre {
+  flex: 1;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.mazo__formato {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  border: 1px solid var(--borde);
+  border-radius: 0.3rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.mazo__notas {
+  color: var(--texto-suave);
+  margin: 0 0 1rem;
+}
+
+.mazos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.6rem;
+}
+
+.mazo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--texto);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.mazo:hover {
+  border-color: var(--acento);
+}
+
+.mazo__portada {
+  flex: 0 0 5.5rem;
+  height: 4rem;
+  background: var(--fondo);
+  overflow: hidden;
+}
+
+.mazo__portada img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.mazo__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-right: 0.5rem;
+}
+
+/* ---- Las cartas apiladas, como se ven los mazos en todas partes ---- */
+
+.zona {
+  margin-bottom: 1.5rem;
+}
+
+.zona__titulo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.zona__cuantas {
+  color: var(--acento);
+  font-variant-numeric: tabular-nums;
+}
+
+.zona__explicacion {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--texto-suave);
+}
+
+.pilas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.45rem;
+  align-items: flex-start;
+}
+
+/* De cada copia solo asoma la banda del nombre; la ultima se ve entera. */
+.pila {
+  --ancho: 7.4rem;
+  --alto: 10.3rem;
+  --asoma: 1.55rem;
+  position: relative;
+  width: var(--ancho);
+  display: flex;
+  flex-direction: column;
+}
+
+.pila__carta {
+  width: 100%;
+  aspect-ratio: 488 / 680;
+  border-radius: 0.32rem;
+  display: block;
+  background: var(--fondo);
+}
+
+.pila__carta + .pila__carta {
+  margin-top: calc(var(--asoma) - var(--alto));
+}
+
+.pila__carta--sinfoto {
+  border: 1px solid var(--borde);
+  padding: 0.3rem;
+  font-size: 0.7rem;
+  color: var(--texto-suave);
+  overflow: hidden;
+}
+
+.pila__muchas {
+  position: absolute;
+  right: 0.3rem;
+  bottom: 0.3rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+  background: rgba(15, 17, 21, 0.85);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
