@@ -1013,7 +1013,32 @@ igual.
   la que vas a encuadrar, y en el recuadro de la esquina no se puede
   encuadrar nada.
 
-### ⚠ Con cartas de verdad no acierta (29/10/2026)
+### ⚠⚠ Era la banda oscura (resuelto el 29/10/2026)
+
+En cuanto se enseñó en pantalla lo leído, el dato llegó en un mensaje:
+foto **perfecta** de una *Ghalta the Unstoppable*, y el lector había sacado
+**`a - a SEN a`**. No era «lee regular»: no leía nada.
+
+La causa, y es de libro: **Tesseract da por hecho texto oscuro sobre fondo
+claro.** En Magic la banda del nombre es muchas veces al revés —letras
+claras sobre banda oscura—, y con esas cartas no lee nada en absoluto.
+
+**Y por eso tres arreglos seguidos fallaron:** las cartas pintadas de las
+pruebas tenían letra oscura sobre banda clara, que es justo el único caso
+que ya funcionaba. La prueba confirmaba lo que no había que confirmar.
+
+Arreglado con **dos pasadas, tal cual y con los colores del revés**, y
+juntando las líneas de las dos. Además:
+
+- **Se estira el contraste** antes de leer, que una foto con brillos sale
+  apagada.
+- **Se tiran las líneas que no tienen ni una palabra de cuatro letras**,
+  que es exactamente lo que era `a - a SEN a`.
+
+**Probado el 29/10/2026** con una carta de banda oscura y letra clara:
+lee *Ghalta the Unstoppable* y devuelve **«Ghalta, la Imparable»**.
+
+### Lo que se hizo antes de saberlo (29/10/2026)
 
 «No pilla ni una carta bien con el OCR.» Y aquí hay que parar y decirlo:
 **se han hecho tres arreglos a ciegas**, cada uno razonable, y ninguno ha

@@ -55,6 +55,37 @@ function conseguirTrabajador(): Promise<Trabajador> {
   return trabajador
 }
 
+/**
+ * Una copia con los colores del revés.
+ *
+ * ESTO ERA EL FALLO DE VERDAD (29/10/2026). Tesseract da por hecho **texto
+ * oscuro sobre fondo claro**, y en Magic la banda del nombre es muchas
+ * veces al revés: letras claras sobre una banda oscura. Con una carta así
+ * no lee mal, **no lee nada**: de «Ghalta the Unstoppable», con la foto
+ * perfecta, sacó «a - a SEN a».
+ *
+ * Las cartas pintadas de las pruebas tenían letra oscura sobre banda
+ * clara, que es justo el caso que sí funcionaba. Por eso tres arreglos
+ * seguidos no dieron con ello.
+ */
+function alReves(fuente: HTMLCanvasElement): HTMLCanvasElement {
+  const vuelta = document.createElement('canvas')
+  vuelta.width = fuente.width
+  vuelta.height = fuente.height
+  const pincel = vuelta.getContext('2d')
+  if (!pincel) return fuente
+  pincel.drawImage(fuente, 0, 0)
+  const datos = pincel.getImageData(0, 0, vuelta.width, vuelta.height)
+  const p = datos.data
+  for (let i = 0; i < p.length; i += 4) {
+    p[i] = 255 - p[i]
+    p[i + 1] = 255 - p[i + 1]
+    p[i + 2] = 255 - p[i + 2]
+  }
+  pincel.putImageData(datos, 0, 0)
+  return vuelta
+}
+
 /** Recorta la franja de arriba y la agranda, que es donde está el nombre. */
 function soloElNombre(imagen: HTMLImageElement): HTMLCanvasElement | null {
   const alto = Math.max(1, Math.round(imagen.naturalHeight * FRANJA_DEL_NOMBRE))
@@ -78,14 +109,41 @@ function soloElNombre(imagen: HTMLImageElement): HTMLCanvasElement | null {
   // cuenta y mirando la imagen, que es mejor que un número puesto a mano.
   const datos = pincel.getImageData(0, 0, lienzo.width, lienzo.height)
   const p = datos.data
+
+  // A grises, y de paso se mira cuánto se separan el más claro y el más
+  // oscuro para estirar el contraste después.
+  let masOscuro = 255
+  let masClaro = 0
   for (let i = 0; i < p.length; i += 4) {
     const gris = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]
     p[i] = gris
     p[i + 1] = gris
     p[i + 2] = gris
+    if (gris < masOscuro) masOscuro = gris
+    if (gris > masClaro) masClaro = gris
   }
+
+  // Estirar el contraste: una foto de una carta con brillos sale apagada,
+  // y esto le devuelve el blanco y el negro sin inventarse nada.
+  const recorrido = masClaro - masOscuro
+  if (recorrido > 10) {
+    for (let i = 0; i < p.length; i += 4) {
+      const v = ((p[i] - masOscuro) * 255) / recorrido
+      p[i] = v
+      p[i + 1] = v
+      p[i + 2] = v
+    }
+  }
+
   pincel.putImageData(datos, 0, 0)
   return lienzo
+}
+
+/** Una línea leída que no puede ser el nombre de nada. */
+function esBasura(linea: string): boolean {
+  // Tiene que tener al menos una palabra de cuatro letras. «a - a SEN a»,
+  // que es lo que salía con las bandas oscuras, se queda fuera por aquí.
+  return !linea.split(' ').some((palabra) => palabra.length >= 4)
 }
 
 /** Una línea de las que escupe Tesseract, limpia de basura. */
@@ -119,16 +177,24 @@ export async function leerNombres(imagenUrl: string): Promise<string[]> {
 
   try {
     const quien = await conseguirTrabajador()
-    const { data } = await quien.recognize(franja)
-    const lineas = data.text
-      .split('\n')
-      .map(limpiar)
-      // Menos de tres letras no es el nombre de nada, y más de cuarenta
-      // tampoco: eso ya es el texto de reglas.
-      .filter((l) => l.length >= 3 && l.length <= 40)
+    // DOS PASADAS: tal cual y con los colores del revés. En Magic la
+    // banda del nombre tanto puede ser oscura sobre claro como clara
+    // sobre oscuro, y Tesseract solo sabe leer lo primero.
+    const lineas: string[] = []
+    for (const version of [franja, alReves(franja)]) {
+      const { data } = await quien.recognize(version)
+      for (const cruda of data.text.split('\n')) {
+        const linea = limpiar(cruda)
+        // Menos de tres letras no es el nombre de nada, y más de cuarenta
+        // tampoco: eso ya es el texto de reglas.
+        if (linea.length < 3 || linea.length > 40) continue
+        if (esBasura(linea)) continue
+        lineas.push(linea)
+      }
+    }
 
     // Sin repetir, y las primeras antes: el nombre va arriba del todo.
-    return [...new Set(lineas)].slice(0, 4)
+    return [...new Set(lineas)].slice(0, 6)
   } catch {
     return []
   }
