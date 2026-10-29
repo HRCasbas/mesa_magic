@@ -1,4 +1,3 @@
-import { Moneda } from './Moneda'
 import {
   FASES,
   numeroDeTurno,
@@ -97,26 +96,16 @@ function Columna({
 }
 
 export function PantallaContadores({
-  codigo,
   tuId,
-  suId,
   tuNombre,
   nombreDelOtro,
-  datosAbiertos,
-  enviarDato,
-  alRecibirDato,
+  contadores,
 }: {
-  codigo: string
   tuId: string
-  /** Null mientras estés solo en la mesa. */
-  suId: string | null
   tuNombre: string
   nombreDelOtro: string | null
-  datosAbiertos: boolean
-  enviarDato: (dato: unknown) => boolean
-  alRecibirDato: (oyente: (dato: unknown) => void) => () => void
+  contadores: ReturnType<typeof useContadores>
 }) {
-  const contadores = useContadores({ codigo, tuId, suId, datosAbiertos, enviarDato, alRecibirDato })
   const { compartido, esMiTurno } = contadores
 
   // Siempre por su nombre, también el tuyo. «Turno 17 de ti» obliga a parar
@@ -128,18 +117,7 @@ export function PantallaContadores({
       <h2>Los contadores</h2>
 
       {!compartido.empieza ? (
-        <div className="turno">
-          <p className="turno__donde">¿Quién empieza?</p>
-          {suId && (
-            <Moneda
-              tuNombre={tuNombre}
-              suNombre={nombreDelOtro ?? 'Tu rival'}
-              tuId={tuId}
-              suId={suId}
-              elegir={contadores.elegirQuienEmpieza}
-            />
-          )}
-        </div>
+        <p className="turno__donde">Tirad la moneda para empezar.</p>
       ) : (
         <div className="turno">
           <p className="turno__donde">
@@ -186,7 +164,7 @@ export function PantallaContadores({
         <Columna titulo={nombreDelOtro ?? 'Tu rival'} valores={contadores.suyos} />
       </div>
 
-      {suId && !contadores.enlazados && (
+      {!contadores.enlazados && (
         <p className="recado recado--mal">
           Sin camino directo con {nombreDelOtro ?? 'tu rival'}: no está viendo tus números.
         </p>

@@ -1,18 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { avatarDe } from './avatar'
+
+/** Vueltas enteras antes de pararse. Suficientes para que se vea girar. */
+const VUELTAS = 6
+
 /**
  * La moneda de quién empieza.
  *
- * Una moneda con una cara por jugador: no puede empatar y se entiende sin
- * explicarla, que es por lo que sustituyó al dado de seis caras.
+ * Una cara por jugador: no puede empatar y se entiende sin explicarla, que
+ * es por lo que sustituyó al dado de seis caras.
  *
- * **El resultado se decide antes de girar.** La animación es solo eso, una
- * animación: así no hay forma de que lo que se ve cambie lo que sale.
+ * **El resultado se decide antes de girar.** El giro es una sola
+ * transición de CSS hasta el ángulo final, no un cambio de cara cada
+ * pocos milisegundos: lo primero parece una moneda y lo segundo parecía
+ * un cartel parpadeando, que fue lo que falló a la primera.
  *
  * La tira cualquiera de los dos y vale la primera que llegue. Entre dos
- * amigos no hace falta más; el día que haga falta, el apaño está escrito
- * en las directrices (cada uno manda un número tapado y se destapan a la
- * vez).
+ * amigos basta; el apaño de los números tapados está escrito en las
+ * directrices por si algún día hace falta.
  */
 export function Moneda({
   tuNombre,
@@ -27,13 +33,13 @@ export function Moneda({
   suId: string
   elegir: (id: string) => void
 }) {
+  const [angulo, setAngulo] = useState(0)
   const [girando, setGirando] = useState(false)
-  const [cara, setCara] = useState(tuNombre)
-  const reloj = useRef<ReturnType<typeof setInterval> | null>(null)
+  const reloj = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {
-      if (reloj.current) clearInterval(reloj.current)
+      if (reloj.current) clearTimeout(reloj.current)
     }
   }, [])
 
@@ -41,23 +47,25 @@ export function Moneda({
     if (girando) return
     const gana = Math.random() < 0.5 ? tuId : suId
     setGirando(true)
-    let vueltas = 0
-    reloj.current = setInterval(() => {
-      vueltas += 1
-      setCara(vueltas % 2 === 0 ? tuNombre : suNombre)
-      if (vueltas >= 11) {
-        if (reloj.current) clearInterval(reloj.current)
-        setCara(gana === tuId ? tuNombre : suNombre)
-        setGirando(false)
-        elegir(gana)
-      }
-    }, 90)
+    // La cara de delante es la tuya; la de detrás, la suya.
+    setAngulo(VUELTAS * 360 + (gana === tuId ? 0 : 180))
+    reloj.current = setTimeout(() => {
+      setGirando(false)
+      elegir(gana)
+    }, 2200)
   }
 
   return (
     <div className="moneda">
-      <div className={girando ? 'moneda__cara moneda__cara--girando' : 'moneda__cara'}>
-        {cara.trim().charAt(0).toUpperCase() || '?'}
+      <div className="moneda__aire">
+        <div
+          className="moneda__disco"
+          style={{ transform: `rotateY(${angulo}deg)` }}
+          aria-hidden="true"
+        >
+          <img className="moneda__lado" src={avatarDe(tuNombre)} alt="" />
+          <img className="moneda__lado moneda__lado--dorso" src={avatarDe(suNombre)} alt="" />
+        </div>
       </div>
       <button type="button" className="boton boton--principal" onClick={tirar} disabled={girando}>
         {girando ? '…' : 'Tirar la moneda'}

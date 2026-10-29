@@ -89,9 +89,9 @@ export function PantallaDentro({
   recargarJugador: () => void
 }) {
   const [comprobaciones, setComprobaciones] = useState<Comprobacion[] | null>(null)
-  const [cambiandoClave, setCambiandoClave] = useState(false)
-  const [enAjustes, setEnAjustes] = useState(false)
-  const [enMazos, setEnMazos] = useState(false)
+  /** En qué sección estás. Solo se ve una cada vez. */
+  const [donde, setDonde] = useState<"mesa" | "mazos" | "ajustes" | "clave">("mesa")
+  const volver = () => setDonde("mesa")
 
   useEffect(() => {
     let vigente = true
@@ -118,47 +118,48 @@ export function PantallaDentro({
         </div>
         <MenuCuenta
           nombre={jugador.nombre}
-          cambiarClave={() => setCambiandoClave(true)}
-          abrirAjustes={() => setEnAjustes(true)}
-          abrirMazos={() => setEnMazos(true)}
+          cambiarClave={() => setDonde("clave")}
+          abrirAjustes={() => setDonde("ajustes")}
+          abrirMazos={() => setDonde("mazos")}
         />
       </header>
 
-      {enAjustes && <PantallaAjustes cerrar={() => setEnAjustes(false)} />}
-      {enMazos && <PantallaMazos idUsuario={idUsuario} cerrar={() => setEnMazos(false)} />}
-
-      {cambiandoClave && (
-        <PantallaClave
-          recuperando={false}
-          hecho={() => setCambiandoClave(false)}
-          cancelar={() => setCambiandoClave(false)}
-        />
+      {/* Cada cosa del menú es una SECCIÓN, no un trozo más pegado
+          debajo: se va a ella y se vuelve. Antes se añadían al final de la
+          página y había que buscarlas con la rueda del ratón. */}
+      {donde === 'mazos' && <PantallaMazos idUsuario={idUsuario} cerrar={volver} />}
+      {donde === 'ajustes' && <PantallaAjustes cerrar={volver} />}
+      {donde === 'clave' && (
+        <PantallaClave recuperando={false} hecho={volver} cancelar={volver} />
       )}
 
-      <PantallaMesa nombre={jugador.nombre} />
+      {donde === 'mesa' && (
+        <>
+          <PantallaMesa nombre={jugador.nombre} />
 
-      {/* Las comprobaciones del aparato van plegadas: hacen falta una vez,
-          el día que algo no va, y el resto del tiempo son ruido. */}
-      <details className="comprobar">
-        <summary>¿Sirve este aparato?</summary>
-        {comprobaciones === null ? (
-          <p className="cargando">Comprobando…</p>
-        ) : (
-          <ul className="comprobaciones">
-            {comprobaciones.map((dato) => (
-              <FilaComprobacion key={dato.clave} dato={dato} />
-            ))}
-          </ul>
-        )}
-        <dl className="aparato">
-          {aparato.map((dato) => (
-            <div key={dato.etiqueta} className="aparato__par">
-              <dt>{dato.etiqueta}</dt>
-              <dd>{dato.valor}</dd>
-            </div>
-          ))}
-        </dl>
-      </details>
+          {/* Plegadas: hacen falta una vez, el día que algo no va. */}
+          <details className="comprobar">
+            <summary>¿Sirve este aparato?</summary>
+            {comprobaciones === null ? (
+              <p className="cargando">Comprobando…</p>
+            ) : (
+              <ul className="comprobaciones">
+                {comprobaciones.map((dato) => (
+                  <FilaComprobacion key={dato.clave} dato={dato} />
+                ))}
+              </ul>
+            )}
+            <dl className="aparato">
+              {aparato.map((dato) => (
+                <div key={dato.etiqueta} className="aparato__par">
+                  <dt>{dato.etiqueta}</dt>
+                  <dd>{dato.valor}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+        </>
+      )}
     </main>
   )
 }

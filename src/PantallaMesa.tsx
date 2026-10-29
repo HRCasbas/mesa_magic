@@ -2,7 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react'
 
 import { BarraPartida } from './BarraPartida'
 import { LateralPartida } from './LateralPartida'
+import { Moneda } from './Moneda'
 import { Mesa } from './Tapete'
+import { useContadores } from './contadores'
 import { useEnlace } from './enlace'
 import { useFotos } from './fotos'
 import { useMazoElegido } from './mazoElegido'
@@ -54,6 +56,15 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
     enviarDato: enlace.enviarDato,
     alRecibirDato: enlace.alRecibirDato,
   })
+  const contadores = useContadores({
+    codigo: mesa.codigo ?? "",
+    tuId: mesa.tuId ?? "",
+    suId: elOtro?.id ?? null,
+    datosAbiertos: enlace.datosAbiertos,
+    enviarDato: enlace.enviarDato,
+    alRecibirDato: enlace.alRecibirDato,
+  })
+
   const [apuntando, setApuntando] = useState(false)
   const [miMesaGrande, setMiMesaGrande] = useState(false)
 
@@ -177,6 +188,20 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
           alPulsar={() => setMiMesaGrande((v) => !v)}
         />
 
+        {/* La moneda va en medio de la imagen y no en el panel: es un
+            momento, se mira una vez y los dos tienen que verla. */}
+        {mazo.mio && mazo.suyo && !contadores.compartido.empieza && elOtro && mesa.tuId && (
+          <div className="tapete__encima">
+            <Moneda
+              tuNombre={nombre}
+              suNombre={elOtro.nombre}
+              tuId={mesa.tuId}
+              suId={elOtro.id}
+              elegir={contadores.elegirQuienEmpieza}
+            />
+          </div>
+        )}
+
         {(mesa.motivo || enlace.fallo) && (
           <p className="tapete__recado">{mesa.motivo ?? enlace.fallo}</p>
         )}
@@ -211,6 +236,7 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
         mazoMio={mazo.mio}
         mazoSuyo={mazo.suyo}
         elegirMazo={mazo.elegir}
+        contadores={contadores}
       />
     </div>
   )

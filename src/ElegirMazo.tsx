@@ -65,24 +65,32 @@ export function ElegirMazo({
     )
   }
 
+  // Por orden alfabético: con catorce mazos, el orden por fecha no sirve
+  // para encontrar ninguno.
+  const ordenados = [...(lista ?? [])].sort((a, b) =>
+    a.nombre.localeCompare(b.nombre, 'es'),
+  )
+
   return (
     <section className="tarjeta">
       <h2>Elige mazo</h2>
       {lista === null && <p className="cargando">…</p>}
       {lista?.length === 0 && <p>No tienes mazos todavía.</p>}
-      <div className="elegir">
-        {lista?.map((mazo) => (
-          <button
-            key={mazo.id}
-            type="button"
-            className="boton boton--plano"
-            onClick={() => setPedido(mazo.id)}
-            disabled={pedido !== null}
-          >
-            {mazo.nombre}
-          </button>
-        ))}
-      </div>
+      {ordenados.length > 0 && (
+        <select
+          className="elegir"
+          value=""
+          disabled={pedido !== null}
+          onChange={(e) => setPedido(e.target.value || null)}
+        >
+          <option value="">{pedido ? 'Un momento…' : 'Elige uno'}</option>
+          {ordenados.map((mazo) => (
+            <option key={mazo.id} value={mazo.id}>
+              {mazo.nombre}
+            </option>
+          ))}
+        </select>
+      )}
     </section>
   )
 }
