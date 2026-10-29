@@ -1601,3 +1601,30 @@ body {
 .pegada__flecha:hover {
   color: var(--acento);
 }
+
+/* Lo que ha leido el lector de la foto, acierte o no. */
+.leido {
+  list-style: none;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.leido__linea {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px dashed var(--borde);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--texto-suave);
+  font-family: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.leido__linea:hover {
+  color: var(--texto);
+  border-color: var(--acento);
+}

@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { idiomaElegido } from './ajustes'
 import { useConsultas } from './consultas'
 import { leerNombres } from './ocr'
-import { buscar, type Carta } from './scryfall'
+import { adivinar, buscar, type Carta } from './scryfall'
 
 function Grande({
   carta,
@@ -82,6 +82,8 @@ export function PantallaConsultas({
   const [fallo, setFallo] = useState<string | null>(null)
   const [abierta, setAbierta] = useState<Carta | null>(null)
   const [leyendo, setLeyendo] = useState(false)
+  /** Lo que el lector ha sacado de la foto, acierte o no. */
+  const [leido, setLeido] = useState<string[]>([])
 
   // Al llegar una foto, se intenta leer el nombre y buscarla sola. Si no
   // sale, no pasa nada: la foto se queda ahí y el buscador está al lado.
@@ -93,29 +95,34 @@ export function PantallaConsultas({
     void (async () => {
       const candidatos = await leerNombres(foto)
       if (!vigente) return
+      // SE ENSEÑA SIEMPRE LO LEÍDO, acierte o no. Si falla, es lo único
+      // que dice si el problema es que lee mal o que busca mal, y además
+      // te deja corregir una letra y darle a Buscar en vez de teclear el
+      // nombre entero (Héctor, 29/10/2026: «no pilla ni una»).
+      setLeido(candidatos)
+      if (candidatos[0]) setEscrito(candidatos[0])
+
       if (candidatos.length === 0) {
         setLeyendo(false)
-        setFallo('No he sabido leer el nombre. Míralo en la foto y búscalo aquí.')
+        setFallo('No he sabido leer nada. Míralo en la foto y búscalo aquí.')
         return
       }
       // Se prueban en orden hasta que una sea una carta de verdad: no hay
       // forma de saber cuál de las líneas leídas es el nombre, y el que
       // sabe qué es una carta es Scryfall, no el lector.
       for (const candidato of candidatos) {
-        try {
-          const carta = await buscar(candidato, idiomaElegido())
-          if (!vigente) return
+        const carta = await adivinar(candidato, idiomaElegido())
+        if (!vigente) return
+        if (carta) {
           consultas.apuntar(carta, true)
           setAbierta(carta)
           setLeyendo(false)
           return
-        } catch {
-          // Esa línea no era. A por la siguiente.
         }
       }
       if (vigente) {
         setLeyendo(false)
-        setFallo(`He leído «${candidatos[0]}», pero no encuentro esa carta.`)
+        setFallo('He leído esto, pero no encuentro ninguna carta así:')
       }
     })()
     return () => {
@@ -182,6 +189,18 @@ export function PantallaConsultas({
       </form>
 
       {fallo && <p className="recado recado--mal">{fallo}</p>}
+
+      {leido.length > 0 && !abierta && (
+        <ul className="leido">
+          {leido.map((linea) => (
+            <li key={linea}>
+              <button type="button" className="leido__linea" onClick={() => setEscrito(linea)}>
+                «{linea}»
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {abierta && (
         <Grande

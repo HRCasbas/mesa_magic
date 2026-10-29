@@ -1013,6 +1013,35 @@ igual.
   la que vas a encuadrar, y en el recuadro de la esquina no se puede
   encuadrar nada.
 
+### ⚠ Con cartas de verdad no acierta (29/10/2026)
+
+«No pilla ni una carta bien con el OCR.» Y aquí hay que parar y decirlo:
+**se han hecho tres arreglos a ciegas**, cada uno razonable, y ninguno ha
+resuelto el problema de verdad, porque **nunca se ha visto qué lee el
+lector con una carta de verdad**. Las pruebas son con cartas pintadas:
+tipografía limpia, de frente, sin grano. Una carta real lleva una letra
+con remates muy marcada, brillo del plástico, grano de la cámara y algo
+de ángulo.
+
+Lo que se ha hecho, en vez de un cuarto arreglo a ciegas:
+
+1. **Se enseña en pantalla lo que ha leído**, acierte o falle. Es lo único
+   que distingue «lee mal» de «lee bien y busca mal», y sin eso se seguiría
+   adivinando.
+2. **Lo leído se deja escrito en el buscador.** Aunque falle, corriges una
+   letra y le das a Buscar: mucho menos trabajo que teclear el nombre.
+3. **Se busca perdonando más.** `fuzzy` aguanta un fallo y un OCR comete
+   más, así que si falla se tira de **autocompletar** de Scryfall con el
+   principio del nombre y con la palabra más larga, que perdona todo lo
+   que venga detrás.
+
+**La lección, y van tres:** cuando un arreglo a ciegas falla dos veces, el
+siguiente trabajo no es otro arreglo, es **conseguir ver el dato**.
+
+Si con esto se ve que lee basura, la salida ya está escrita más arriba y
+es el **número de colección**: ASCII puro, lista blanca de dígitos y
+mayúsculas, y resultado exacto.
+
 ### ⚠ Lo que sigue sin probarse del OCR
 
 **Una carta de verdad, por una cámara de verdad.** Lo probado es una carta

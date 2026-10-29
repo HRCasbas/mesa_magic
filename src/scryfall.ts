@@ -38,6 +38,60 @@ export interface Carta {
  */
 const PARECE_NUMERO = /^([A-Za-z0-9]{3,5})\s+([0-9]+[a-z★]?)$/
 
+/** Lo que Scryfall sugiere al escribir el principio de un nombre. */
+async function autocompletar(trozo: string): Promise<string[]> {
+  try {
+    const datos = await enLaCola(async () => {
+      const r = await fetch(`${DIRECCION}/cards/autocomplete?q=${encodeURIComponent(trozo)}`)
+      if (!r.ok) return null
+      return (await r.json()) as { data?: string[] }
+    })
+    return datos?.data ?? []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Adivinar qué carta es una línea leída por el OCR.
+ *
+ * LA BÚSQUEDA NORMAL NO BASTA PARA ESTO: `fuzzy` perdona **un** fallo, y
+ * un OCR sobre una foto de una carta comete más. Así que si falla se tira
+ * de **autocompletar**, que trabaja con el principio del nombre y con
+ * palabras sueltas, y perdona todo lo que venga detrás.
+ *
+ * Devuelve null sin quejarse: esto es una apuesta, no una búsqueda.
+ */
+export async function adivinar(linea: string, idioma: string): Promise<Carta | null> {
+  const limpio = linea.trim()
+  if (limpio.length < 3) return null
+
+  try {
+    return await enTuIdioma(await porNombre(limpio), idioma)
+  } catch {
+    // No era exacta. Se prueba a adivinarla.
+  }
+
+  const intentos: string[] = []
+  // El principio suele leerse mejor que el final.
+  if (limpio.length >= 5) intentos.push(limpio.slice(0, 8).trim())
+  // Y una palabra larga suele ser la distintiva del nombre.
+  const larga = limpio.split(' ').sort((a, b) => b.length - a.length)[0]
+  if (larga && larga.length >= 5) intentos.push(larga)
+
+  for (const intento of intentos) {
+    const sugerencias = await autocompletar(intento)
+    for (const sugerida of sugerencias.slice(0, 2)) {
+      try {
+        return await enTuIdioma(await porNombre(sugerida), idioma)
+      } catch {
+        // Esa tampoco. Siguiente.
+      }
+    }
+  }
+  return null
+}
+
 export async function buscar(escrito: string, idioma: string): Promise<Carta> {
   const limpio = escrito.trim()
   const comoNumero = PARECE_NUMERO.exec(limpio)
