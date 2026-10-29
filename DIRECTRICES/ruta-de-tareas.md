@@ -1067,6 +1067,24 @@ Si con esto se ve que lee basura, la salida ya está escrita más arriba y
 es el **número de colección**: ASCII puro, lista blanca de dígitos y
 mayúsculas, y resultado exacto.
 
+### ⚠ El OCR queda en el banquillo (Héctor, 29/10/2026)
+
+> «Nada, ya lo dejaremos para el final y si no funciona quitamos la
+> función.»
+
+Después del arreglo de la banda oscura **sigue sin acertar con cartas de
+verdad**. Se deja como está y se decide al final: o se arregla con el
+número de colección, o **se quita**.
+
+Y quitarlo no sería un fracaso: **lo que de verdad resolvía el problema
+era la foto ampliada y el buscador**, y las dos funcionan. El OCR siempre
+fue un acelerador. Lo que no puede quedarse es a medias, prometiendo algo
+que no cumple.
+
+Si se retoma, lo que hay que probar primero es **el número de colección**
+en vez del nombre: dígitos y tres letras, lista blanca, y resultado
+exacto. Está medido más arriba.
+
 ### ⚠ Lo que sigue sin probarse del OCR
 
 **Una carta de verdad, por una cámara de verdad.** Lo probado es una carta
@@ -1086,6 +1104,63 @@ Las notas decían que Scryfall pide identificarse con un `User-Agent` propio.
 **Desde un navegador eso no se puede cumplir**: es una de las cabeceras que
 el navegador no deja tocar. Lo que sí está en nuestra mano es el ritmo, y se
 respeta: las peticiones van en cola, de una en una, con 120 ms entre ellas.
+
+---
+
+## Fase 7: la base de los mazos (29/10/2026)
+
+Aplicada la migración `magic_002_mazos_y_cartas`. Dos tablas y una columna
+nueva, probadas antes en una transacción con `rollback` como manda el
+proyecto.
+
+### Qué se creó
+
+| Tabla | Qué guarda |
+|---|---|
+| `magic.mazos` | nombre, formato, notas, portada (identificador y nombre), activo, creado, tocado |
+| `magic.cartas_del_mazo` | nombre, cantidad, identificador de Scryfall, si va en la **reserva**, y el orden |
+
+Y `magic.jugadores` tiene ya una columna `avatar`, vacía de momento, para
+cuando se monte lo de la imagen y la moneda.
+
+### La decisión que importa: el mazo del rival NO se lee de la base
+
+La regla 7 dice que el rival ve tu mazo durante la partida. **Eso no se
+hace abriendo permisos**, se hace mandando el mazo elegido **por el canal
+de datos**, como todo lo demás de la partida.
+
+Dos cosas se ganan con eso: los permisos se quedan en lo simple —lo tuyo
+es tuyo y nadie más lo ve— y, sobre todo, **el mazo se ve aunque Supabase
+esté dormida**, que es la regla 1.
+
+### Detalles del diseño
+
+- **De la portada se guarda el identificador y el nombre, no la imagen.**
+  La imagen se le pide a Scryfall al pintarla. Ya estaba decidido y no
+  cambia.
+- **`reserva`** para el banquillo, que en Magic se cambia entre partidas.
+- **Borrar un jugador se lleva sus mazos, y borrar un mazo sus cartas**
+  (`on delete cascade`). Lo que no se puede llevar por delante es el
+  historial: por eso la regla 8 dice que la partida guarda su propia copia
+  del nombre y la portada.
+- Permisos: solo `authenticated`, nada para `anon`. Comprobado.
+
+> ⚠ Supabase, por sus permisos por defecto del esquema, le da a
+> `authenticated` también `TRUNCATE`, `TRIGGER` y `REFERENCES`, que no se
+> pidieron. No es alcanzable desde la API (PostgREST no expone `TRUNCATE`)
+> y viene de la fase 1, pero conviene saberlo y no tocarlo a la ligera:
+> este proyecto lo comparte con la web de Pokémon.
+
+### ⚠ Lo que falta para seguir: el fichero de export
+
+Sigue pendiente lo de siempre: **Héctor tiene que dar el fichero que
+exporta su aplicación de mazos**. Sin verlo no se puede escribir la
+importación, porque cada programa lo escribe a su manera.
+
+Mientras tanto se puede hacer todo lo demás —crear, editar, portada,
+notas, y **pegar una lista de texto**, que funciona con cualquier
+aplicación—, y la importación de su formato se añade después sin rehacer
+nada.
 
 ---
 
