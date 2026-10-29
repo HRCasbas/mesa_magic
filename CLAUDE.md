@@ -108,6 +108,7 @@ src/
   enlace.ts           el camino directo entre los dos: vídeo y datos
   contadores.ts       los números de la partida, y cómo viajan
   mazos.ts            tus mazos y sus cartas, de la base de datos
+  importar.ts         leer una lista de cartas pegada tal cual
   PantallaMazos.tsx   verlos, con las cartas apiladas
   ajustes.ts          lo que eliges una vez, como el idioma
   pegatinas.ts        las pegatinas sobre el vídeo, en coordenadas 0-1

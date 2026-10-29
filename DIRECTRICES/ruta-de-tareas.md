@@ -1189,6 +1189,37 @@ está en una de tres:
 Migración `magic_003_tres_zonas_del_mazo`. Los quince mazos importados
 venían del `// MAYBEBOARD` del export, así que esos pasaron a `posibles`.
 
+### Editar e importar (29/10/2026)
+
+- **Mazo nuevo**, cambiar nombre, formato y notas, y **borrar** el mazo.
+- **Importar pegando la lista** tal y como la saca su programa. Reemplaza
+  todas las cartas del mazo: se borra y se mete lo nuevo, en vez de
+  comparar carta por carta. Son sesenta cartas que llegan de golpe; la
+  comparación costaría más código y más fallos que volver a escribirlo.
+- **La portada se elige pulsando una carta del propio mazo.** Es la que
+  pidió la regla («la carta más importante»), está siempre a mano y evita
+  otro buscador.
+- Antes de meter nada, el formulario **dice cuántas cartas ha entendido**
+  en cada zona y cuántas líneas no ha sabido leer. Así se ve si cuadra sin
+  guardar a ciegas.
+
+**Probado el 29/10/2026 con los ficheros de verdad de Héctor:**
+
+| Caso | Resultado |
+|---|---|
+| Chocobos entero | 60 en el mazo, 12 en posibles, ninguna línea perdida |
+| `Counterspell (FCA) 4` | queda `Counterspell` |
+| `Island (EOE) 269` | queda `Island` |
+| `Soul Swallower (tercera copia)` | se respeta tal cual: **no** se confunde con una edición |
+| `Sideboard` como encabezado | va al banquillo |
+| `// MAYBEBOARD` | va a posibles |
+
+Y lo de `(tercera copia)` deja esa carta sin foto, porque ese nombre no
+existe en Scryfall. Se arregla **en la búsqueda, no en el intérprete**:
+las que no salen y acaban en paréntesis se piden otra vez sin él. Así el
+nombre se respeta tal y como él lo escribió y la foto es la de la carta de
+verdad.
+
 ### Ver un mazo: las cartas apiladas
 
 Héctor lo pidió con una foto: de cada copia **solo asoma la banda del

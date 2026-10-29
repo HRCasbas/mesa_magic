@@ -144,7 +144,7 @@ export function PantallaDentro({
       </header>
 
       {enAjustes && <PantallaAjustes cerrar={() => setEnAjustes(false)} />}
-      {enMazos && <PantallaMazos cerrar={() => setEnMazos(false)} />}
+      {enMazos && <PantallaMazos idUsuario={idUsuario} cerrar={() => setEnMazos(false)} />}
 
       {cambiandoClave && (
         <PantallaClave

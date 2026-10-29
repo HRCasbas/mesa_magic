@@ -85,7 +85,7 @@ export function useMazos() {
 }
 
 /** Las cartas de un mazo, en orden. */
-export function useCartasDelMazo(mazoId: string | null) {
+export function useCartasDelMazo(mazoId: string | null, vuelta = 0) {
   const [cartas, setCartas] = useState<CartaDelMazo[] | null>(null)
 
   useEffect(() => {
@@ -103,10 +103,67 @@ export function useCartasDelMazo(mazoId: string | null) {
     return () => {
       vigente = false
     }
-  }, [mazoId])
+  }, [mazoId, vuelta])
 
   // Sin mazo abierto no hay cartas, y se calcula aquí en vez de borrar el
   // estado dentro del efecto: así no queda un instante con el mazo cerrado
   // y las cartas del anterior todavía puestas.
   return mazoId ? cartas : null
+}
+
+// ---- guardar ----
+
+/** Crea un mazo vacío y devuelve su identificador. */
+export async function crearMazo(
+  jugador: string,
+  nombre: string,
+  formato: string,
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('mazos')
+    .insert({ jugador, nombre: nombre.trim(), formato: formato.trim() || 'Casual' })
+    .select('id')
+    .single()
+  return error ? null : (data as { id: string }).id
+}
+
+export async function guardarMazo(mazo: Mazo): Promise<boolean> {
+  const { error } = await supabase
+    .from('mazos')
+    .update({
+      nombre: mazo.nombre.trim(),
+      formato: mazo.formato.trim() || 'Casual',
+      notas: mazo.notas,
+      portada_id: mazo.portadaId,
+      portada_nombre: mazo.portadaNombre,
+      activo: mazo.activo,
+      tocado: new Date().toISOString(),
+    })
+    .eq('id', mazo.id)
+  return !error
+}
+
+export async function borrarMazo(mazoId: string): Promise<boolean> {
+  const { error } = await supabase.from('mazos').delete().eq('id', mazoId)
+  return !error
+}
+
+/**
+ * Cambia de golpe todas las cartas de un mazo.
+ *
+ * Se borra todo y se mete lo nuevo, en vez de ir carta por carta viendo
+ * qué cambió. Es un mazo de sesenta cartas que se importa entero: la
+ * comparación costaría más código y más fallos que volver a escribirlo.
+ */
+export async function guardarCartas(
+  mazoId: string,
+  cartas: { nombre: string; cantidad: number; zona: Zona; orden: number }[],
+): Promise<boolean> {
+  const { error: borrando } = await supabase.from('cartas_del_mazo').delete().eq('mazo', mazoId)
+  if (borrando) return false
+  if (cartas.length === 0) return true
+  const { error } = await supabase
+    .from('cartas_del_mazo')
+    .insert(cartas.map((c) => ({ mazo: mazoId, ...c })))
+  return !error
 }

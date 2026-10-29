@@ -1777,3 +1777,67 @@ body {
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- Editar un mazo ---- */
+
+.mazo__forma {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.mazo__forma textarea,
+.importar textarea {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.importar {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.importar__cuenta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.importar__cuenta strong {
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.importar__perdidas {
+  color: var(--duda);
+}
+
+/* La pila es un boton: pulsarla pone esa carta de portada. */
+.pila {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.pila--portada .pila__carta:last-child {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+}
+
+.pila__carta--sinfoto {
+  display: flex;
+  align-items: flex-start;
+  text-align: left;
+}

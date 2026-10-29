@@ -47,6 +47,26 @@ const PARECE_NUMERO = /^([A-Za-z0-9]{3,5})\s+([0-9]+[a-z★]?)$/
  * setenta y cinco de golpe**, así que un mazo cabe en una sola petición.
  */
 export async function porLote(nombres: string[]): Promise<Map<string, Carta>> {
+  const encontradas = await pedirLote(nombres)
+
+  // Las que no salen y acaban en un paréntesis, otra vez sin él. En los
+  // mazos de Héctor hay un `Soul Swallower (tercera copia)`, que es una
+  // nota suya: el nombre se respeta tal cual lo escribió, pero la foto es
+  // la de la carta de verdad.
+  const sinSuerte = nombres.filter((n) => !encontradas.has(n.toLowerCase()) && /\([^)]*\)\s*$/.test(n))
+  if (sinSuerte.length > 0) {
+    const desnudos = sinSuerte.map((n) => n.replace(/\s*\([^)]*\)\s*$/, '').trim())
+    const segunda = await pedirLote(desnudos)
+    sinSuerte.forEach((original, i) => {
+      const carta = segunda.get(desnudos[i].toLowerCase())
+      if (carta) encontradas.set(original.toLowerCase(), carta)
+    })
+  }
+
+  return encontradas
+}
+
+async function pedirLote(nombres: string[]): Promise<Map<string, Carta>> {
   const encontradas = new Map<string, Carta>()
   for (let i = 0; i < nombres.length; i += 75) {
     const trozo = nombres.slice(i, i + 75)
