@@ -192,7 +192,13 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
         pegar={pegatinas.pegar}
         quitarTodas={pegatinas.quitarTodas}
         apuntando={apuntando}
-        alternarApuntar={() => setApuntando((v) => !v)}
+        alternarApuntar={() => {
+          // Si estabas mirando tu propia mesa, se pone delante la del
+          // rival: es la que vas a encuadrar, y en el recuadro de la
+          // esquina no se puede encuadrar nada (Héctor, 29/10/2026).
+          if (!apuntando) setMiMesaGrande(false)
+          setApuntando((v) => !v)
+        }}
         foto={fotos.foto?.imagen ?? null}
         esperandoFoto={fotos.esperando}
         falloFoto={fotos.fallo}

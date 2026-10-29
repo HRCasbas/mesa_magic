@@ -135,10 +135,11 @@ export function Mesa({
       window.removeEventListener('pointermove', alArrastrar)
       window.removeEventListener('pointerup', alSoltar)
       const fin = dentro(suelto.clientX, suelto.clientY)
-      // EL RECUADRO SE QUEDA PUESTO (Héctor, 28/10/2026). Si la carta no
-      // se reconoce, al menos ves qué encuadraste, y sabes si fallaste tú
-      // o falló la lectura. Desaparece al empezar el siguiente.
-      setDibujando({ x1: empezo.x, y1: empezo.y, x2: fin.x, y2: fin.y })
+      // EL RECUADRO NO SE QUEDA (Héctor, 29/10/2026). Primero se dejó
+      // puesto para ver qué habías encuadrado, y estorbaba: se quedaba
+      // encima de la imagen, y al cambiar las mesas de sitio aparecía
+      // dibujado sobre la otra. Lo que encuadraste ya lo ves en la foto.
+      setDibujando(null)
       alSeleccionar?.({
         x: Math.min(empezo.x, fin.x),
         y: Math.min(empezo.y, fin.y),

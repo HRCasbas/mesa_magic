@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 
 import { idiomaElegido } from './ajustes'
 import { useConsultas } from './consultas'
-import { leerNombre } from './ocr'
+import { leerNombres } from './ocr'
 import { buscar, type Carta } from './scryfall'
 
 function Grande({
@@ -91,22 +91,31 @@ export function PantallaConsultas({
     setLeyendo(true)
     setFallo(null)
     void (async () => {
-      const nombre = await leerNombre(foto)
+      const candidatos = await leerNombres(foto)
       if (!vigente) return
-      if (!nombre) {
+      if (candidatos.length === 0) {
         setLeyendo(false)
         setFallo('No he sabido leer el nombre. Míralo en la foto y búscalo aquí.')
         return
       }
-      try {
-        const carta = await buscar(nombre, idiomaElegido())
-        if (!vigente) return
-        consultas.apuntar(carta, true)
-        setAbierta(carta)
-      } catch {
-        if (vigente) setFallo(`He leído «${nombre}», pero no encuentro esa carta.`)
-      } finally {
-        if (vigente) setLeyendo(false)
+      // Se prueban en orden hasta que una sea una carta de verdad: no hay
+      // forma de saber cuál de las líneas leídas es el nombre, y el que
+      // sabe qué es una carta es Scryfall, no el lector.
+      for (const candidato of candidatos) {
+        try {
+          const carta = await buscar(candidato, idiomaElegido())
+          if (!vigente) return
+          consultas.apuntar(carta, true)
+          setAbierta(carta)
+          setLeyendo(false)
+          return
+        } catch {
+          // Esa línea no era. A por la siguiente.
+        }
+      }
+      if (vigente) {
+        setLeyendo(false)
+        setFallo(`He leído «${candidatos[0]}», pero no encuentro esa carta.`)
       }
     })()
     return () => {

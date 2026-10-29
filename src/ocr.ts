@@ -14,8 +14,19 @@
 // los datos del inglés en su versión rápida). Por eso **se carga al
 // usarlo**, nunca al abrir la web.
 
-/** El nombre va arriba del todo de la carta, en esta franja. */
-const FRANJA_DEL_NOMBRE = 0.16
+/**
+ * Cuánto se mira de arriba del recorte.
+ *
+ * SE MIRABA EL 16 % Y NO VALÍA (Héctor, 29/10/2026: «con definición muy
+ * buena no detecta el nombre»). El fallo era **dar por hecho dónde está el
+ * nombre**: eso solo se cumple si encuadras la carta clavada. Encuadrando
+ * un poco ancho —que es lo normal—, ese 16 % es mesa, no nombre.
+ *
+ * Ahora se mira el tercio de arriba entero, se saca **todo el texto que
+ * haya** y se prueban las líneas una por una contra Scryfall. Vale igual
+ * si has encuadrado justo o con margen.
+ */
+const FRANJA_DEL_NOMBRE = 0.38
 
 /** Letras que puede tener el nombre de una carta. Nada de símbolos raros. */
 const LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ,.'-"
@@ -33,8 +44,10 @@ function conseguirTrabajador(): Promise<Trabajador> {
       const nuevo = await tesseract.createWorker('eng')
       await nuevo.setParameters({
         tessedit_char_whitelist: LETRAS,
-        // Una sola línea de texto: es lo que es el nombre de una carta.
-        tessedit_pageseg_mode: '7' as never,
+        // Un bloque de texto, no una sola línea: en el trozo de arriba de
+        // la carta puede haber el nombre y algo más, y queremos todo para
+        // ir probando.
+        tessedit_pageseg_mode: '6' as never,
       })
       return nuevo as unknown as Trabajador
     })
@@ -48,34 +61,34 @@ function soloElNombre(imagen: HTMLImageElement): HTMLCanvasElement | null {
   const ancho = imagen.naturalWidth
   if (!ancho || !alto) return null
 
-  // Se dibuja al triple de tamaño: a Tesseract le va mucho mejor con
-  // letras grandes, y agrandar no inventa detalle pero sí ayuda al
-  // reconocedor.
-  const aumento = 3
+  // Se agranda para que a Tesseract le lleguen letras grandes, pero sin
+  // pasarse: una imagen enorme tarda mucho más y no lee mejor.
+  const aumento = Math.min(3, Math.max(1, 1400 / ancho))
   const lienzo = document.createElement('canvas')
-  lienzo.width = ancho * aumento
-  lienzo.height = alto * aumento
+  lienzo.width = Math.round(ancho * aumento)
+  lienzo.height = Math.round(alto * aumento)
   const pincel = lienzo.getContext('2d')
   if (!pincel) return null
   pincel.imageSmoothingQuality = 'high'
   pincel.drawImage(imagen, 0, 0, ancho, alto, 0, 0, lienzo.width, lienzo.height)
 
-  // A blanco y negro con mucho contraste: el nombre de una carta es texto
-  // oscuro sobre una banda clara, y quitarle el color ayuda.
+  // SOLO A GRISES, SIN FORZAR BLANCO Y NEGRO. Antes se partía en dos a
+  // ojo (claro o oscuro) y eso se comía las letras cuando la foto venía
+  // más clara o más oscura de lo previsto. Tesseract hace ese corte por su
+  // cuenta y mirando la imagen, que es mejor que un número puesto a mano.
   const datos = pincel.getImageData(0, 0, lienzo.width, lienzo.height)
   const p = datos.data
   for (let i = 0; i < p.length; i += 4) {
     const gris = 0.299 * p[i] + 0.587 * p[i + 1] + 0.114 * p[i + 2]
-    const v = gris > 140 ? 255 : gris < 90 ? 0 : gris
-    p[i] = v
-    p[i + 1] = v
-    p[i + 2] = v
+    p[i] = gris
+    p[i + 1] = gris
+    p[i + 2] = gris
   }
   pincel.putImageData(datos, 0, 0)
   return lienzo
 }
 
-/** Lo que Tesseract escupe, limpio de basura. */
+/** Una línea de las que escupe Tesseract, limpia de basura. */
 function limpiar(crudo: string): string {
   return crudo
     .replace(/\s+/g, ' ')
@@ -84,28 +97,39 @@ function limpiar(crudo: string): string {
 }
 
 /**
- * Lee el nombre de la carta de una foto. Devuelve null si no saca nada
- * que merezca la pena intentar.
+ * Lee el trozo de arriba de la carta y devuelve **los candidatos a
+ * nombre**, el más prometedor primero.
+ *
+ * No devuelve uno solo a propósito: no hay forma de saber cuál de las
+ * líneas es el nombre, así que se devuelven todas y quien llama las va
+ * probando contra Scryfall hasta que una acierta. Scryfall es el que sabe
+ * qué es una carta; esto solo sabe leer.
  */
-export async function leerNombre(imagenUrl: string): Promise<string | null> {
+export async function leerNombres(imagenUrl: string): Promise<string[]> {
   const imagen = new Image()
   imagen.src = imagenUrl
   try {
     await imagen.decode()
   } catch {
-    return null
+    return []
   }
 
   const franja = soloElNombre(imagen)
-  if (!franja) return null
+  if (!franja) return []
 
   try {
     const quien = await conseguirTrabajador()
     const { data } = await quien.recognize(franja)
-    const nombre = limpiar(data.text)
-    // Menos de tres letras no es el nombre de nada.
-    return nombre.length >= 3 ? nombre : null
+    const lineas = data.text
+      .split('\n')
+      .map(limpiar)
+      // Menos de tres letras no es el nombre de nada, y más de cuarenta
+      // tampoco: eso ya es el texto de reglas.
+      .filter((l) => l.length >= 3 && l.length <= 40)
+
+    // Sin repetir, y las primeras antes: el nombre va arriba del todo.
+    return [...new Set(lineas)].slice(0, 4)
   } catch {
-    return null
+    return []
   }
 }

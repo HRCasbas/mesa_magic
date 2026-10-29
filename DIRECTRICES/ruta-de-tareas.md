@@ -975,6 +975,44 @@ el navegador decide por su cuenta si se molesta en descodificar.
 Comprobado después del arreglo: la foto llega con imagen (brillo medio
 143 sobre 255, no 0) y la carta sale identificada.
 
+### El OCR no puede dar por hecho dónde está el nombre (29/10/2026)
+
+Con la foto ya buena, seguía sin leer: «con definición muy buena no
+detecta el nombre de la carta».
+
+El fallo era **suponer que el nombre está en el 16 % de arriba del
+recorte**. Eso solo se cumple si encuadras la carta clavada. Encuadrando
+con margen —que es lo normal y lo que hace cualquiera— ese 16 % es mesa
+negra, no nombre.
+
+Tres cambios, y el tercero es el que importa:
+
+1. Se mira **el tercio de arriba** (38 %), no una rendija.
+2. Modo **bloque de texto**, no «una sola línea», para sacar todo lo que
+   haya ahí.
+3. **No se elige el nombre: se prueban las líneas una por una contra
+   Scryfall** hasta que una resulta ser una carta. El que sabe qué es una
+   carta es Scryfall; el lector solo sabe leer. Antes se apostaba por una
+   línea y, si fallaba, se acabó.
+
+Y se quitó el blanco y negro forzado con un umbral a ojo: se pasa a grises
+y se deja que Tesseract decida el corte mirando la imagen, que lo hace
+mejor que un número escrito a mano.
+
+**Probado el 29/10/2026 encuadrando ancho a propósito**, con la carta
+ocupando menos de la mitad del recuadro y negro alrededor: lo acierta
+igual.
+
+### Dos cosas más de ese mismo día
+
+- **El recuadro ya no se queda pegado a la imagen.** Se dejó puesto el día
+  antes para ver qué habías encuadrado, y estorbaba: tapaba la mesa y, al
+  cambiar las imágenes de sitio, aparecía dibujado sobre la otra. Lo que
+  encuadraste ya se ve en la foto.
+- **Al pulsar «Ampliar una carta», la mesa del rival se pone delante.** Es
+  la que vas a encuadrar, y en el recuadro de la esquina no se puede
+  encuadrar nada.
+
 ### ⚠ Lo que sigue sin probarse del OCR
 
 **Una carta de verdad, por una cámara de verdad.** Lo probado es una carta
