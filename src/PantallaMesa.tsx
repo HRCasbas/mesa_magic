@@ -5,6 +5,7 @@ import { LateralPartida } from './LateralPartida'
 import { Mesa } from './Tapete'
 import { useEnlace } from './enlace'
 import { useFotos } from './fotos'
+import { useMazoElegido } from './mazoElegido'
 import { useMesa } from './mesa'
 import { usePegatinas } from './pegatinas'
 
@@ -37,6 +38,12 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
   })
 
   const pegatinas = usePegatinas({
+    datosAbiertos: enlace.datosAbiertos,
+    enviarDato: enlace.enviarDato,
+    alRecibirDato: enlace.alRecibirDato,
+  })
+
+  const mazo = useMazoElegido({
     datosAbiertos: enlace.datosAbiertos,
     enviarDato: enlace.enviarDato,
     alRecibirDato: enlace.alRecibirDato,
@@ -81,8 +88,6 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
     return (
       <section className="tarjeta">
         <h2>La mesa</h2>
-        <p>Uno de los dos crea la mesa y le dicta el código al otro. Da igual quién.</p>
-
         {mesa.motivo && <p className="recado recado--mal">{mesa.motivo}</p>}
 
         <div className="mesa__opciones">
@@ -203,6 +208,9 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
         esperandoFoto={fotos.esperando}
         falloFoto={fotos.fallo}
         cerrarFoto={fotos.cerrar}
+        mazoMio={mazo.mio}
+        mazoSuyo={mazo.suyo}
+        elegirMazo={mazo.elegir}
       />
     </div>
   )

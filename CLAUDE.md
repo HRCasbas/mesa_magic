@@ -29,6 +29,11 @@ archivos.
 **Es muy bueno detectando problemas de uso reales.** Cuando dice que algo no
 se entiende, tiene razón.
 
+**La web se explica sola, sin párrafos.** Lo pidió el 29/10/2026: «que con
+los títulos, opciones y botones se autoexplique, minimalista». Si hace
+falta un párrafo para explicar un botón, el botón está mal puesto o mal
+escrito: primero se arregla el botón. El porqué va a `DIRECTRICES/`.
+
 **Respuestas cortas.** Lo pidió el 27/10/2026: *«Sé más directo, no me hagas
 leer toda la conversación, dime novedades y qué tengo que hacer o probar».*
 Tres bloques y poco más: **qué hay nuevo**, **qué tiene que hacer él**, **qué

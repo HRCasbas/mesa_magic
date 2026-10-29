@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
+import { ElegirMazo } from './ElegirMazo'
 import { Paleta } from './Paleta'
+import type { MazoEnJuego } from './mazoElegido'
 import { PantallaConsultas } from './PantallaConsultas'
 import { PantallaContadores } from './PantallaContadores'
 import type { ClasePegatina } from './pegatinas'
@@ -33,6 +35,9 @@ export function LateralPartida({
   esperandoFoto,
   falloFoto,
   cerrarFoto,
+  mazoMio,
+  mazoSuyo,
+  elegirMazo,
 }: {
   codigo: string
   tuId: string
@@ -52,6 +57,9 @@ export function LateralPartida({
   esperandoFoto: boolean
   falloFoto: string | null
   cerrarFoto: () => void
+  mazoMio: MazoEnJuego | null
+  mazoSuyo: MazoEnJuego | null
+  elegirMazo: (mazo: MazoEnJuego | null) => void
 }) {
   const [pestana, setPestana] = useState<Pestana>('partida')
 
@@ -75,8 +83,16 @@ export function LateralPartida({
       </div>
 
       <div className="lateral__dentro">
-        {pestana === 'partida' ? (
+        {pestana === "partida" ? (
           <>
+            <ElegirMazo
+              mio={mazoMio}
+              suyo={mazoSuyo}
+              nombreDelOtro={nombreDelOtro}
+              elegir={elegirMazo}
+            />
+
+            {mazoMio && mazoSuyo && (
             <PantallaContadores
               codigo={codigo}
               tuId={tuId}
@@ -87,6 +103,7 @@ export function LateralPartida({
               enviarDato={enviarDato}
               alRecibirDato={alRecibirDato}
             />
+            )}
 
             <section className="tarjeta">
               <h2>Las pegatinas</h2>

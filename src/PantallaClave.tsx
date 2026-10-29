@@ -63,12 +63,6 @@ export function PantallaClave({
   const dentro = (
     <>
       <h2>{recuperando ? 'Pon tu clave nueva' : 'Cambiar la clave'}</h2>
-      <p>
-        {recuperando
-          ? 'Has entrado con el enlace del correo. Escribe aquí la clave con la que vas a entrar a partir de ahora.'
-          : 'Si entraste por un enlace de invitación, todavía no tienes clave puesta. Esta es la que usarás para entrar.'}
-      </p>
-
       <form onSubmit={guardar} className="entrada__forma">
         <label className="campo">
           <span className="campo__nombre">Clave nueva</span>

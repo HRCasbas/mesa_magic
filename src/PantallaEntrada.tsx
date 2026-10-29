@@ -230,18 +230,6 @@ export function PantallaEntrada() {
           )}
         </form>
 
-        <p className="entrada__pie">
-          {puerta === 'crear' ? (
-            <>
-              Hace falta un <strong>código de invitación</strong>: esta web enciende cámaras y no
-              puede estar abierta a cualquiera.
-            </>
-          ) : puerta === 'olvidada' ? (
-            <>Te llega un correo con un enlace, y al pulsarlo podrás escribir la clave nueva aquí.</>
-          ) : (
-            <>La primera vez que entres te pedirá el nombre con el que te verá tu rival.</>
-          )}
-        </p>
       </div>
     </main>
   )

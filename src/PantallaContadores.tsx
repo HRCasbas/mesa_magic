@@ -1,3 +1,4 @@
+import { Moneda } from './Moneda'
 import {
   FASES,
   numeroDeTurno,
@@ -128,26 +129,15 @@ export function PantallaContadores({
 
       {!compartido.empieza ? (
         <div className="turno">
-          <p className="turno__donde">
-            {suId ? '¿Quién empieza?' : 'Cuando llegue tu rival se elige quién empieza.'}
-          </p>
+          <p className="turno__donde">¿Quién empieza?</p>
           {suId && (
-            <div className="turno__botones">
-              <button
-                type="button"
-                className="boton boton--plano"
-                onClick={() => contadores.elegirQuienEmpieza(tuId)}
-              >
-                Empiezo yo
-              </button>
-              <button
-                type="button"
-                className="boton boton--plano"
-                onClick={() => contadores.elegirQuienEmpieza(suId)}
-              >
-                Empieza {nombreDelOtro ?? 'tu rival'}
-              </button>
-            </div>
+            <Moneda
+              tuNombre={tuNombre}
+              suNombre={nombreDelOtro ?? 'Tu rival'}
+              tuId={tuId}
+              suId={suId}
+              elegir={contadores.elegirQuienEmpieza}
+            />
           )}
         </div>
       ) : (
@@ -185,18 +175,9 @@ export function PantallaContadores({
       )}
 
       {compartido.empieza && (
-        <p className="aviso aviso--suelto">
-          {esMiTurno ? (
-            <>
-              Te toca. La <strong>barra espaciadora</strong> pasa turno.
-            </>
-          ) : (
-            <>
-              Le toca a <strong>{nombreDeQuienJuega}</strong>. El turno lo pasa quien lo juega.
-            </>
-          )}{' '}
-          Van <strong>{turnosJugados(compartido)}</strong>{' '}
-          {turnosJugados(compartido) === 1 ? 'turno jugado' : 'turnos jugados'}.
+        <p className="turno__pie">
+          {esMiTurno ? "Te toca" : `Le toca a ${nombreDeQuienJuega}`} · {turnosJugados(compartido)}{" "}
+          {turnosJugados(compartido) === 1 ? "turno" : "turnos"}
         </p>
       )}
 

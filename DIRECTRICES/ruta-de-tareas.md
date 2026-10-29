@@ -1189,6 +1189,44 @@ está en una de tres:
 Migración `magic_003_tres_zonas_del_mazo`. Los quince mazos importados
 venían del `// MAYBEBOARD` del export, así que esos pasaron a `posibles`.
 
+### ⚠ Menos texto: que se explique sola (Héctor, 29/10/2026)
+
+> «Intenta hacer la web como una web, no hecha por IA, sin tantas
+> explicaciones, que con los títulos, opciones y botones se autoexplique.
+> Minimalista.»
+
+Es la crítica más útil que ha hecho, y describe un vicio: **explicar en
+pantalla lo que ya dice el botón**. Un párrafo debajo de cada cosa
+tranquiliza a quien lo escribe y estorba a quien lo usa.
+
+Lo que se quitó en el repaso:
+
+- Los párrafos de la puerta, los ajustes, la clave, la mesa, la paleta y
+  la importación.
+- «Lo que falta» y «El plan» con las fases: era andamio de desarrollo
+  puesto en la cara del usuario.
+- Las comprobaciones del aparato pasan a ir **plegadas**: hacen falta una
+  vez, el día que algo no va.
+- El pie del turno se queda en lo mínimo: «Te toca · 3 turnos».
+
+**La regla, de aquí en adelante:** si hace falta un párrafo para explicar
+un botón, el botón está mal puesto o mal escrito. Primero se arregla el
+botón. El porqué va a estas directrices, que para eso están.
+
+### Elegir mazo y la moneda (29/10/2026)
+
+- **No se juega sin que los dos hayan elegido mazo** (regla 5). Hasta que
+  los dos no eligen, no aparecen los contadores.
+- **El mazo elegido viaja por el canal de datos**, no se lee de la base:
+  el rival lo ve aunque Supabase esté dormida.
+- **La moneda** sustituye al dado: una cara por jugador, no puede empatar.
+  **El resultado se decide antes de girar**; la animación es solo eso, y
+  así no hay forma de que lo que se ve cambie lo que sale.
+- La tira cualquiera de los dos y vale la primera que llegue. Entre dos
+  amigos basta; el apaño de los números tapados sigue escrito por si algún
+  día hace falta.
+- Las caras son la inicial del nombre **hasta que haya avatares**.
+
 ### Editar e importar (29/10/2026)
 
 - **Mazo nuevo**, cambiar nombre, formato y notas, y **borrar** el mazo.

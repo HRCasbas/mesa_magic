@@ -245,10 +245,6 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
             </form>
 
             <h3 className="zona__titulo">Importar</h3>
-            <p className="aviso aviso--suelto">
-              Pega la lista tal y como la saca tu programa de mazos.{' '}
-              <strong>Reemplaza todas las cartas</strong> de este mazo.
-            </p>
             <Importar
               guardar={async (leidas) => {
                 await guardarCartas(abierto.id, leidas)

@@ -158,9 +158,6 @@ export function PantallaConsultas({
       >
         {apuntando ? 'Encuadra la carta…' : 'Ampliar una carta'}
       </button>
-      {apuntando && (
-        <p className="aviso aviso--suelto">Arrastra un recuadro alrededor de la carta.</p>
-      )}
       {esperandoFoto && <p className="cargando">Pidiéndola…</p>}
       {leyendo && <p className="cargando">Leyendo el nombre…</p>}
       {falloFoto && <p className="recado recado--mal">{falloFoto}</p>}

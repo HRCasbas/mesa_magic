@@ -16,20 +16,6 @@ import { mensajeDeError, supabase } from './supabase'
 
 const SIGNOS: Record<Resultado, string> = { bien: '✓', mal: '✕', duda: '?' }
 
-/** Las fases del proyecto. La primera sin hacer es la que toca ahora. */
-const FASES = [
-  { numero: 0, nombre: 'El terreno', hecha: true },
-  { numero: 1, nombre: 'La puerta', hecha: true },
-  { numero: 2, nombre: 'La mesa', hecha: true },
-  { numero: 3, nombre: 'El vídeo', hecha: true },
-  { numero: 4, nombre: 'Los contadores', hecha: true },
-  { numero: 5, nombre: 'Las pegatinas', hecha: true },
-  { numero: 6, nombre: 'Leer las cartas', hecha: true },
-  { numero: 7, nombre: 'Los mazos', hecha: false },
-  { numero: 8, nombre: 'El historial', hecha: false },
-  { numero: 9, nombre: 'El remate', hecha: false },
-]
-
 /** La primera vez que entras no tienes ficha todavia, y hace falta un nombre. */
 function PedirNombre({ idUsuario, hecho }: { idUsuario: string; hecho: () => void }) {
   const [nombre, setNombre] = useState('')
@@ -54,10 +40,6 @@ function PedirNombre({ idUsuario, hecho }: { idUsuario: string; hecho: () => voi
     <main className="pagina">
       <section className="tarjeta">
         <h2>¿Cómo te llamas?</h2>
-        <p>
-          Es el nombre con el que te va a ver tu rival: en el dado de quién empieza y en el
-          historial de partidas. Se puede cambiar luego.
-        </p>
         <form onSubmit={guardar} className="entrada__forma">
           <label className="campo">
             <span className="campo__nombre">Tu nombre</span>
@@ -126,7 +108,6 @@ export function PantallaDentro({
   }
 
   const aparato = datosDelAparato()
-  const fallos = comprobaciones?.filter((c) => c.resultado === 'mal').length ?? 0
 
   return (
     <main className="pagina">
@@ -156,41 +137,19 @@ export function PantallaDentro({
 
       <PantallaMesa nombre={jugador.nombre} />
 
-      <section className="tarjeta">
-        <h2>¿Sirve este aparato?</h2>
+      {/* Las comprobaciones del aparato van plegadas: hacen falta una vez,
+          el día que algo no va, y el resto del tiempo son ruido. */}
+      <details className="comprobar">
+        <summary>¿Sirve este aparato?</summary>
         {comprobaciones === null ? (
           <p className="cargando">Comprobando…</p>
         ) : (
-          <>
-            <ul className="comprobaciones">
-              {comprobaciones.map((dato) => (
-                <FilaComprobacion key={dato.clave} dato={dato} />
-              ))}
-            </ul>
-            <p className={fallos === 0 ? 'resumen resumen--bien' : 'resumen resumen--mal'}>
-              {fallos === 0
-                ? 'Este aparato sirve.'
-                : fallos === 1
-                  ? 'Hay 1 comprobación en rojo. Dímelo y la miramos.'
-                  : `Hay ${fallos} comprobaciones en rojo. Dímelo y las miramos.`}
-            </p>
-          </>
+          <ul className="comprobaciones">
+            {comprobaciones.map((dato) => (
+              <FilaComprobacion key={dato.clave} dato={dato} />
+            ))}
+          </ul>
         )}
-      </section>
-
-      <section className="tarjeta">
-        <h2>El plan</h2>
-        <ol className="fases">
-          {FASES.map((fase) => (
-            <li key={fase.numero} className={fase.hecha ? 'fase fase--hecha' : 'fase'}>
-              <span className="fase__numero">{fase.numero}</span>
-              <span className="fase__nombre">{fase.nombre}</span>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <footer className="pie">
         <dl className="aparato">
           {aparato.map((dato) => (
             <div key={dato.etiqueta} className="aparato__par">
@@ -199,7 +158,7 @@ export function PantallaDentro({
             </div>
           ))}
         </dl>
-      </footer>
+      </details>
     </main>
   )
 }

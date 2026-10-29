@@ -35,11 +35,6 @@ export function PantallaAjustes({ cerrar }: { cerrar: () => void }) {
         </select>
       </label>
 
-      <p className="aviso aviso--suelto">
-        Las cartas se buscan y se enseñan en ese idioma. Si una carta nunca se imprimió así, se
-        enseña la que haya.
-      </p>
-
       {guardado && <p className="recado recado--bien">Guardado.</p>}
 
       <button type="button" className="boton boton--plano" onClick={cerrar}>
