@@ -85,15 +85,20 @@ export function LateralPartida({
         </button>
       </div>
 
-      <div className="lateral__dentro">
+      <div className={pestana === "cartas" ? "lateral__dentro lateral__dentro--lista" : "lateral__dentro"}>
         {pestana === "partida" ? (
           <>
-            <ElegirMazo
-              mio={mazoMio}
-              suyo={mazoSuyo}
-              nombreDelOtro={nombreDelOtro}
-              elegir={elegirMazo}
-            />
+            {/* Una vez empezada la partida, los mazos ya se saben: la
+                sección sobra y lo que hace es robarle sitio a lo que sí
+                se toca cada turno. */}
+            {!contadores.compartido.empieza && (
+              <ElegirMazo
+                mio={mazoMio}
+                suyo={mazoSuyo}
+                nombreDelOtro={nombreDelOtro}
+                elegir={elegirMazo}
+              />
+            )}
 
             {mazoMio && mazoSuyo && (
             <PantallaContadores

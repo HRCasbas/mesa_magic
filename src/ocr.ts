@@ -123,9 +123,21 @@ function soloElNombre(imagen: HTMLImageElement): HTMLCanvasElement | null {
     if (gris > masClaro) masClaro = gris
   }
 
+  // ⚠ SI NO HAY NADA, NO SE LEE NADA. Se mira ANTES de estirar el
+  // contraste, porque estirar le saca relieve hasta al ruido. Encuadrando
+  // un trozo liso —un hueco negro de la mesa— el lector sacaba basura
+  // («EIGEN Ly») y luego se buscaba esa basura. Un trozo donde casi todos
+  // los píxeles son del mismo tono no tiene texto, y punto.
+  const recorrido = masClaro - masOscuro
+  const medio = (masOscuro + masClaro) / 2
+  let conSustancia = 0
+  for (let i = 0; i < p.length; i += 4) {
+    if (Math.abs(p[i] - medio) > 40) conSustancia += 1
+  }
+  if (recorrido < 60 || conSustancia / (p.length / 4) < 0.03) return null
+
   // Estirar el contraste: una foto de una carta con brillos sale apagada,
   // y esto le devuelve el blanco y el negro sin inventarse nada.
-  const recorrido = masClaro - masOscuro
   if (recorrido > 10) {
     for (let i = 0; i < p.length; i += 4) {
       const v = ((p[i] - masOscuro) * 255) / recorrido

@@ -131,14 +131,20 @@ export async function adivinar(linea: string, idioma: string): Promise<Carta | n
 
   const intentos: string[] = []
   // El principio suele leerse mejor que el final.
-  if (limpio.length >= 5) intentos.push(limpio.slice(0, 8).trim())
+  if (limpio.length >= 6) intentos.push(limpio.slice(0, 8).trim())
   // Y una palabra larga suele ser la distintiva del nombre.
   const larga = limpio.split(' ').sort((a, b) => b.length - a.length)[0]
-  if (larga && larga.length >= 5) intentos.push(larga)
+  if (larga && larga.length >= 6) intentos.push(larga)
 
   for (const intento of intentos) {
     const sugerencias = await autocompletar(intento)
     for (const sugerida of sugerencias.slice(0, 2)) {
+      // ⚠ Y AQUÍ SE COMPRUEBA QUE SE PARECE. Autocompletar devuelve algo
+      // casi siempre, aunque le des basura: encuadrando un cuadro negro,
+      // el lector sacó `EIGEN Ly` y esto contestaba tan contento
+      // «Zhang He, Wei General». Una carta inventada con seguridad es
+      // peor que no dar ninguna.
+      if (!seParecen(limpio, sugerida)) continue
       try {
         return await enTuIdioma(await porNombre(sugerida), idioma)
       } catch {
@@ -147,6 +153,40 @@ export async function adivinar(linea: string, idioma: string): Promise<Carta | n
     }
   }
   return null
+}
+
+/** Letras y nada más, en minúscula: para comparar sin tropezar con tildes. */
+function soloLetras(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '')
+}
+
+/**
+ * Si lo leído y lo sugerido son razonablemente la misma cosa.
+ *
+ * Se pide que **más de la mitad** de las letras de lo leído estén en la
+ * sugerencia, en el mismo orden. Es tolerante con un OCR que se come
+ * letras o se inventa alguna, y corta en seco las sugerencias que no
+ * tienen nada que ver.
+ */
+function seParecen(leido: string, sugerida: string): boolean {
+  const a = soloLetras(leido)
+  const b = soloLetras(sugerida)
+  if (a.length < 5 || b.length === 0) return false
+
+  let encajan = 0
+  let donde = 0
+  for (const letra of a) {
+    const sitio = b.indexOf(letra, donde)
+    if (sitio >= 0) {
+      encajan += 1
+      donde = sitio + 1
+    }
+  }
+  return encajan / a.length > 0.6
 }
 
 export async function buscar(escrito: string, idioma: string): Promise<Carta> {

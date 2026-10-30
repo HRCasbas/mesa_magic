@@ -1,5 +1,4 @@
 import {
-  FASES,
   numeroDeTurno,
   turnosJugados,
   useContadores,
@@ -123,17 +122,8 @@ export function PantallaContadores({
           <p className="turno__donde">
             Turno <strong>{numeroDeTurno(compartido)}</strong> de{' '}
             <strong>{nombreDeQuienJuega}</strong>
-            <span className="turno__fase">{FASES[compartido.fase]}</span>
           </p>
           <div className="turno__botones">
-            <button
-              type="button"
-              className="boton boton--plano"
-              onClick={contadores.siguienteFase}
-              disabled={!esMiTurno}
-            >
-              Siguiente fase
-            </button>
             <button
               type="button"
               className="boton boton--principal"
@@ -172,7 +162,7 @@ export function PantallaContadores({
 
       <div className="controles">
         <button type="button" className="boton boton--plano" onClick={contadores.reiniciarMios}>
-          Reiniciar mis contadores
+          Reiniciar
         </button>
         <button type="button" className="boton boton--plano" onClick={contadores.partidaNueva}>
           Partida nueva

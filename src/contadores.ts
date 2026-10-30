@@ -31,11 +31,13 @@ export const CONTADORES_NUEVOS: Contadores = {
   energia: 0,
 }
 
-/** Las fases del turno, en el orden en que van. */
-export const FASES = ['Inicio', 'Principal 1', 'Combate', 'Principal 2', 'Final'] as const
-
 /**
- * Lo que es de los dos: quién empieza, qué turno se juega y en qué fase va.
+ * Lo que es de los dos: quién empieza y qué turno se juega.
+ *
+ * LAS FASES SE QUITARON (Héctor, 30/10/2026: «no lo vamos a usar»). En
+ * una mesa de verdad las fases se cantan en voz alta y se ven; llevarlas
+ * en pantalla era un botón más que tocar en cada turno para no enterarse
+ * de nada nuevo.
  *
  * CÓMO SE CUENTAN LOS TURNOS (Héctor, 27/10/2026). En Magic un turno es de
  * UNO, no de los dos: turno 1 de A, turno 1 de B, turno 2 de A… Así que
@@ -59,11 +61,10 @@ export interface Compartido {
   empieza: string
   /** El turno que se está jugando, contando los de los dos: 1, 2, 3… */
   turnoEnJuego: number
-  fase: number
   secuencia: number
 }
 
-const COMPARTIDO_NUEVO: Compartido = { empieza: '', turnoEnJuego: 1, fase: 0, secuencia: 0 }
+const COMPARTIDO_NUEVO: Compartido = { empieza: '', turnoEnJuego: 1, secuencia: 0 }
 
 /** De quién es el turno que se juega ahora. */
 export function deQuienEsElTurno(c: Compartido, tuId: string, suId: string): string {
@@ -85,7 +86,7 @@ export function turnosJugados(c: Compartido): number {
 
 type Mensaje =
   | { que: 'contadores'; valores: Contadores }
-  | { que: 'compartido'; empieza: string; turnoEnJuego: number; fase: number; secuencia: number }
+  | { que: 'compartido'; empieza: string; turnoEnJuego: number; secuencia: number }
   /** «Acabo de llegar, cuéntame cómo va». */
   | { que: 'hola' }
 
@@ -159,22 +160,10 @@ export function useContadores({
     return deQuienEsElTurno(c, tuId, suId) === tuId
   }
 
-  const siguienteFase = useCallback(() => {
-    setCompartido((c) => {
-      if (!esSuyoElTurno(c)) return c
-      const siguiente = c.fase + 1
-      return siguiente < FASES.length
-        ? { ...c, fase: siguiente, secuencia: c.secuencia + 1 }
-        : { ...c, turnoEnJuego: c.turnoEnJuego + 1, fase: 0, secuencia: c.secuencia + 1 }
-    })
-    // `esSuyoElTurno` solo depende de estos dos, que no cambian en una mesa.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tuId, suId])
-
   const pasarTurno = useCallback(() => {
     setCompartido((c) =>
       esSuyoElTurno(c)
-        ? { ...c, turnoEnJuego: c.turnoEnJuego + 1, fase: 0, secuencia: c.secuencia + 1 }
+        ? { ...c, turnoEnJuego: c.turnoEnJuego + 1, secuencia: c.secuencia + 1 }
         : c,
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -185,13 +174,13 @@ export function useContadores({
     setCompartido((c) => ({
       ...c,
       turnoEnJuego: Math.max(1, c.turnoEnJuego - 1),
-      fase: 0,
+
       secuencia: c.secuencia + 1,
     }))
   }, [])
 
   const elegirQuienEmpieza = useCallback((id: string) => {
-    setCompartido((c) => ({ empieza: id, turnoEnJuego: 1, fase: 0, secuencia: c.secuencia + 1 }))
+    setCompartido((c) => ({ empieza: id, turnoEnJuego: 1, secuencia: c.secuencia + 1 }))
   }, [])
 
   const partidaNueva = useCallback(() => {
@@ -230,7 +219,7 @@ export function useContadores({
             ? {
                 empieza: mensaje.empieza,
                 turnoEnJuego: mensaje.turnoEnJuego,
-                fase: mensaje.fase,
+
                 secuencia: mensaje.secuencia,
               }
             : c,
@@ -276,7 +265,7 @@ export function useContadores({
     enlazados: datosAbiertos,
     cambiar,
     reiniciarMios,
-    siguienteFase,
+
     pasarTurno,
     turnoAtras,
     elegirQuienEmpieza,

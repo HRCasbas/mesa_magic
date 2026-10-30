@@ -1189,6 +1189,54 @@ está en una de tres:
 Migración `magic_003_tres_zonas_del_mazo`. Los quince mazos importados
 venían del `// MAYBEBOARD` del export, así que esos pasaron a `posibles`.
 
+### ⚠⚠ El buscador se inventaba cartas (arreglado el 30/10/2026)
+
+Héctor encuadró **un cuadro negro** y la web le contestó, muy segura,
+«Zhang He, Wei General». El lector había sacado `EIGEN Ly` y el apaño de
+autocompletar se tragó eso como si fuera un nombre.
+
+**Una carta inventada con seguridad es peor que no dar ninguna**, porque
+el que la mira se la cree. Dos cierres, los dos necesarios:
+
+1. **No se lee un trozo liso.** Antes de pasar nada al lector se mira si
+   hay algo que leer: si casi todos los píxeles son del mismo tono, no hay
+   texto y se para ahí. Se mira **antes** de estirar el contraste, que
+   estirar le saca relieve hasta al ruido.
+2. **La sugerencia tiene que parecerse a lo leído.** Autocompletar
+   devuelve algo casi siempre, le des lo que le des. Ahora se exige que
+   más de la mitad de las letras de lo leído aparezcan, en orden, en la
+   sugerencia.
+
+**Probado el 30/10/2026:**
+
+| Se lee | Antes | Ahora |
+|---|---|---|
+| `EIGEN Ly` | Zhang He, Wei General | **nada** |
+| `a - a SEN a` | algo | **nada** |
+| `Ghalta the Unstoppble` | — | Ghalta the Unstoppable |
+| `Canopv Vista` | — | Canopy Vista |
+
+O sea: deja de inventar **sin** perder la tolerancia a las erratas, que
+era lo que había que conseguir.
+
+### Más pegas de uso (Héctor, 30/10/2026)
+
+- **Los desplegables venían con el estilo de Windows**, blancos y azules,
+  cantando al lado del resto. Ahora llevan el de la web, con la flecha
+  dibujada a mano, que es lo único que deja hacer `appearance: none`.
+- **Fuera las fases del turno.** «No lo vamos a usar»: en una mesa de
+  verdad las fases se cantan y se ven, y llevarlas en pantalla era un
+  botón más que tocar cada turno para no enterarse de nada nuevo.
+- **La sección de mazos desaparece al empezar la partida.** Ya se sabe con
+  qué juega cada uno, y lo que hacía era robarle sitio a lo que sí se toca
+  cada turno.
+- **«Reiniciar mis contadores» → «Reiniciar»**, y los botones planos con
+  fondo, que parecían texto.
+- **El panel de la derecha no se desplaza.** Lo que se toca en cada turno
+  no puede estar debajo de la línea del agua. Con las fases fuera, los
+  mazos escondidos y todo más apretado, cabe; el desplazamiento se queda
+  solo en la pestaña de cartas, que es una lista sin tope.
+
 ### ⚠ Menos texto: que se explique sola (Héctor, 29/10/2026)
 
 > «Intenta hacer la web como una web, no hecha por IA, sin tantas
