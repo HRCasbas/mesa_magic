@@ -2076,12 +2076,17 @@ mira».
 
 ## Pendiente de que Héctor decida
 
-- **El fichero de export de los mazos** (27/10/2026). Héctor dijo que lo
-  daría «en su momento». **Sin verlo no se puede escribir la importación**,
-  así que hay que pedírselo antes de empezar la fase 7. Lo demás de las
-  cartas ya está decidido: se importan y el rival las ve.
 - **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
-  0 tuviera título. La dirección ya sí está elegida: `magic-mesa.pages.dev`.
+  0 tuviera título. La dirección ya sí está elegida:
+  `magic-mesa.duelo.workers.dev`.
+- **El avatar de verdad.** Ahora es la inicial sobre un color sacado del
+  nombre. Hay una columna `avatar` en `magic.jugadores` esperando, y
+  Supabase Storage da 1 GB gratis.
+- **La red de seguridad de GitHub Pages sigue encendida**
+  (`.github/workflows/publicar.yml`): publica una copia en
+  `hrcasbas.github.io/mesa_magic/`. Sirvió cuando Cloudflare era nuevo; hoy
+  es una segunda dirección con la misma web que nadie mira. Se puede
+  apagar.
 - **Cloudflare Access** (gratis hasta 50 usuarios) pondría una puerta en el
   borde, antes de que la web llegue a cargarse. Más seguro, pero añade un
   código al correo cada vez. No se ha metido.
