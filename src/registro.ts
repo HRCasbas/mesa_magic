@@ -18,8 +18,17 @@
 // sin el código de la mesa, que lo dictáis vosotros y cambia cada partida.
 // Una cuenta de más no puede ver vuestra partida ni encender nada vuestro.
 
-export const CODIGO_DE_INVITACION = 'MAGIC-MESA'
+// Cambiado el 30/10/2026: el anterior, 'MAGIC-MESA', se adivinaba solo
+// con leer el nombre de la web.
+export const CODIGO_DE_INVITACION = 'Con23dedos'
 
+/**
+ * Da igual cómo lo escriba: con mayúsculas o sin ellas, vale.
+ *
+ * Un código se dicta por teléfono o se manda por un mensaje, y el que lo
+ * recibe no sabe dónde van las mayúsculas. Afinar eso no añade ni una
+ * pizca de seguridad y sí una vuelta más a quien está entrando.
+ */
 export function valeElCodigo(escrito: string): boolean {
-  return escrito.trim().toUpperCase() === CODIGO_DE_INVITACION
+  return escrito.trim().toLowerCase() === CODIGO_DE_INVITACION.toLowerCase()
 }
