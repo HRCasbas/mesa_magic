@@ -2131,6 +2131,43 @@ vídeo de los dos pasaría por un servidor de un tercero y los cupos son de
 
 ---
 
+## El relé, encendido (30/10/2026)
+
+Funciona: `/api/servidores` devuelve `"hayRele":true` y los `turn:` de
+Cloudflare. Tres cosas que costaron y conviene no repetir.
+
+**Cloudflare pide método de pago aunque el total sea 0,00 €.** Se resolvió
+con **PayPal**, que aparece como botón en la misma pantalla de alta. No
+hace falta tarjeta. El alta no cuaja hasta que se rellena la dirección de
+facturación entera y se pulsa el botón del final: a medias, el panel sigue
+ofreciendo «Comenzar» y parece que no se ha hecho nada.
+
+**⚠ LOS SECRETOS, DE TIPO «SECRETO», NUNCA «VARIABLE».** Las credenciales
+se pusieron como Variables de texto plano y **el siguiente despliegue desde
+git se las llevó por delante**: `wrangler deploy` manda las `vars` de
+`wrangler.jsonc` y borra las que se hayan añadido a mano por el panel. Los
+secretos no se tocan. El síntoma engaña: el relé deja de funcionar sin que
+nadie haya tocado nada del relé.
+
+**El nombre de un secreto no se puede cambiar.** Se escribió
+`TURN_CLAVE_I` sin la D y el panel deja editar el tipo y el valor, pero no
+el nombre: hay que borrarlo y crearlo otra vez.
+
+**Y el código esperaba otra forma de respuesta.** Con las credenciales ya
+puestas seguía sin haber relé: se leía `iceServers` como un objeto con
+`urls` y Cloudflare devuelve una **lista**. Ahora se admiten las dos
+formas, y cuando no viene nada útil el motivo dice **qué campos vinieron**
+—los nombres, nunca los valores, que ahí dentro hay credenciales y el
+motivo se enseña en el diagnóstico—. La lección: una llamada que devuelve
+200 y un JSON que no cuadra es el fallo más caro de encontrar, porque no
+parece un fallo.
+
+**Dónde está todo:** app TURN `mesa-magic` en Realtime → TURN. El **ID** se
+puede volver a ver siempre; el **token de API**, solo el día que se crea, y
+si se pierde se rota desde los tres puntos de la app sin que cambie el ID.
+
+---
+
 ## Pendiente de que Héctor decida
 
 - **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
@@ -2152,9 +2189,7 @@ vídeo de los dos pasaría por un servidor de un tercero y los cupos son de
   **ve girar la moneda**, pero sigue sin poder comprobar nada. Hay un truco
   limpio: cada uno manda su número tapado y solo al tener los dos se
   destapan y se suman. Media hora de trabajo.
-- **El relé TURN.** Probado y comprobado que hace falta (móvil con datos
-  contra PC: no entra la imagen), pero Cloudflare pide tarjeta para dar de
-  alta Realtime aunque el total sea 0,00 €. Sin decidir.
+- ~~El relé TURN.~~ **Hecho el 30/10/2026**, pagando 0,00 € con PayPal.
 
 ---
 
