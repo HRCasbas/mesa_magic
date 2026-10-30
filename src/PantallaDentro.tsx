@@ -8,6 +8,7 @@ import {
 } from './comprobaciones'
 import { MenuCuenta } from './MenuCuenta'
 import { PantallaAjustes } from './PantallaAjustes'
+import { PantallaHistorial } from './PantallaHistorial'
 import { PantallaMazos } from './PantallaMazos'
 import { PantallaClave } from './PantallaClave'
 import { PantallaMesa } from './PantallaMesa'
@@ -90,7 +91,7 @@ export function PantallaDentro({
 }) {
   const [comprobaciones, setComprobaciones] = useState<Comprobacion[] | null>(null)
   /** En qué sección estás. Solo se ve una cada vez. */
-  const [donde, setDonde] = useState<"mesa" | "mazos" | "ajustes" | "clave">("mesa")
+  const [donde, setDonde] = useState<"mesa" | "mazos" | "ajustes" | "clave" | "historial">("mesa")
   const volver = () => setDonde("mesa")
 
   useEffect(() => {
@@ -121,6 +122,7 @@ export function PantallaDentro({
           cambiarClave={() => setDonde("clave")}
           abrirAjustes={() => setDonde("ajustes")}
           abrirMazos={() => setDonde("mazos")}
+          abrirHistorial={() => setDonde("historial")}
         />
       </header>
 
@@ -128,7 +130,8 @@ export function PantallaDentro({
           debajo: se va a ella y se vuelve. Antes se añadían al final de la
           página y había que buscarlas con la rueda del ratón. */}
       {donde === 'mazos' && <PantallaMazos idUsuario={idUsuario} cerrar={volver} />}
-      {donde === 'ajustes' && <PantallaAjustes cerrar={volver} />}
+      {donde === "ajustes" && <PantallaAjustes cerrar={volver} />}
+      {donde === "historial" && <PantallaHistorial tuId={idUsuario} cerrar={volver} />}
       {donde === 'clave' && (
         <PantallaClave recuperando={false} hecho={volver} cancelar={volver} />
       )}

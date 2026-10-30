@@ -5,7 +5,9 @@ import { Paleta } from './Paleta'
 import type { MazoEnJuego } from './mazoElegido'
 import { PantallaConsultas } from './PantallaConsultas'
 import { PantallaContadores } from './PantallaContadores'
+import { FinDePartida } from './FinDePartida'
 import type { useContadores } from './contadores'
+import type { useFinDePartida } from './partidas'
 import type { ClasePegatina } from './pegatinas'
 
 type Pestana = 'partida' | 'cartas'
@@ -40,6 +42,7 @@ export function LateralPartida({
   mazoSuyo,
   elegirMazo,
   contadores,
+  fin,
 }: {
   codigo: string
   tuId: string
@@ -63,6 +66,7 @@ export function LateralPartida({
   mazoSuyo: MazoEnJuego | null
   elegirMazo: (mazo: MazoEnJuego | null) => void
   contadores: ReturnType<typeof useContadores>
+  fin: ReturnType<typeof useFinDePartida>
 }) {
   const [pestana, setPestana] = useState<Pestana>('partida')
 
@@ -107,6 +111,16 @@ export function LateralPartida({
               nombreDelOtro={nombreDelOtro}
               contadores={contadores}
             />
+            )}
+
+            {contadores.compartido.empieza && suId && (
+              <FinDePartida
+                tuId={tuId}
+                suId={suId}
+                tuNombre={tuNombre}
+                suNombre={nombreDelOtro ?? "Tu rival"}
+                fin={fin}
+              />
             )}
 
             <section className="tarjeta">

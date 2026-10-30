@@ -2226,3 +2226,95 @@ select option {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+/* ---- Fin de partida ---- */
+
+.fin {
+  border-color: var(--acento);
+}
+
+.fin__dice {
+  margin: 0 0 0.75rem;
+}
+
+.fin__abrir {
+  width: 100%;
+}
+
+/* ---- El historial ---- */
+
+.balance {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.6rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.balance li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.balance strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.partidas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.partida {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem 0.4rem 0;
+  border: 1px solid var(--borde);
+  border-left: 3px solid var(--mal);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.partida--gane {
+  border-left-color: var(--bien);
+}
+
+.partida__portada {
+  flex: 0 0 4.5rem;
+  height: 3.2rem;
+  background: var(--fondo);
+  overflow: hidden;
+}
+
+.partida__portada img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.partida__texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.partida__contra {
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
+.partida__detalle {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+}

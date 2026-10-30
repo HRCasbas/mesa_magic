@@ -1,13 +1,14 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useState, type FormEvent } from 'react'
 
 import { BarraPartida } from './BarraPartida'
 import { LateralPartida } from './LateralPartida'
 import { Moneda } from './Moneda'
 import { Mesa } from './Tapete'
-import { useContadores } from './contadores'
+import { turnosJugados, useContadores } from './contadores'
 import { useEnlace } from './enlace'
 import { useFotos } from './fotos'
 import { useMazoElegido } from './mazoElegido'
+import { useFinDePartida } from './partidas'
 import { useMesa } from './mesa'
 import { usePegatinas } from './pegatinas'
 
@@ -63,6 +64,30 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
     datosAbiertos: enlace.datosAbiertos,
     enviarDato: enlace.enviarDato,
     alRecibirDato: enlace.alRecibirDato,
+  })
+
+  // Al cerrar una partida se vuelve a la moneda con el mismo mazo puesto:
+  // no hay series, hay partidas sueltas encadenadas (regla 5). Las dos
+  // funciones son estables, así que esto tampoco cambia en cada pintado y
+  // el oyente del canal no se vuelve a enganchar sin parar.
+  const { partidaNueva, reiniciarMios } = contadores
+  const volverAEmpezar = useCallback(() => {
+    partidaNueva()
+    reiniciarMios()
+  }, [partidaNueva, reiniciarMios])
+
+  const fin = useFinDePartida({
+    tuId: mesa.tuId ?? "",
+    tuNombre: nombre,
+    suId: elOtro?.id ?? null,
+    suNombre: elOtro?.nombre ?? "",
+    miMazo: mazo.mio,
+    suMazo: mazo.suyo,
+    turnos: turnosJugados(contadores.compartido),
+    empezo: contadores.compartido.empieza,
+    enviarDato: enlace.enviarDato,
+    alRecibirDato: enlace.alRecibirDato,
+    alTerminar: volverAEmpezar,
   })
 
   const [apuntando, setApuntando] = useState(false)
@@ -237,6 +262,7 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
         mazoSuyo={mazo.suyo}
         elegirMazo={mazo.elegir}
         contadores={contadores}
+        fin={fin}
       />
     </div>
   )

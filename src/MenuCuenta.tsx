@@ -14,11 +14,13 @@ export function MenuCuenta({
   cambiarClave,
   abrirAjustes,
   abrirMazos,
+  abrirHistorial,
 }: {
   nombre: string
   cambiarClave: () => void
   abrirAjustes: () => void
   abrirMazos: () => void
+  abrirHistorial: () => void
 }) {
   const [abierto, setAbierto] = useState(false)
   const caja = useRef<HTMLDivElement>(null)
@@ -58,6 +60,16 @@ export function MenuCuenta({
             }}
           >
             Mis mazos
+          </button>
+          <button
+            type="button"
+            className="cuenta__opcion"
+            onClick={() => {
+              setAbierto(false)
+              abrirHistorial()
+            }}
+          >
+            Historial
           </button>
           <button
             type="button"

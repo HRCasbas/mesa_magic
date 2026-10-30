@@ -106,7 +106,9 @@ src/
   registro.ts         el código de invitación, y hasta dónde protege
   PantallaDentro.tsx  lo que se ve con sesión
   PantallaMesa.tsx    crear mesa, entrar con código, ver quién está
-  PantallaVideo.tsx   las dos imágenes, los cortes y el diagnóstico
+  Tapete.tsx          una mesa vista por la cámara, con sus pegatinas
+  BarraPartida.tsx    la barra de la izquierda: cámara, micro, salir
+  LateralPartida.tsx  el panel de la derecha, en dos pestañas
   PantallaContadores.tsx  vidas, veneno, turno y fase
   sesion.ts           lleva la sesión y la ficha del jugador
   mesa.ts             la conexión con la mesa
@@ -115,6 +117,11 @@ src/
   mazos.ts            tus mazos y sus cartas, de la base de datos
   importar.ts         leer una lista de cartas pegada tal cual
   PantallaMazos.tsx   verlos, con las cartas apiladas
+  partidas.ts         terminar una partida y el historial
+  FinDePartida.tsx    declarar ganador y que el otro lo acepte
+  PantallaHistorial.tsx  las partidas jugadas y el balance por mazo
+  Moneda.tsx          quien empieza
+  avatar.ts           un avatar de mentira hasta que haya de verdad
   ajustes.ts          lo que eliges una vez, como el idioma
   pegatinas.ts        las pegatinas sobre el vídeo, en coordenadas 0-1
   CapaPegatinas.tsx   la capa que las pinta y deja arrastrarlas

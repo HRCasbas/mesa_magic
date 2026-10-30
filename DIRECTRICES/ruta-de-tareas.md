@@ -38,7 +38,7 @@ Tres cosas:
 | **5** | Las pegatinas arrastrables | **Hecha** (27/10/2026) |
 | **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | **Hecha** (28/10/2026), falta el OCR |
 | **7** | Mazos: zona propia, portada, elegir mazo para jugar | |
-| **8** | Historial: declarar ganador, aceptar, y qué sale del registro | |
+| **8** | Historial: declarar ganador, aceptar, y qué sale del registro | **Hecha** (30/10/2026) |
 | **9** | El remate: PWA, pantalla que no se apaga, atajos | |
 
 **Supabase solo se toca en la fase 1 y en la 7.** De la 2 a la 6, todo
@@ -1379,6 +1379,63 @@ buscarla por nombre cuando no haya identificador.**
 
 El formato quedó en `Casual` para todos, que es el valor por defecto:
 adivinarlo habría sido peor que dejarlo para que lo cambie él.
+
+---
+
+## Fase 8: el historial (30/10/2026)
+
+Migración `magic_004_historial_de_partidas`, probada antes con `rollback`.
+
+### Quién decide y quién escribe
+
+**La aplicación no decide nada** (regla 6). Uno declara —quién gana y por
+qué— y al otro le sale el recado con «De acuerdo» o «No». Estar a cero
+vidas no es perder, y Magic tiene demasiadas casuísticas para que un
+programa se ponga a adivinar.
+
+**La fila la escribe el que ACEPTA.** Es quien confirma que es verdad, y
+así hay un solo escritor: no salen dos filas por partida ni hay que
+ponerse a quitar repetidos.
+
+### Lo que se guarda, y por qué así
+
+La regla 8 dice que una partida vieja no puede quedarse en blanco porque
+hoy borres un mazo. Así que **la partida guarda su propia copia**: el
+nombre del mazo, su portada y el nombre de cada jugador **tal como estaban
+ese día**. No se apunta al mazo, se copia.
+
+Y se guardan los turnos jugados, que **salen solos** del contador
+compartido (`turnoEnJuego - 1`): no hay nada que llevar al día.
+
+Motivos: vidas, veneno, sin biblioteca, por una carta, se rindió, otra
+cosa. Son los que dijo Héctor el 26/10, y ninguno lo calcula la máquina.
+
+### No hay `update`
+
+Una partida pasada no se edita: si está mal, se borra y se apunta otra.
+Un historial que se puede retocar no sirve para discutir nada.
+
+### Lo que sale de ahí
+
+En «Historial»: cada partida con los dos mazos, quién ganó, por qué,
+cuántos turnos y cuándo. Y arriba, **el balance de cada mazo tuyo**
+(ganadas–perdidas), que es lo que de verdad se mira y lo que justificaba
+obligar a elegir mazo.
+
+### Al terminar, se vuelve a la moneda
+
+No hay series (regla 5): al cerrar una partida se reinician los contadores
+y el turno, **y el mazo elegido se queda puesto**. Si quieres cambiarlo,
+hay botón.
+
+### Probado el 30/10/2026
+
+Los dos lados en la misma página: uno propone, al otro le sale el recado
+con los dos botones y al primero «Retirarlo»; al rechazar, los dos vuelven
+a «Finalizar partida».
+
+**Sin probar: que la partida se apunte de verdad en la base**, que hace
+falta sesión en dos sitios.
 
 ---
 
