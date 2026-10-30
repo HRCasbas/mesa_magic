@@ -1189,6 +1189,40 @@ está en una de tres:
 Migración `magic_003_tres_zonas_del_mazo`. Los quince mazos importados
 venían del `// MAYBEBOARD` del export, así que esos pasaron a `posibles`.
 
+### La pantalla de mazos, a dos columnas (Héctor, 30/10/2026)
+
+Iba todo en una columna de 44 rem y «desaprovechas media pantalla», con
+las cartas de cuatro en cuatro. Ahora, con un mazo abierto:
+
+- **La página se ensancha** (`pagina--ancha`), que esto no se juega en el
+  móvil y no hay por qué apretarlo.
+- **A la izquierda los datos** —portada grande, nombre, formato, notas,
+  añadir carta, importar y borrar—, y **pegada arriba** (`sticky`) para
+  que no se vaya al desplazar.
+- **A la derecha las cartas**, que con el ancho pasan de cuatro por fila a
+  siete u ocho.
+
+### Tocar las cartas una a una
+
+- **Se añade escribiendo el nombre**, con el sitio donde va al lado. Si la
+  carta ya está, sube la cantidad en vez de repetirla.
+- **El botón derecho abre un menú**: «Quitar una» o «Quitar todas». Una ×
+  en cada carta era una × tapando el dibujo de todas.
+- **Importar está detrás de un botón**, en un diálogo. No se importa todos
+  los días, y tener el cuadro de texto siempre abierto le robaba sitio a
+  lo que sí se mira.
+- Lo que tocas se ve al momento: se trabaja sobre una copia en memoria y
+  se guarda detrás, sin esperar a la ida y vuelta.
+
+### ⚠ Las fotos se piden por lo que hay, no por un contador
+
+Al reemplazar las cartas no aparecían las fotos nuevas. La culpa era de
+pedirlas con **un contador de vueltas** que había que acordarse de subir.
+
+Ahora la petición va **atada a los propios nombres**: se junta la lista en
+una cadena y, si esa cadena cambia, se piden otra vez. No hay nada que
+acordarse de subir, porque **la condición es el dato**.
+
 ### ⚠⚠ El buscador se inventaba cartas (arreglado el 30/10/2026)
 
 Héctor encuadró **un cuadro negro** y la web le contestó, muy segura,

@@ -1655,7 +1655,7 @@ body {
   gap: 0.6rem;
 }
 
-.mazo {
+.mazo__ficha {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -1670,7 +1670,7 @@ body {
   overflow: hidden;
 }
 
-.mazo:hover {
+.mazo__ficha:hover {
   border-color: var(--acento);
 }
 
@@ -2095,4 +2095,134 @@ select option {
 
 .lateral .menudo {
   font-size: 0.85rem;
+}
+
+/* ---- Un mazo abierto: datos a la izquierda, cartas a la derecha ----
+   Lo pidio Hector el 30/10/2026: antes todo iba en una columna estrecha y
+   se desaprovechaba media pantalla, con las cartas en cuatro por fila. */
+
+.pagina--ancha {
+  max-width: 100rem;
+}
+
+.mazo {
+  display: grid;
+  grid-template-columns: 19rem 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.mazo__lado {
+  display: grid;
+  gap: 0.9rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.mazo__grande {
+  width: 100%;
+  border-radius: 0.75rem;
+  display: block;
+}
+
+.mazo__anadir {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--borde);
+}
+
+.mazo__abajo {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--borde);
+}
+
+.mazo__cartas {
+  min-width: 0;
+}
+
+/* ---- El menu del boton derecho sobre una carta ---- */
+
+.menucarta {
+  position: fixed;
+  z-index: 40;
+  display: grid;
+  gap: 0.15rem;
+  min-width: 11rem;
+  padding: 0.4rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  background: var(--fondo-tarjeta);
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.5);
+}
+
+.menucarta strong {
+  padding: 0.2rem 0.4rem 0.4rem;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  border-bottom: 1px solid var(--borde);
+  margin-bottom: 0.2rem;
+}
+
+.menucarta button {
+  padding: 0.45rem 0.5rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menucarta button:hover {
+  background: var(--fondo);
+  color: var(--mal);
+}
+
+/* ---- Dialogos ---- */
+
+.dialogo {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(8, 9, 12, 0.72);
+}
+
+.dialogo__caja {
+  width: min(34rem, 100%);
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.9rem;
+  background: var(--fondo-tarjeta);
+}
+
+.dialogo__caja h3 {
+  margin: 0;
+}
+
+.dialogo__caja textarea {
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.dialogo__botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
