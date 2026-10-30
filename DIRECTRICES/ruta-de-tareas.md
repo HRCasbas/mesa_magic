@@ -2230,6 +2230,21 @@ La columna de datos del mazo cabe entera sin desplazarla: lo que la hacía
 larga era la portada a tamaño de carta, y de una portada basta con
 reconocerla.
 
+**El almacén público no abre la puerta de la API** (30/10/2026). Subir una
+foto fallaba con «new row violates row-level security policy» y parecía un
+problema de escritura: lo que faltaba era el permiso de **lectura**. Que un
+bucket sea `public` solo abre el enlace que se pone en un `<img>`; la API
+de objetos sigue mandando por seguridad de filas, y `upsert` empieza por
+mirar si el archivo ya estaba. Arreglado en `magic_006_avatares_a_la_vista`.
+
+**Un comparador tiene que ser consistente aunque falten datos.** El orden
+por coste miraba a Scryfall, y con las cartas aún sin llegar devolvía
+`-1` para la conocida y `1` para la otra: eso no es un orden, es una regla
+que se contradice a sí misma, y la lista salía revuelta con las tierras
+arriba. Ahora cada carta tiene un peso siempre: las tierras básicas se
+reconocen por el nombre sin preguntar a nadie, y lo que no se sabe espera
+al final con coste 99.
+
 ---
 
 ## Pendiente de que Héctor decida

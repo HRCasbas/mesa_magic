@@ -2150,18 +2150,28 @@ select option {
 /* La columna de la izquierda cabe entera en la pantalla y no se desplaza
    (Hector, 30/10/2026). Lo que la hacia larga era la portada a tamaño de
    carta: de la portada basta con reconocerla. */
+/* Se queda quieta y, si lo suyo no cabe, se desplaza ELLA SOLA: lo que
+   molestaba era tener que bajar la pagina entera, con las cartas, para
+   llegar a los botones del mazo (Hector, 30/10/2026). */
 .mazo__lado {
   display: grid;
   gap: 0.75rem;
   position: sticky;
   top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .mazo__grande {
-  width: 9rem;
-  border-radius: 0.6rem;
+  width: 100%;
+  border-radius: 0.75rem;
   display: block;
-  justify-self: center;
+}
+
+/* Las notas son para una linea o dos, no para un escrito. */
+.mazo__lado textarea {
+  min-height: 3.5rem;
 }
 
 .mazo__anadir {

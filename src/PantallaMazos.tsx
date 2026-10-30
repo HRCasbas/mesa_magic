@@ -154,12 +154,25 @@ function DialogoImportar({
  * se dejan al final y en su sitio: moverlas de golpe cuando llega la
  * respuesta sería peor que no ordenarlas.
  */
+const TIERRAS_BASICAS = new Set([
+  'plains', 'island', 'swamp', 'mountain', 'forest', 'wastes',
+  'llanura', 'isla', 'pantano', 'montaña', 'bosque',
+])
+
+/** El coste y si es tierra, con lo que se sepa de cada carta. */
+function pesoDe(carta: CartaDelMazo, foto: Carta | undefined) {
+  if (foto) return { tierra: foto.esTierra, coste: foto.coste }
+  // Todavía no ha llegado de Scryfall. Las tierras básicas se reconocen
+  // por el nombre y van a su sitio igual; el resto espera al final, para
+  // que la lista no dé un salto raro cuando llegue la respuesta.
+  return { tierra: TIERRAS_BASICAS.has(carta.nombre.trim().toLowerCase()), coste: 99 }
+}
+
 function porCoste(deLaZona: CartaDelMazo[], fotos: Map<string, Carta>): CartaDelMazo[] {
   return [...deLaZona].sort((una, otra) => {
-    const a = fotos.get(una.nombre.toLowerCase())
-    const b = fotos.get(otra.nombre.toLowerCase())
-    if (!a || !b) return a ? -1 : b ? 1 : una.orden - otra.orden
-    if (a.esTierra !== b.esTierra) return a.esTierra ? 1 : -1
+    const a = pesoDe(una, fotos.get(una.nombre.toLowerCase()))
+    const b = pesoDe(otra, fotos.get(otra.nombre.toLowerCase()))
+    if (a.tierra !== b.tierra) return a.tierra ? 1 : -1
     if (a.coste !== b.coste) return a.coste - b.coste
     return una.nombre.localeCompare(otra.nombre)
   })
