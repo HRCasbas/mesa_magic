@@ -187,24 +187,34 @@ export function useContadores({
     setCompartido((c) => ({ ...COMPARTIDO_NUEVO, secuencia: c.secuencia + 1 }))
   }, [])
 
-  // El espacio pasa turno. Es la tecla que más se usa en una partida, y
-  // así no hay que soltar las cartas para buscar el botón con el ratón.
+  // Los atajos. Solo dos, y son las dos cosas que se tocan en cada turno:
+  // pasar turno y tus propias vidas. Más teclas serían más cosas que
+  // recordar para no ahorrarse nada.
   useEffect(() => {
     function alPulsar(evento: KeyboardEvent) {
-      if (evento.code !== 'Space' || evento.repeat) return
-      // Dentro de un campo de texto el espacio es un espacio, y punto.
+      if (evento.repeat) return
+      // Dentro de un campo de texto las teclas son del campo, y punto.
       const donde = document.activeElement
       if (donde instanceof HTMLInputElement || donde instanceof HTMLTextAreaElement) return
-      // En cambio sobre un botón sí se le quita: un botón se pulsa con el
-      // espacio al soltarlo, y cortarlo aquí evita que «Turno atrás», que
-      // se queda con el foco después de pulsarlo, siga mandando. El espacio
-      // significa pasar turno SIEMPRE, mire donde mire el foco.
-      evento.preventDefault()
-      pasarTurno()
+
+      if (evento.code === 'Space') {
+        // Sobre un botón sí se le quita el espacio: un botón se pulsa con
+        // el espacio al soltarlo, y cortarlo aquí evita que «Turno atrás»,
+        // que se queda con el foco después de pulsarlo, siga mandando. El
+        // espacio es pasar turno SIEMPRE, mire donde mire el foco.
+        evento.preventDefault()
+        pasarTurno()
+        return
+      }
+
+      if (evento.code === 'ArrowUp' || evento.code === 'ArrowDown') {
+        evento.preventDefault()
+        cambiar('vidas', evento.code === 'ArrowUp' ? 1 : -1)
+      }
     }
     window.addEventListener('keydown', alPulsar)
     return () => window.removeEventListener('keydown', alPulsar)
-  }, [pasarTurno])
+  }, [pasarTurno, cambiar])
 
   // ---- lo que viaja ----
 

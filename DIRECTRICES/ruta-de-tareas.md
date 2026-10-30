@@ -39,7 +39,7 @@ Tres cosas:
 | **6** | Leer las cartas: tocar una carta, foto de alta resolución, ampliar, Scryfall y OCR | **Hecha** (28/10/2026), falta el OCR |
 | **7** | Mazos: zona propia, portada, elegir mazo para jugar | |
 | **8** | Historial: declarar ganador, aceptar, y qué sale del registro | **Hecha** (30/10/2026) |
-| **9** | El remate: PWA, pantalla que no se apaga, atajos | |
+| **9** | El remate: PWA, pantalla que no se apaga, atajos | **Hecha** (30/10/2026) |
 
 **Supabase solo se toca en la fase 1 y en la 7.** De la 2 a la 6, todo
 Cloudflare.
@@ -1379,6 +1379,53 @@ buscarla por nombre cuando no haya identificador.**
 
 El formato quedó en `Casual` para todos, que es el valor por defecto:
 adivinarlo habría sido peor que dejarlo para que lo cambie él.
+
+---
+
+## Fase 9: el remate (30/10/2026)
+
+### ⚠ La pantalla que no se apaga es lo más importante de esta fase
+
+**Sin esto no se puede jugar con el móvil.** Un teléfono apuntando a la
+mesa está quieto: nadie lo toca durante minutos, y a los treinta segundos
+se apaga la pantalla y con ella se va la cámara. Daba igual lo bien que
+fuera todo lo demás.
+
+Dos detalles que no son opcionales:
+
+- El navegador solo concede el permiso **mientras la pestaña está
+  delante**, y lo suelta solo al cambiar de aplicación. **Hay que volver a
+  pedirlo al volver**; sin esa segunda parte, basta con mirar un mensaje a
+  media partida para quedarse sin ello.
+- Donde no exista, no pasa nada: se juega igual.
+
+### Instalable, y sin guardar nada
+
+Manifiesto, icono propio y pantalla completa apaisada. El navegador **no
+deja instalar una web sin un trabajador de servicio**, así que hay uno,
+pero **no guarda nada en caché y es a propósito**: guardar copias traería
+el problema de siempre —servir una versión vieja y volverse loco buscando
+por qué no se ve el cambio—, y aquí ya pasó una vez con la caché de
+Cloudflare. Y sin partida no hay nada que hacer sin conexión, así que
+guardar la aplicación para jugar sin internet no sirve de nada.
+
+### Dos atajos, y solo dos
+
+- **Espacio**: pasar turno.
+- **Flecha arriba / abajo**: tus vidas.
+
+Son las dos cosas que se tocan en cada turno. Más teclas serían más cosas
+que recordar para no ahorrarse nada. Y no se explican en pantalla: van en
+el `title` de los botones, que es donde se mira cuando se busca.
+
+### Probado el 30/10/2026
+
+Manifiesto servido y enlazado, icono servido, trabajador de servicio
+registrado y permiso de pantalla disponible. Y las flechas: 20 − 1 − 1 + 1
+= 19.
+
+**Sin probar: que no se apague una pantalla de verdad** en una partida
+larga, que es cosa de jugar.
 
 ---
 

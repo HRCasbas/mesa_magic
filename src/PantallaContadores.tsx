@@ -61,7 +61,12 @@ function Columna({
             <button type="button" className="tecla tecla--ancha" onClick={() => cambiar('vidas', -5)}>
               −5
             </button>
-            <button type="button" className="tecla tecla--ancha" onClick={() => cambiar('vidas', -1)}>
+            <button
+              type="button"
+              className="tecla tecla--ancha"
+              title="Flecha abajo"
+              onClick={() => cambiar("vidas", -1)}
+            >
               −1
             </button>
           </div>
@@ -69,7 +74,12 @@ function Columna({
         <strong className="vidas__valor">{valores ? valores.vidas : '—'}</strong>
         {cambiar && (
           <div className="vidas__lado">
-            <button type="button" className="tecla tecla--ancha" onClick={() => cambiar('vidas', 1)}>
+            <button
+              type="button"
+              className="tecla tecla--ancha"
+              title="Flecha arriba"
+              onClick={() => cambiar("vidas", 1)}
+            >
               +1
             </button>
             <button type="button" className="tecla tecla--ancha" onClick={() => cambiar('vidas', 5)}>
@@ -127,6 +137,7 @@ export function PantallaContadores({
             <button
               type="button"
               className="boton boton--principal"
+              title="Barra espaciadora"
               onClick={contadores.pasarTurno}
               disabled={!esMiTurno}
             >

@@ -1,0 +1,16 @@
+{
+  "name": "Mesa Magic",
+  "short_name": "Mesa Magic",
+  "description": "Magic: The Gathering a distancia, mesa contra mesa.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "icons": [
+    { "src": "./icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icono.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

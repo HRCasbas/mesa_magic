@@ -5,6 +5,7 @@ import { LateralPartida } from './LateralPartida'
 import { Moneda } from './Moneda'
 import { Mesa } from './Tapete'
 import { turnosJugados, useContadores } from './contadores'
+import { usePantallaDespierta } from './despierto'
 import { useEnlace } from './enlace'
 import { useFotos } from './fotos'
 import { useMazoElegido } from './mazoElegido'
@@ -96,7 +97,9 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
   // Dentro de la partida la pantalla no se mueve (Héctor, 28/10/2026). La
   // partida es una capa fija encima de todo; sin esto, la rueda del ratón
   // seguiría moviendo la página de debajo y la imagen bailaría.
-  const jugando = mesa.estado === 'dentro'
+  const jugando = mesa.estado === "dentro"
+  usePantallaDespierta(jugando)
+
   useEffect(() => {
     if (!jugando) return
     const comoEstaba = document.body.style.overflow

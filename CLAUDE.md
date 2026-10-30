@@ -123,6 +123,7 @@ src/
   Moneda.tsx          quien empieza
   avatar.ts           un avatar de mentira hasta que haya de verdad
   ajustes.ts          lo que eliges una vez, como el idioma
+  despierto.ts        que no se apague la pantalla mientras juegas
   pegatinas.ts        las pegatinas sobre el vídeo, en coordenadas 0-1
   CapaPegatinas.tsx   la capa que las pinta y deja arrastrarlas
   fotos.ts            pedirle al otro una foto de una carta, a su resolución
