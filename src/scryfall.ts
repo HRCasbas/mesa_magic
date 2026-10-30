@@ -26,6 +26,10 @@ export interface Carta {
   oraculo: string | null
   /** La página de Scryfall, por si quieres leerla entera. */
   pagina: string
+  /** El coste de maná convertido. Sirve para ordenar el mazo. */
+  coste: number
+  /** Si es una tierra. Las tierras van al final, no por coste. */
+  esTierra: boolean
 }
 
 /**
@@ -245,6 +249,8 @@ interface Cruda {
   set_name: string
   collector_number: string
   scryfall_uri: string
+  cmc?: number
+  type_line?: string
   image_uris?: { normal?: string; large?: string }
   card_faces?: { image_uris?: { normal?: string; large?: string } }[]
 }
@@ -264,6 +270,11 @@ function ordenar(cruda: Cruda): Carta {
     idioma: cruda.lang,
     oraculo: cruda.oracle_id ?? null,
     pagina: cruda.scryfall_uri,
+    coste: cruda.cmc ?? 0,
+    // El tipo viene en inglés siempre, sea cual sea el idioma de la carta.
+    // Una tierra que además es criatura (Dryad Arbor) cuenta como tierra:
+    // se juega como tierra, y ahí es donde se la busca.
+    esTierra: /Land/.test(cruda.type_line ?? ''),
   }
 }
 

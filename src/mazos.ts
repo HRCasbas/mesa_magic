@@ -86,7 +86,12 @@ export function useMazos() {
 
 /** Las cartas de un mazo, en orden. */
 export function useCartasDelMazo(mazoId: string | null, vuelta = 0) {
-  const [cartas, setCartas] = useState<CartaDelMazo[] | null>(null)
+  // SE GUARDA DE QUÉ MAZO SON, no solo las cartas (Héctor, 30/10/2026:
+  // «no coincide el nombre del mazo con el contenido»). Al abrir otro
+  // mazo, el nombre cambia al momento y las cartas tardan su viaje a la
+  // base: sin este dato, lo que se devolvía mientras tanto eran las del
+  // mazo anterior, y quien lo miraba veía un mazo que no existe.
+  const [traidas, setTraidas] = useState<{ de: string; cartas: CartaDelMazo[] } | null>(null)
 
   useEffect(() => {
     if (!mazoId) return
@@ -98,17 +103,17 @@ export function useCartasDelMazo(mazoId: string | null, vuelta = 0) {
         .eq('mazo', mazoId)
         .order('orden')
       if (!vigente) return
-      setCartas(error ? [] : (data as CartaDelMazo[]))
+      setTraidas({ de: mazoId, cartas: error ? [] : (data as CartaDelMazo[]) })
     })()
     return () => {
       vigente = false
     }
   }, [mazoId, vuelta])
 
-  // Sin mazo abierto no hay cartas, y se calcula aquí en vez de borrar el
-  // estado dentro del efecto: así no queda un instante con el mazo cerrado
-  // y las cartas del anterior todavía puestas.
-  return mazoId ? cartas : null
+  // Sin mazo abierto no hay cartas, y mientras llegan las del mazo que se
+  // acaba de abrir tampoco: null quiere decir «todavía no se sabe», nunca
+  // «las de antes».
+  return mazoId && traidas?.de === mazoId ? traidas.cartas : null
 }
 
 // ---- guardar ----

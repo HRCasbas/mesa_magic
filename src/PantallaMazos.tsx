@@ -142,6 +142,29 @@ function DialogoImportar({
   )
 }
 
+/**
+ * Las cartas de una zona, ordenadas como se mira un mazo (Héctor,
+ * 30/10/2026): **por coste de maná, y las tierras al final**.
+ *
+ * Es el orden en el que se piensa un mazo: lo barato arriba, lo caro
+ * abajo, y las tierras aparte porque no se juegan pagándolas. El orden
+ * guardado en la base no se toca, que es el de la lista que se importó.
+ *
+ * Mientras una carta no ha llegado de Scryfall no se sabe su coste. Esas
+ * se dejan al final y en su sitio: moverlas de golpe cuando llega la
+ * respuesta sería peor que no ordenarlas.
+ */
+function porCoste(deLaZona: CartaDelMazo[], fotos: Map<string, Carta>): CartaDelMazo[] {
+  return [...deLaZona].sort((una, otra) => {
+    const a = fotos.get(una.nombre.toLowerCase())
+    const b = fotos.get(otra.nombre.toLowerCase())
+    if (!a || !b) return a ? -1 : b ? 1 : una.orden - otra.orden
+    if (a.esTierra !== b.esTierra) return a.esTierra ? 1 : -1
+    if (a.coste !== b.coste) return a.coste - b.coste
+    return una.nombre.localeCompare(otra.nombre)
+  })
+}
+
 export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar: () => void }) {
   const { lista, fallo, recargar } = useMazos()
   const [abiertoId, setAbiertoId] = useState<string | null>(null)
@@ -166,6 +189,21 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
     deQuien.current = abiertoId
     setCartas(traidas)
   }, [traidas, abiertoId])
+
+  /**
+   * Abrir un mazo, vaciando lo que hubiera.
+   *
+   * El vaciado va AQUÍ y no en un efecto: el nombre del mazo cambia al
+   * momento y sus cartas tardan su viaje a la base, así que entre una cosa
+   * y otra se veían las del mazo anterior bajo el nombre del nuevo
+   * (Héctor, 30/10/2026). Lo que provoca el cambio es esta pulsación, y
+   * aquí es donde se limpia.
+   */
+  function abrirMazo(id: string | null) {
+    setAbiertoId(id)
+    deQuien.current = null
+    setCartas([])
+  }
 
   // Las fotos se piden por LO QUE HAY, no por un contador de vueltas: si
   // cambian las cartas, cambia la huella y se vuelven a pedir. Con el
@@ -237,7 +275,7 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
     if (!nombre) return
     const id = await crearMazo(idUsuario, nombre, 'Casual')
     recargar()
-    if (id) setAbiertoId(id)
+    if (id) abrirMazo(id)
   }
 
   async function guardarDatos(evento: FormEvent) {
@@ -251,7 +289,7 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
     if (!abierto) return
     if (!window.confirm(`¿Seguro que borras «${abierto.nombre}»? No se puede deshacer.`)) return
     await borrarMazo(abierto.id)
-    setAbiertoId(null)
+    abrirMazo(null)
     recargar()
   }
 
@@ -268,7 +306,7 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
       <>
         <div className="mazo">
           <aside className="mazo__lado">
-            <button type="button" className="boton boton--plano" onClick={() => setAbiertoId(null)}>
+            <button type="button" className="boton boton--plano" onClick={() => abrirMazo(null)}>
               ← Mis mazos
             </button>
 
@@ -357,7 +395,10 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
             )}
 
             {ZONAS.map(({ zona, nombre, explicacion }) => {
-              const deAqui = cartas.filter((c) => c.zona === zona)
+              const deAqui = porCoste(
+                cartas.filter((c) => c.zona === zona),
+                fotos.mapa,
+              )
               if (deAqui.length === 0) return null
               const cuantas = deAqui.reduce((suma, c) => suma + c.cantidad, 0)
               return (
@@ -431,7 +472,7 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
 
       <div className="mazos">
         {lista?.map((mazo) => (
-          <button key={mazo.id} type="button" className="mazo__ficha" onClick={() => setAbiertoId(mazo.id)}>
+          <button key={mazo.id} type="button" className="mazo__ficha" onClick={() => abrirMazo(mazo.id)}>
             <span className="mazo__portada">
               {mazo.portadaNombre && (
                 <img src={portadaDe(mazo.portadaNombre, 'art_crop')} alt="" loading="lazy" />

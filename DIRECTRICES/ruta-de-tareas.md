@@ -2168,19 +2168,67 @@ si se pierde se rota desde los tres puntos de la app sin que cambie el ID.
 
 ---
 
+## Lo rematado el 30/10/2026 (avatar, moneda, mazos)
+
+**El avatar de verdad, hecho.** La foto se recorta en cuadrado y se encoge
+a 256 px **en el navegador**, antes de subirla: una foto del móvil son
+cuatro megas y de un avatar se ven ciento veinte píxeles. Vive en el
+almacén `avatares` de Supabase (migración `magic_005_avatares`), público
+de lectura —se enseña en la moneda, firmar cada enlace para eso no tiene
+sentido— y con cada uno escribiendo solo en la carpeta de su propio
+identificador. La dirección lleva `?v=` con la hora, porque el archivo se
+llama siempre igual y sin eso el navegador seguiría enseñando la foto
+vieja durante horas.
+
+**La foto del rival viaja por la mesa, no por la base de datos** (regla 1),
+y **el Worker solo la reparte si es una dirección de nuestro almacén**. Sin
+esa comprobación, el de enfrente podría poner cualquier dirección y tu
+navegador iría a pedirla: le estarías diciendo a un servidor ajeno que
+estás jugando y desde dónde.
+
+**La moneda ya no se puede amañar** (`sorteo.ts`). Cada uno manda la
+**huella** de su número antes de conocer el del otro, y solo entonces se
+destapan y se comprueba que cuadran. Lo arranca quien pulsa y el otro
+contesta solo. Si una huella no cuadra, la moneda **se queda quieta**: es
+mejor repetir la tirada que empezar una partida con una trampa dentro.
+
+**Fuera GitHub Pages.** Publicaba una segunda web igual en
+`hrcasbas.github.io/mesa_magic/` que no miraba nadie.
+
+---
+
+## El mazo que no era el suyo (30/10/2026)
+
+Héctor abrió un mazo y vio **el nombre de uno y las cartas de otro**.
+
+`useCartasDelMazo` guardaba las cartas pero no **de qué mazo eran**. Al
+abrir otro, el nombre cambiaba al momento y las cartas tardaban su viaje a
+la base; en ese hueco, la pantalla copiaba las del mazo anterior y se
+marcaba como ya copiada, así que cuando llegaban las buenas **ya no las
+cogía**. Ahora se guarda el mazo junto a sus cartas y `null` quiere decir
+«todavía no se sabe», nunca «las de antes». El vaciado se hace **al pulsar
+el mazo**, no en un efecto, que es donde empieza el cambio.
+
+**Lo mismo afectaba a elegir mazo para jugar**, por el mismo camino: con
+dos pulsaciones seguidas se podía mandar al rival la lista de otro mazo.
+Nadie lo había visto.
+
+**Y el orden de las cartas:** por coste de maná y **las tierras al final**
+(Héctor, 30/10/2026). Es el orden en el que se piensa un mazo. El coste
+sale de Scryfall, así que una carta que todavía no ha llegado se queda al
+final y en su sitio: moverlas de golpe al llegar la respuesta sería peor
+que no ordenarlas. El orden guardado en la base no se toca, que es el de
+la lista que se importó.
+
+---
+
 ## Pendiente de que Héctor decida
 
 - **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
   0 tuviera título. La dirección ya sí está elegida:
   `magic-mesa.duelo.workers.dev`.
-- **El avatar de verdad.** Ahora es la inicial sobre un color sacado del
-  nombre. Hay una columna `avatar` en `magic.jugadores` esperando, y
-  Supabase Storage da 1 GB gratis.
-- **La red de seguridad de GitHub Pages sigue encendida**
-  (`.github/workflows/publicar.yml`): publica una copia en
-  `hrcasbas.github.io/mesa_magic/`. Sirvió cuando Cloudflare era nuevo; hoy
-  es una segunda dirección con la misma web que nadie mira. Se puede
-  apagar.
+- ~~El avatar de verdad.~~ **Hecho el 30/10/2026.**
+- ~~La red de seguridad de GitHub Pages.~~ **Apagada el 30/10/2026.**
 - **Cloudflare Access** (gratis hasta 50 usuarios) pondría una puerta en el
   borde, antes de que la web llegue a cargarse. Más seguro, pero añade un
   código al correo cada vez. No se ha metido.
