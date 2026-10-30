@@ -13,7 +13,7 @@ import {
   type Mazo,
   type Zona,
 } from './mazos'
-import { porLote, type Carta } from './scryfall'
+import { porLote, porNombre, type Carta } from './scryfall'
 
 const SIN_IMAGENES = new Map<string, Carta>()
 
@@ -159,6 +159,11 @@ const TIERRAS_BASICAS = new Set([
   'llanura', 'isla', 'pantano', 'montaña', 'bosque',
 ])
 
+/** Si una carta es tierra, con lo que se sepa de ella. */
+function esTierra(carta: CartaDelMazo, fotos: Map<string, Carta>): boolean {
+  return pesoDe(carta, fotos.get(carta.nombre.toLowerCase())).tierra
+}
+
 /** El coste y si es tierra, con lo que se sepa de cada carta. */
 function pesoDe(carta: CartaDelMazo, foto: Carta | undefined) {
   if (foto) return { tierra: foto.esTierra, coste: foto.coste }
@@ -178,6 +183,64 @@ function porCoste(deLaZona: CartaDelMazo[], fotos: Map<string, Carta>): CartaDel
   })
 }
 
+/**
+ * «¿Esta carta, y cuántas?»
+ *
+ * Se enseña la carta **grande** porque en Magic hay nombres que se parecen
+ * mucho, y una vez metida en el mazo el error no se ve: la lista son
+ * nombres. Mirando la ilustración se sabe al instante si es la que se
+ * quería.
+ */
+function ConfirmarCarta({
+  carta,
+  zona,
+  anadir,
+  cancelar,
+}: {
+  carta: Carta
+  zona: string
+  anadir: (cuantas: number) => void
+  cancelar: () => void
+}) {
+  const [cuantas, setCuantas] = useState(1)
+
+  return (
+    <div className="dialogo">
+      <div className="dialogo__caja dialogo__caja--carta">
+        {carta.imagen && <img className="confirmar__carta" src={carta.imagen} alt="" />}
+        <div className="confirmar__texto">
+          <h3 className="confirmar__nombre">{carta.nombre}</h3>
+          <p className="confirmar__donde">
+            {carta.edicionNombre} · a {zona.toLowerCase()}
+          </p>
+          <label className="campo">
+            <span className="campo__nombre">Cuántas</span>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={cuantas}
+              onChange={(e) => setCuantas(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
+            />
+          </label>
+          <div className="dialogo__botones">
+            <button
+              type="button"
+              className="boton boton--principal"
+              onClick={() => anadir(cuantas)}
+            >
+              Añadir
+            </button>
+            <button type="button" className="boton boton--plano" onClick={cancelar}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar: () => void }) {
   const { lista, fallo, recargar } = useMazos()
   const [abiertoId, setAbiertoId] = useState<string | null>(null)
@@ -192,6 +255,11 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
   const [importando, setImportando] = useState(false)
   const [menu, setMenu] = useState<Menu | null>(null)
   const [nueva, setNueva] = useState('')
+  const [modificando, setModificando] = useState(false)
+  /** La carta encontrada, esperando que se diga que sí y cuántas. */
+  const [porConfirmar, setPorConfirmar] = useState<Carta | null>(null)
+  const [buscandoCarta, setBuscandoCarta] = useState(false)
+  const [noExiste, setNoExiste] = useState<string | null>(null)
   const [zonaNueva, setZonaNueva] = useState<Zona>('principal')
 
   // Las cartas que llegan de la base se copian aquí una vez, y a partir de
@@ -252,20 +320,43 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
     if (abiertoId) await guardarCartas(abiertoId, nuevas)
   }
 
-  function anadir(evento: FormEvent) {
+  /**
+   * Buscar la carta antes de meterla.
+   *
+   * ANTES SE METÍA LO ESCRITO TAL CUAL (Héctor, 30/10/2026: «no añadas un
+   * recuadro vacío con lo escrito»). Una errata entraba en el mazo como
+   * una carta más, sin foto y sin que nada avisara, y ahí se quedaba.
+   * Ahora se pregunta a Scryfall: si no existe, se dice; y si existe, se
+   * enseña grande para que se vea que es esa y no otra que se llama
+   * parecido, que en Magic pasa mucho.
+   */
+  async function buscarParaAnadir(evento: FormEvent) {
     evento.preventDefault()
-    const nombre = nueva.trim()
-    if (!nombre) return
+    const escrito = nueva.trim()
+    if (!escrito || buscandoCarta) return
+    setNoExiste(null)
+    setBuscandoCarta(true)
+    try {
+      setPorConfirmar(await porNombre(escrito))
+    } catch {
+      setNoExiste(escrito)
+    }
+    setBuscandoCarta(false)
+  }
+
+  /** Ya dicho que sí: entra en el mazo con su nombre de verdad. */
+  function anadirYa(nombre: string, cuantas: number, zona: Zona) {
+    setPorConfirmar(null)
     setNueva('')
-    const ya = cartas.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase() && c.zona === zonaNueva)
+    const ya = cartas.find((c) => c.nombre.toLowerCase() === nombre.toLowerCase() && c.zona === zona)
     if (ya) {
-      void aplicar(cartas.map((c) => (c.id === ya.id ? { ...c, cantidad: c.cantidad + 1 } : c)))
+      void aplicar(cartas.map((c) => (c.id === ya.id ? { ...c, cantidad: c.cantidad + cuantas } : c)))
       return
     }
-    const orden = cartas.filter((c) => c.zona === zonaNueva).length + 1
+    const orden = cartas.filter((c) => c.zona === zona).length + 1
     void aplicar([
       ...cartas,
-      { id: crypto.randomUUID(), nombre, cantidad: 1, zona: zonaNueva, orden },
+      { id: crypto.randomUUID(), nombre, cantidad: cuantas, zona, orden },
     ])
   }
 
@@ -312,20 +403,84 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
     recargar()
   }
 
+  /**
+   * Lo que se pinta a la derecha, en orden.
+   *
+   * **Las tierras van en su propia sección, al final del mazo** (Héctor,
+   * 30/10/2026). Así es como se mira un mazo: primero los hechizos por
+   * coste, y las tierras aparte, que ni se pagan ni se cuentan igual. Y de
+   * paso se ve de un vistazo cuántas lleva, que es el número que de verdad
+   * se mira al afinar un mazo.
+   */
+  function bloquesDe(todas: CartaDelMazo[]) {
+    const salida: {
+      clave: string
+      nombre: string
+      explicacion: string
+      cartas: CartaDelMazo[]
+    }[] = []
+
+    for (const { zona, nombre, explicacion } of ZONAS) {
+      const deAqui = porCoste(
+        todas.filter((c) => c.zona === zona),
+        fotos.mapa,
+      )
+      if (deAqui.length === 0) continue
+      const tierras = deAqui.filter((c) => esTierra(c, fotos.mapa))
+      const resto = deAqui.filter((c) => !esTierra(c, fotos.mapa))
+      if (resto.length > 0) salida.push({ clave: zona, nombre, explicacion, cartas: resto })
+      if (tierras.length > 0) {
+        salida.push({
+          clave: zona + ':tierras',
+          nombre: 'Tierras',
+          explicacion: '',
+          cartas: tierras,
+        })
+      }
+    }
+    return salida
+  }
+
   // ---- un mazo abierto ----
   if (abierto) {
     const datos = borrador?.id === abierto.id ? borrador : abierto
+    const bloques = bloquesDe(cartas)
     return (
       <>
         <div className="mazo">
           <aside className="mazo__lado">
-            <button
-              type="button"
-              className="boton boton--atras"
-              onClick={() => abrirMazo(null)}
-            >
-              ← Mis mazos
-            </button>
+            <div className="mazo__arriba">
+              <button
+                type="button"
+                className="boton boton--atras"
+                onClick={() => abrirMazo(null)}
+              >
+                ← Mis mazos
+              </button>
+              {/* El engranaje cambia la columna entera de mirar a
+                  modificar. Mirando un mazo no se toca nada de esto, y
+                  tenerlo siempre puesto obligaba a desplazar la columna
+                  (Héctor, 30/10/2026). */}
+              <button
+                type="button"
+                className={modificando ? 'engranaje engranaje--puesto' : 'engranaje'}
+                onClick={() => setModificando((v) => !v)}
+                aria-pressed={modificando}
+                aria-label={modificando ? 'Dejar de modificar' : 'Modificar el mazo'}
+              >
+                <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5Zm0-5A1.5 1.5 0 1 0 13.5 12 1.5 1.5 0 0 0 12 10.5Z"
+                  />
+                  <path
+                    fill="currentColor"
+                    d="M13.6 22h-3.2l-.3-2.3a7.9 7.9 0 0 1-1.6-.9l-2.1.9-1.6-2.8 1.8-1.4a8 8 0 0 1 0-1.9l-1.8-1.4 1.6-2.8 2.1.9a7.9 7.9 0 0 1 1.6-.9L10.4 7h3.2l.3 2.3a7.9 7.9 0 0 1 1.6.9l2.1-.9 1.6 2.8-1.8 1.4a8 8 0 0 1 0 1.9l1.8 1.4-1.6 2.8-2.1-.9a7.9 7.9 0 0 1-1.6.9Z"
+                    opacity=".3"
+                  />
+                </svg>
+              </button>
+            </div>
 
             {abierto.portadaNombre && (
               <img
@@ -335,6 +490,15 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
               />
             )}
 
+            {!modificando && (
+              <div className="mazo__datos">
+                <h2 className="mazo__nombre">{abierto.nombre}</h2>
+                <p className="mazo__formato">{abierto.formato}</p>
+                {abierto.notas && <p className="mazo__notas">{abierto.notas}</p>}
+              </div>
+            )}
+
+            {modificando && (
             <form onSubmit={guardarDatos} className="mazo__forma">
               <label className="campo">
                 <span className="campo__nombre">Nombre</span>
@@ -367,14 +531,19 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
                 Guardar
               </button>
             </form>
+            )}
 
-            <form onSubmit={anadir} className="mazo__anadir">
+            {modificando && (
+            <form onSubmit={buscarParaAnadir} className="mazo__anadir">
               <label className="campo">
                 <span className="campo__nombre">Añadir carta</span>
                 <input
                   type="text"
                   value={nueva}
-                  onChange={(e) => setNueva(e.target.value)}
+                  onChange={(e) => {
+                    setNueva(e.target.value)
+                    setNoExiste(null)
+                  }}
                   placeholder="Lightning Bolt"
                   spellCheck={false}
                 />
@@ -386,11 +555,16 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
                   </option>
                 ))}
               </select>
-              <button type="submit" className="boton boton--plano">
-                Añadir
+              <button type="submit" className="boton boton--plano" disabled={buscandoCarta}>
+                {buscandoCarta ? 'Buscando…' : 'Buscar'}
               </button>
+              {noExiste && (
+                <p className="recado recado--mal">No existe ninguna carta así: «{noExiste}».</p>
+              )}
             </form>
+            )}
 
+            {modificando && (
             <div className="mazo__abajo">
               <button
                 type="button"
@@ -403,6 +577,7 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
                 Borrar el mazo
               </button>
             </div>
+            )}
           </aside>
 
           <div className="mazo__cartas">
@@ -411,15 +586,10 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
               <p>Este mazo no tiene cartas. Añádelas o importa la lista.</p>
             )}
 
-            {ZONAS.map(({ zona, nombre, explicacion }) => {
-              const deAqui = porCoste(
-                cartas.filter((c) => c.zona === zona),
-                fotos.mapa,
-              )
-              if (deAqui.length === 0) return null
+            {bloques.map(({ clave, nombre, explicacion, cartas: deAqui }) => {
               const cuantas = deAqui.reduce((suma, c) => suma + c.cantidad, 0)
               return (
-                <section key={zona} className="zona">
+                <section key={clave} className="zona">
                   <h3 className="zona__titulo">
                     {nombre} <span className="zona__cuantas">{cuantas}</span>
                     <span className="zona__explicacion">{explicacion}</span>
@@ -464,6 +634,15 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
               const conId = leidas.map((c) => ({ ...c, id: crypto.randomUUID() }))
               await aplicar(conId)
             }}
+          />
+        )}
+
+        {porConfirmar && (
+          <ConfirmarCarta
+            carta={porConfirmar}
+            zona={ZONAS.find((z) => z.zona === zonaNueva)?.nombre ?? 'el mazo'}
+            anadir={(cuantas) => anadirYa(porConfirmar.nombre, cuantas, zonaNueva)}
+            cancelar={() => setPorConfirmar(null)}
           />
         )}
       </>

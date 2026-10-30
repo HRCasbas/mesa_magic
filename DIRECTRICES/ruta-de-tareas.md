@@ -2245,6 +2245,29 @@ arriba. Ahora cada carta tiene un peso siempre: las tierras básicas se
 reconocen por el nombre sin preguntar a nadie, y lo que no se sabe espera
 al final con coste 99.
 
+## La pantalla de un mazo, a su gusto (30/10/2026)
+
+**Las tierras, en su propia sección.** Ordenarlas al final por una regla
+de comparación era sutil y además no se veía: ahora es **una sección
+aparte**, «Tierras», detrás de cada zona. Así es como se mira un mazo
+—primero los hechizos por coste, las tierras aparte, que ni se pagan ni
+se cuentan igual— y de paso se ve **cuántas lleva**, que es el número que
+de verdad se mira al afinar un mazo.
+
+**Un engranaje cambia la columna de mirar a modificar.** Mirando un mazo
+no se toca el nombre, ni las notas, ni el botón de borrar; tenerlo todo
+puesto hacía la columna tan larga que había que desplazarla. En modo
+mirar se ven la portada, el nombre, el formato y las notas, y cabe de
+sobra.
+
+**Añadir una carta se comprueba antes.** Antes entraba **lo escrito tal
+cual**: una errata se metía en el mazo como una carta más, sin foto y sin
+que nada avisara. Ahora se pregunta a Scryfall; si no existe, se dice, y
+si existe se enseña **grande**, con su edición, para decir que sí y
+cuántas. La carta grande no es un adorno: en Magic hay nombres que se
+parecen mucho y, una vez metida, el error ya no se ve, porque la lista
+son nombres.
+
 ---
 
 ## Pendiente de que Héctor decida

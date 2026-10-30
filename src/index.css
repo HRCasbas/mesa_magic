@@ -2387,3 +2387,110 @@ select option {
   color: var(--texto);
   background: transparent;
 }
+
+/* ---- La columna del mazo: mirar o modificar ----
+   Lo pidio Hector el 30/10/2026. Mirando un mazo no se toca ni el nombre
+   ni las notas ni el boton de borrar, y tenerlo todo puesto hacia la
+   columna tan larga que habia que desplazarla. El engranaje la cambia
+   entera, y en modo mirar cabe de sobra. */
+
+.mazo__arriba {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.engranaje {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+
+.engranaje:hover {
+  color: var(--texto);
+  border-color: var(--texto-suave);
+}
+
+.engranaje--puesto {
+  color: var(--fondo);
+  background: var(--acento);
+  border-color: var(--acento);
+}
+
+.mazo__datos {
+  display: grid;
+  gap: 0.25rem;
+}
+
+/* Modificando, todo mas pequeño: son campos que se tocan una vez. */
+.mazo__lado .campo__nombre {
+  font-size: 0.78rem;
+}
+
+.mazo__lado input,
+.mazo__lado select,
+.mazo__lado textarea,
+.mazo__lado .boton {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.88rem;
+}
+
+.mazo__lado textarea {
+  min-height: 3.2rem;
+}
+
+/* ---- «¿Esta carta, y cuantas?» ----
+   La carta se enseña GRANDE: en Magic hay nombres que se parecen mucho, y
+   una vez metida en el mazo el error no se ve, porque la lista son
+   nombres. */
+
+.dialogo__caja--carta {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  max-width: 34rem;
+}
+
+.confirmar__carta {
+  width: 14rem;
+  border-radius: 0.75rem;
+  display: block;
+  flex: 0 0 auto;
+}
+
+.confirmar__texto {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+  min-width: 0;
+}
+
+.confirmar__nombre {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.confirmar__donde {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 36rem) {
+  .dialogo__caja--carta {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .confirmar__carta {
+    width: 11rem;
+  }
+}
