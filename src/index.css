@@ -1381,15 +1381,45 @@ body {
   border-color: var(--acento);
 }
 
+/* Es una imagen: o la foto del jugador, o la inicial dibujada en avatar.ts.
+   De las dos maneras ocupa lo mismo, asi que subir una foto no mueve la
+   cabecera ni un pixel. */
 .cuenta__avatar {
-  display: grid;
-  place-items: center;
   width: 1.8rem;
   height: 1.8rem;
   border-radius: 50%;
-  background: var(--acento);
-  color: var(--fondo);
-  font-weight: 700;
+  object-fit: cover;
+  display: block;
+  background: var(--fondo);
+}
+
+/* ---- La foto de perfil, en los ajustes ---- */
+
+.foto {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.foto__cara {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  background: var(--fondo);
+}
+
+.foto__botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* El selector de archivos del navegador no hay quien lo vista: se esconde
+   y se abre desde un boton normal. */
+.foto__fichero {
+  display: none;
 }
 
 .cuenta__menu {

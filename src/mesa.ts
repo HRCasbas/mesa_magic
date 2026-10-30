@@ -7,6 +7,8 @@ export type EstadoMesa = 'fuera' | 'conectando' | 'dentro' | 'caida'
 export interface Ocupante {
   id: string
   nombre: string
+  /** Su foto de perfil, si tiene. */
+  avatar?: string
 }
 
 type MensajeSaliente =
@@ -28,7 +30,7 @@ function direccionDeLaMesa(codigo: string): string {
  * encontréis. En cuanto estéis encontrados (fase 3), la imagen y el panel
  * viajarán directos de un navegador al otro sin pasar por aquí.
  */
-export function useMesa(nombre: string) {
+export function useMesa(nombre: string, avatar: string | null) {
   const [estado, setEstado] = useState<EstadoMesa>('fuera')
   const [codigo, setCodigo] = useState<string | null>(null)
   const [jugadores, setJugadores] = useState<Ocupante[]>([])
@@ -101,7 +103,7 @@ export function useMesa(nombre: string) {
         // El token va AQUÍ y no en la dirección: una dirección acaba en
         // registros y en el historial del navegador, y una sesión no tiene
         // por qué acabar ahí.
-        ws.send(JSON.stringify({ tipo: 'entrar', token, nombre }))
+        ws.send(JSON.stringify({ tipo: 'entrar', token, nombre, avatar: avatar ?? undefined }))
       })
 
       ws.addEventListener('message', (evento) => {
@@ -141,7 +143,7 @@ export function useMesa(nombre: string) {
         if (!salidaBuscada.current) setEstado('caida')
       })
     },
-    [nombre],
+    [nombre, avatar],
   )
 
   /** Pide un código nuevo al Worker y entra con él. */

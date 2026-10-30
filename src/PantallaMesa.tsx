@@ -22,8 +22,8 @@ import { usePegatinas } from './pegatinas'
  * el reparto de SpellTable, y lo pidió Héctor el 28/10/2026 después de
  * jugar con el montaje anterior: lo que importa es ver las cartas.
  */
-export function PantallaMesa({ nombre }: { nombre: string }) {
-  const mesa = useMesa(nombre)
+export function PantallaMesa({ nombre, avatar }: { nombre: string; avatar: string | null }) {
+  const mesa = useMesa(nombre, avatar)
   const [escrito, setEscrito] = useState('')
 
   const elOtro = mesa.jugadores.find((j) => j.id !== mesa.tuId) ?? null
@@ -223,6 +223,8 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
             <Moneda
               tuNombre={nombre}
               suNombre={elOtro.nombre}
+              tuFoto={avatar}
+              suFoto={elOtro.avatar ?? null}
               tuId={mesa.tuId}
               suId={elOtro.id}
               elegir={contadores.elegirQuienEmpieza}

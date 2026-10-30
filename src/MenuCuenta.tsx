@@ -1,22 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { avatarDe } from './avatar'
 import { supabase } from './supabase'
 
 /**
  * El menú de la cuenta, arriba a la derecha.
  *
  * Aquí va todo lo que es tuyo y no de la partida: los mazos, la clave y la
- * salida. El avatar todavía no existe (fase 7), así que de momento es la
- * primera letra de tu nombre.
+ * salida. Con la foto puesta se ve la foto; sin ella, la inicial.
  */
 export function MenuCuenta({
   nombre,
+  avatar,
   cambiarClave,
   abrirAjustes,
   abrirMazos,
   abrirHistorial,
 }: {
   nombre: string
+  avatar: string | null
   cambiarClave: () => void
   abrirAjustes: () => void
   abrirMazos: () => void
@@ -43,9 +45,7 @@ export function MenuCuenta({
         onClick={() => setAbierto((v) => !v)}
         aria-expanded={abierto}
       >
-        <span className="cuenta__avatar" aria-hidden="true">
-          {nombre.trim().charAt(0).toUpperCase() || '?'}
-        </span>
+        <img className="cuenta__avatar" src={avatarDe(nombre, avatar)} alt="" />
         <span className="cuenta__nombre">{nombre}</span>
       </button>
 

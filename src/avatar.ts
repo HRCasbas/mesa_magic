@@ -1,8 +1,9 @@
-// Un avatar de mentira mientras no haya avatares de verdad.
+// El avatar: la foto si la hay, y si no la inicial dibujada aquí mismo.
 //
-// Se dibuja aquí mismo en vez de traerlo de ningún sitio: no hay que
-// subir nada, no se ve un hueco gris, y el día que haya avatares de
-// verdad esto se cambia por la imagen del jugador sin tocar nada más.
+// EL DIBUJO NO SOBRA AHORA QUE SE PUEDEN SUBIR FOTOS: es lo que se ve
+// mientras nadie ha subido ninguna, y es lo que evita el hueco gris en la
+// moneda la primera vez que se juega. Se dibuja aquí en vez de traerlo de
+// ningún sitio, así que no falla ni tarda.
 //
 // El color sale del nombre, así que el de cada uno es siempre el mismo.
 
@@ -14,8 +15,13 @@ function colorDe(nombre: string): string {
   return COLORES[suma % COLORES.length]
 }
 
-/** Una imagen cuadrada con la inicial, lista para poner en un `src`. */
-export function avatarDe(nombre: string): string {
+/**
+ * La imagen cuadrada del jugador, lista para poner en un `src`.
+ *
+ * Con `foto` devuelve la foto; sin ella, la inicial sobre su color.
+ */
+export function avatarDe(nombre: string, foto?: string | null): string {
+  if (foto) return foto
   const inicial = (nombre.trim().charAt(0) || '?').toUpperCase()
   const color = colorDe(nombre)
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">

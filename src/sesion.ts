@@ -6,6 +6,8 @@ import { VENIMOS_DE_RECUPERAR, supabase } from './supabase'
 export interface Jugador {
   id: string
   nombre: string
+  /** La foto de perfil, si ha subido alguna. */
+  avatar: string | null
 }
 
 export interface EstadoSesion {
@@ -67,7 +69,7 @@ export function useSesion(): EstadoSesion & {
     let vigente = true
     supabase
       .from('jugadores')
-      .select('id, nombre')
+      .select('id, nombre, avatar')
       .eq('id', sesion.user.id)
       .maybeSingle()
       .then(({ data }) => {

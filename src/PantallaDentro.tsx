@@ -121,6 +121,7 @@ export function PantallaDentro({
         </div>
         <MenuCuenta
           nombre={jugador.nombre}
+          avatar={jugador.avatar}
           cambiarClave={() => setDonde("clave")}
           abrirAjustes={() => setDonde("ajustes")}
           abrirMazos={() => setDonde("mazos")}
@@ -132,7 +133,15 @@ export function PantallaDentro({
           debajo: se va a ella y se vuelve. Antes se añadían al final de la
           página y había que buscarlas con la rueda del ratón. */}
       {donde === 'mazos' && <PantallaMazos idUsuario={idUsuario} cerrar={volver} />}
-      {donde === "ajustes" && <PantallaAjustes cerrar={volver} />}
+      {donde === 'ajustes' && (
+        <PantallaAjustes
+          cerrar={volver}
+          idUsuario={idUsuario}
+          nombre={jugador.nombre}
+          avatar={jugador.avatar}
+          avatarCambiado={recargarJugador}
+        />
+      )}
       {donde === "historial" && <PantallaHistorial tuId={idUsuario} cerrar={volver} />}
       {donde === 'clave' && (
         <PantallaClave recuperando={false} hecho={volver} cancelar={volver} />
@@ -140,7 +149,7 @@ export function PantallaDentro({
 
       {donde === 'mesa' && (
         <>
-          <PantallaMesa nombre={jugador.nombre} />
+          <PantallaMesa nombre={jugador.nombre} avatar={jugador.avatar} />
 
           {/* Plegadas: hacen falta una vez, el día que algo no va. */}
           <details className="comprobar">

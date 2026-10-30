@@ -17,11 +17,13 @@ import { comprobarToken } from './jwt'
 interface Ocupante {
   id: string
   nombre: string
+  /** Su foto de perfil, si tiene. Solo se reparte si es de nuestro almacen. */
+  avatar?: string
 }
 
 /** Lo que manda el navegador. */
 type MensajeEntrante =
-  | { tipo: 'entrar'; token: string; nombre: string }
+  | { tipo: 'entrar'; token: string; nombre: string; avatar?: string }
   | { tipo: 'senal'; carga: unknown }
   | { tipo: 'eco'; marca: number }
 
@@ -96,7 +98,10 @@ export class Mesa extends DurableObject {
 
   // ---- por dentro ----
 
-  private async entrar(conexion: WebSocket, mensaje: { token: string; nombre: string }) {
+  private async entrar(
+    conexion: WebSocket,
+    mensaje: { token: string; nombre: string; avatar?: string },
+  ) {
     const credencial = await comprobarToken(mensaje.token)
     if (!credencial) {
       this.echar(conexion, 'Tu sesión no vale o ha caducado. Vuelve a entrar.')
@@ -127,7 +132,12 @@ export class Mesa extends DurableObject {
     }
 
     const nombre = mensaje.nombre?.trim().slice(0, 40) || 'Alguien'
-    conexion.serializeAttachment({ id: credencial.id, nombre } satisfies Ocupante)
+    // La foto se reparte SOLO si vive en nuestro almacen. Sin esto, uno de
+    // los dos podria mandar la direccion que quisiera y el navegador del
+    // otro iria a pedirla: le estaria diciendo a un servidor ajeno que
+    // esta jugando, y desde donde.
+    const avatar = esNuestro(mensaje.avatar) ? mensaje.avatar : undefined
+    conexion.serializeAttachment({ id: credencial.id, nombre, avatar } satisfies Ocupante)
 
     this.avisarATodos()
   }
@@ -177,5 +187,20 @@ export class Mesa extends DurableObject {
   /** Al cerrarse una conexión, los que quedan tienen que enterarse. */
   private contarEstado(_conexion: WebSocket) {
     this.avisarATodos()
+  }
+}
+
+/** Si una direccion de foto es de nuestro almacen de Supabase. */
+function esNuestro(direccion: string | undefined): boolean {
+  if (!direccion || direccion.length > 300) return false
+  try {
+    const url = new URL(direccion)
+    return (
+      url.protocol === 'https:' &&
+      url.hostname.endsWith('.supabase.co') &&
+      url.pathname.includes('/public/avatares/')
+    )
+  } catch {
+    return false
   }
 }
