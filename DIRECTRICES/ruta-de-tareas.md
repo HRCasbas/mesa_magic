@@ -2268,6 +2268,42 @@ cuántas. La carta grande no es un adorno: en Magic hay nombres que se
 parecen mucho y, una vez metida, el error ya no se ve, porque la lista
 son nombres.
 
+## El fallo que no se veía: dos caracteres invisibles (30/10/2026)
+
+Tres intentos seguidos de poner las tierras al final del mazo, y las tres
+veces salían las primeras. La regla de ordenación era correcta, la
+respuesta de Scryfall traía el tipo, el código compilado parecía bien.
+
+Lo que había de verdad en el archivo era esto:
+
+```
+esTierra: /<BS>Land<BS>/.test(...)
+```
+
+Dos **caracteres de retroceso** (0x08) donde tenía que haber `\b`. Al
+escribir el archivo desde un script, `\b` dentro de un texto entre
+acentos graves no es «borde de palabra»: es el carácter de retroceso. La
+expresión buscaba *retroceso + Land + retroceso*, que no existe en ningún
+sitio, así que **ninguna carta era tierra jamás**. En pantalla se veía como
+un orden mal hecho, y mirando el código con los ojos se leía `/\bLand\b/`,
+porque esos caracteres no se ven.
+
+**Lo que lo encontró:** mirar el archivo con `cat -A`, que enseña lo que
+hay de verdad, después de comprobar por separado que la API sí mandaba el
+tipo y que el comparador sí estaba bien. Las dos piezas buenas y el
+resultado malo: entonces lo que falla está en medio, y hay que mirarlo con
+otros ojos, no volver a leerlo con los mismos.
+
+**La regla que queda:** cuando una comprobación se cumple siempre o no se
+cumple nunca sin motivo, mirar los bytes. Y al escribir código desde un
+script, cuidado con `\b`, `\t`, `\n` y `\0` dentro de textos entre
+acentos graves.
+
+De paso, `pesoDe` lleva ahora **dos redes por debajo** del tipo de
+Scryfall: el nombre de las tierras básicas y la regla de que una carta de
+coste cero sin tipo conocido es una tierra. Esto coloca cartas en la
+pantalla, y una tierra fuera de su sección se ve al momento.
+
 ---
 
 ## Pendiente de que Héctor decida

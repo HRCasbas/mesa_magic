@@ -2494,3 +2494,81 @@ select option {
     width: 11rem;
   }
 }
+
+/* ---- La columna del mazo, rehecha (Hector, 30/10/2026) ----
+   La portada arriba, debajo el nombre con el formato y la cuenta, y nada
+   mas. Lo de modificar sale con el engranaje, en su propio bloque
+   separado por una linea, con las cajas pequeñas: son campos que se tocan
+   una vez y no merecen el tamaño de un formulario de alta. */
+
+.mazo__datos {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.mazo__datos .mazo__nombre {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.mazo__datos .mazo__formato {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.mazo__datos .mazo__notas {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+  white-space: pre-wrap;
+}
+
+.mazo__taller {
+  display: grid;
+  gap: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--borde);
+}
+
+/* El campo y su boton, en la misma linea: es una sola accion. */
+.mazo__buscar {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.mazo__buscar input {
+  flex: 1;
+  min-width: 0;
+}
+
+.mazo__buscar .boton {
+  flex: 0 0 auto;
+}
+
+.mazo__abajo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.mazo__abajo .boton {
+  flex: 1;
+}
+
+.boton--peligro {
+  color: var(--mal);
+  border-color: color-mix(in srgb, var(--mal) 45%, transparent);
+}
+
+.boton--peligro:hover {
+  background: color-mix(in srgb, var(--mal) 15%, transparent);
+}
+
+/* Cuantas y donde, uno al lado del otro: son la misma pregunta. */
+.confirmar__campos {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: 0.6rem;
+}

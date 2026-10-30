@@ -166,11 +166,23 @@ function esTierra(carta: CartaDelMazo, fotos: Map<string, Carta>): boolean {
 
 /** El coste y si es tierra, con lo que se sepa de cada carta. */
 function pesoDe(carta: CartaDelMazo, foto: Carta | undefined) {
-  if (foto) return { tierra: foto.esTierra, coste: foto.coste }
+  const porElNombre = TIERRAS_BASICAS.has(carta.nombre.trim().toLowerCase())
+  // Dos redes por debajo de lo que diga Scryfall: el nombre de las
+  // basicas, que no hay que preguntarselo a nadie, y la regla de que una
+  // carta de coste cero SIN TIPO CONOCIDO es una tierra, porque en un
+  // mazo de verdad casi siempre lo es. Esto coloca cartas en la pantalla:
+  // una tierra fuera de su seccion se ve al momento.
+  if (foto) {
+    const sinTipo = (foto.tipo ?? '').trim() === ''
+    return {
+      tierra: foto.esTierra || porElNombre || (sinTipo && foto.coste === 0),
+      coste: foto.coste,
+    }
+  }
   // Todavía no ha llegado de Scryfall. Las tierras básicas se reconocen
   // por el nombre y van a su sitio igual; el resto espera al final, para
   // que la lista no dé un salto raro cuando llegue la respuesta.
-  return { tierra: TIERRAS_BASICAS.has(carta.nombre.trim().toLowerCase()), coste: 99 }
+  return { tierra: porElNombre, coste: 99 }
 }
 
 function porCoste(deLaZona: CartaDelMazo[], fotos: Map<string, Carta>): CartaDelMazo[] {
@@ -193,16 +205,17 @@ function porCoste(deLaZona: CartaDelMazo[], fotos: Map<string, Carta>): CartaDel
  */
 function ConfirmarCarta({
   carta,
-  zona,
+  zonaPuesta,
   anadir,
   cancelar,
 }: {
   carta: Carta
-  zona: string
-  anadir: (cuantas: number) => void
+  zonaPuesta: Zona
+  anadir: (cuantas: number, zona: Zona) => void
   cancelar: () => void
 }) {
   const [cuantas, setCuantas] = useState(1)
+  const [zona, setZona] = useState<Zona>(zonaPuesta)
 
   return (
     <div className="dialogo">
@@ -210,24 +223,34 @@ function ConfirmarCarta({
         {carta.imagen && <img className="confirmar__carta" src={carta.imagen} alt="" />}
         <div className="confirmar__texto">
           <h3 className="confirmar__nombre">{carta.nombre}</h3>
-          <p className="confirmar__donde">
-            {carta.edicionNombre} · a {zona.toLowerCase()}
-          </p>
-          <label className="campo">
-            <span className="campo__nombre">Cuántas</span>
-            <input
-              type="number"
-              min={1}
-              max={99}
-              value={cuantas}
-              onChange={(e) => setCuantas(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
-            />
-          </label>
+          <p className="confirmar__donde">{carta.edicionNombre}</p>
+          <div className="confirmar__campos">
+            <label className="campo">
+              <span className="campo__nombre">Cuántas</span>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={cuantas}
+                onChange={(e) => setCuantas(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
+              />
+            </label>
+            <label className="campo">
+              <span className="campo__nombre">Dónde</span>
+              <select value={zona} onChange={(e) => setZona(e.target.value as Zona)}>
+                {ZONAS.map((z) => (
+                  <option key={z.zona} value={z.zona}>
+                    {z.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           <div className="dialogo__botones">
             <button
               type="button"
               className="boton boton--principal"
-              onClick={() => anadir(cuantas)}
+              onClick={() => anadir(cuantas, zona)}
             >
               Añadir
             </button>
@@ -458,9 +481,9 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
                 ← Mis mazos
               </button>
               {/* El engranaje cambia la columna entera de mirar a
-                  modificar. Mirando un mazo no se toca nada de esto, y
-                  tenerlo siempre puesto obligaba a desplazar la columna
-                  (Héctor, 30/10/2026). */}
+                  modificar. Mirando un mazo no se toca ni el nombre ni las
+                  notas ni el botón de borrar, y tenerlo todo puesto hacía
+                  la columna tan larga que había que desplazarla. */}
               <button
                 type="button"
                 className={modificando ? 'engranaje engranaje--puesto' : 'engranaje'}
@@ -468,15 +491,10 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
                 aria-pressed={modificando}
                 aria-label={modificando ? 'Dejar de modificar' : 'Modificar el mazo'}
               >
-                <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                   <path
                     fill="currentColor"
-                    d="M12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5Zm0-5A1.5 1.5 0 1 0 13.5 12 1.5 1.5 0 0 0 12 10.5Z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M13.6 22h-3.2l-.3-2.3a7.9 7.9 0 0 1-1.6-.9l-2.1.9-1.6-2.8 1.8-1.4a8 8 0 0 1 0-1.9l-1.8-1.4 1.6-2.8 2.1.9a7.9 7.9 0 0 1 1.6-.9L10.4 7h3.2l.3 2.3a7.9 7.9 0 0 1 1.6.9l2.1-.9 1.6 2.8-1.8 1.4a8 8 0 0 1 0 1.9l1.8 1.4-1.6 2.8-2.1-.9a7.9 7.9 0 0 1-1.6.9Z"
-                    opacity=".3"
+                    d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4.9a7.6 7.6 0 0 0-1.7-1L14.9 3h-4l-.4 2.6a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-.9a7.6 7.6 0 0 0 1.7 1l.4 2.6h4l.4-2.6a7.6 7.6 0 0 0 1.7-1l2.4.9 2-3.4-2-1.6ZM12 15.2A3.2 3.2 0 1 1 15.2 12 3.2 3.2 0 0 1 12 15.2Z"
                   />
                 </svg>
               </button>
@@ -490,93 +508,94 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
               />
             )}
 
-            {!modificando && (
+            {!modificando ? (
               <div className="mazo__datos">
                 <h2 className="mazo__nombre">{abierto.nombre}</h2>
-                <p className="mazo__formato">{abierto.formato}</p>
+                <p className="mazo__formato">
+                  {abierto.formato} · {cartas.reduce((s, c) => s + c.cantidad, 0)} cartas
+                </p>
                 {abierto.notas && <p className="mazo__notas">{abierto.notas}</p>}
               </div>
-            )}
+            ) : (
+              <div className="mazo__taller">
+                <form onSubmit={guardarDatos} className="mazo__forma">
+                  <label className="campo">
+                    <span className="campo__nombre">Nombre</span>
+                    <input
+                      type="text"
+                      value={datos.nombre}
+                      onChange={(e) => setBorrador({ ...datos, nombre: e.target.value })}
+                      maxLength={80}
+                      required
+                    />
+                  </label>
+                  <label className="campo">
+                    <span className="campo__nombre">Formato</span>
+                    <input
+                      type="text"
+                      value={datos.formato}
+                      onChange={(e) => setBorrador({ ...datos, formato: e.target.value })}
+                      maxLength={40}
+                    />
+                  </label>
+                  <label className="campo">
+                    <span className="campo__nombre">Notas</span>
+                    <textarea
+                      value={datos.notas}
+                      onChange={(e) => setBorrador({ ...datos, notas: e.target.value })}
+                      rows={2}
+                    />
+                  </label>
+                  <button type="submit" className="boton boton--principal">
+                    Guardar
+                  </button>
+                </form>
 
-            {modificando && (
-            <form onSubmit={guardarDatos} className="mazo__forma">
-              <label className="campo">
-                <span className="campo__nombre">Nombre</span>
-                <input
-                  type="text"
-                  value={datos.nombre}
-                  onChange={(e) => setBorrador({ ...datos, nombre: e.target.value })}
-                  maxLength={80}
-                  required
-                />
-              </label>
-              <label className="campo">
-                <span className="campo__nombre">Formato</span>
-                <input
-                  type="text"
-                  value={datos.formato}
-                  onChange={(e) => setBorrador({ ...datos, formato: e.target.value })}
-                  maxLength={40}
-                />
-              </label>
-              <label className="campo">
-                <span className="campo__nombre">Notas</span>
-                <textarea
-                  value={datos.notas}
-                  onChange={(e) => setBorrador({ ...datos, notas: e.target.value })}
-                  rows={3}
-                />
-              </label>
-              <button type="submit" className="boton boton--principal">
-                Guardar
-              </button>
-            </form>
-            )}
+                {/* Buscar y añadir. La zona se elige en la ventana que
+                    sale después, con la carta delante: aquí solo ocupaba
+                    sitio para una pregunta que casi siempre se contesta
+                    igual (Héctor, 30/10/2026). */}
+                <form onSubmit={buscarParaAnadir} className="mazo__anadir">
+                  <label className="campo">
+                    <span className="campo__nombre">Añadir carta</span>
+                    <div className="mazo__buscar">
+                      <input
+                        type="text"
+                        value={nueva}
+                        onChange={(e) => {
+                          setNueva(e.target.value)
+                          setNoExiste(null)
+                        }}
+                        placeholder="Lightning Bolt"
+                        spellCheck={false}
+                      />
+                      <button type="submit" className="boton boton--plano" disabled={buscandoCarta}>
+                        {buscandoCarta ? '…' : 'Buscar'}
+                      </button>
+                    </div>
+                  </label>
+                  {noExiste && (
+                    <p className="recado recado--mal">No existe ninguna carta así: «{noExiste}».</p>
+                  )}
+                </form>
 
-            {modificando && (
-            <form onSubmit={buscarParaAnadir} className="mazo__anadir">
-              <label className="campo">
-                <span className="campo__nombre">Añadir carta</span>
-                <input
-                  type="text"
-                  value={nueva}
-                  onChange={(e) => {
-                    setNueva(e.target.value)
-                    setNoExiste(null)
-                  }}
-                  placeholder="Lightning Bolt"
-                  spellCheck={false}
-                />
-              </label>
-              <select value={zonaNueva} onChange={(e) => setZonaNueva(e.target.value as Zona)}>
-                {ZONAS.map((z) => (
-                  <option key={z.zona} value={z.zona}>
-                    {z.nombre}
-                  </option>
-                ))}
-              </select>
-              <button type="submit" className="boton boton--plano" disabled={buscandoCarta}>
-                {buscandoCarta ? 'Buscando…' : 'Buscar'}
-              </button>
-              {noExiste && (
-                <p className="recado recado--mal">No existe ninguna carta así: «{noExiste}».</p>
-              )}
-            </form>
-            )}
-
-            {modificando && (
-            <div className="mazo__abajo">
-              <button
-                type="button"
-                className="boton boton--plano"
-                onClick={() => setImportando(true)}
-              >
-                Importar lista
-              </button>
-              <button type="button" className="boton boton--plano" onClick={quitarMazo}>
-                Borrar el mazo
-              </button>
-            </div>
+                <div className="mazo__abajo">
+                  <button
+                    type="button"
+                    className="boton boton--plano"
+                    onClick={() => setImportando(true)}
+                  >
+                    Importar lista
+                  </button>
+                  <button
+                    type="button"
+                    className="boton boton--plano boton--peligro"
+                    onClick={quitarMazo}
+                  >
+                    Borrar el mazo
+                  </button>
+                </div>
+              </div>
             )}
           </aside>
 
@@ -640,8 +659,11 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
         {porConfirmar && (
           <ConfirmarCarta
             carta={porConfirmar}
-            zona={ZONAS.find((z) => z.zona === zonaNueva)?.nombre ?? 'el mazo'}
-            anadir={(cuantas) => anadirYa(porConfirmar.nombre, cuantas, zonaNueva)}
+            zonaPuesta={zonaNueva}
+            anadir={(cuantas, zona) => {
+              setZonaNueva(zona)
+              anadirYa(porConfirmar.nombre, cuantas, zona)
+            }}
             cancelar={() => setPorConfirmar(null)}
           />
         )}

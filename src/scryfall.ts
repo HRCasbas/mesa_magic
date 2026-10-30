@@ -28,8 +28,10 @@ export interface Carta {
   pagina: string
   /** El coste de maná convertido. Sirve para ordenar el mazo. */
   coste: number
-  /** Si es una tierra. Las tierras van al final, no por coste. */
+  /** Si es una tierra. Las tierras van en su propia sección del mazo. */
   esTierra: boolean
+  /** La línea de tipo, en inglés y tal cual viene. De aquí sale lo anterior. */
+  tipo: string
 }
 
 /**
@@ -252,7 +254,18 @@ interface Cruda {
   cmc?: number
   type_line?: string
   image_uris?: { normal?: string; large?: string }
-  card_faces?: { image_uris?: { normal?: string; large?: string } }[]
+  card_faces?: { type_line?: string; image_uris?: { normal?: string; large?: string } }[]
+}
+
+/**
+ * La línea de tipo de una carta.
+ *
+ * Viene **en inglés siempre**, sea cual sea el idioma de la carta, así que
+ * buscar «land» ahí vale para todos. Las cartas de dos caras no la traen
+ * arriba: la traen por cara, igual que la imagen.
+ */
+function tipoDe(cruda: Cruda): string {
+  return cruda.type_line ?? cruda.card_faces?.[0]?.type_line ?? ''
 }
 
 function ordenar(cruda: Cruda): Carta {
@@ -271,10 +284,10 @@ function ordenar(cruda: Cruda): Carta {
     oraculo: cruda.oracle_id ?? null,
     pagina: cruda.scryfall_uri,
     coste: cruda.cmc ?? 0,
-    // El tipo viene en inglés siempre, sea cual sea el idioma de la carta.
+    tipo: tipoDe(cruda),
     // Una tierra que además es criatura (Dryad Arbor) cuenta como tierra:
     // se juega como tierra, y ahí es donde se la busca.
-    esTierra: /Land/.test(cruda.type_line ?? ''),
+    esTierra: /land/i.test(tipoDe(cruda)),
   }
 }
 
