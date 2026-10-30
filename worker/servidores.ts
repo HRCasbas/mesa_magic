@@ -74,12 +74,29 @@ export async function servidoresDeConexion(entorno: {
       }
     }
 
-    const datos = (await respuesta.json()) as { iceServers?: ServidorDeConexion }
-    if (!datos.iceServers?.urls) {
-      return { servidores: base, hayRele: false, motivo: 'Respuesta de relé inesperada.' }
+    // Cloudflare ha devuelto `iceServers` unas veces como un objeto y otras
+    // como una lista. Se admiten las dos formas: la alternativa es que el
+    // rele deje de funcionar el dia que cambien de opinion, y sin aviso,
+    // porque la llamada sigue saliendo bien.
+    const datos = (await respuesta.json()) as {
+      iceServers?: ServidorDeConexion | ServidorDeConexion[]
+    }
+    const crudo = datos.iceServers
+    const lista = Array.isArray(crudo) ? crudo : crudo ? [crudo] : []
+    const utiles = lista.filter((servidor) => servidor?.urls)
+
+    if (utiles.length === 0) {
+      // El motivo lleva los NOMBRES de lo que vino, nunca los valores: hay
+      // credenciales ahi dentro y esto se enseña en el diagnostico.
+      const campos = Object.keys(datos).join(', ') || 'nada'
+      return {
+        servidores: base,
+        hayRele: false,
+        motivo: `Respuesta de relé inesperada (vino: ${campos}).`,
+      }
     }
 
-    return { servidores: [...base, datos.iceServers], hayRele: true }
+    return { servidores: [...base, ...utiles], hayRele: true }
   } catch {
     // Que el rele no conteste no puede dejar sin jugar a quien no lo
     // necesita, que son la mayoria.
