@@ -2220,6 +2220,16 @@ final y en su sitio: moverlas de golpe al llegar la respuesta sería peor
 que no ordenarlas. El orden guardado en la base no se toca, que es el de
 la lista que se importó.
 
+**Volver, de una pulsación y siempre en el mismo sitio** (Héctor,
+30/10/2026: «desde dentro de un mazo tienes que ir a Mis mazos, luego
+cerrar»). Cada sección tenía su botón de salir en una esquina distinta.
+Ahora hay **uno solo**, `← Atrás`, arriba a la izquierda en todas, que
+sube **un** nivel; y **«La mesa» es la primera opción del menú de la
+cuenta**, para volver a jugar desde donde sea sin deshacer el camino.
+La columna de datos del mazo cabe entera sin desplazarla: lo que la hacía
+larga era la portada a tamaño de carta, y de una portada basta con
+reconocerla.
+
 ---
 
 ## Pendiente de que Héctor decida

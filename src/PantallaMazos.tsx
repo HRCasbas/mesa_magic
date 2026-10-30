@@ -306,7 +306,11 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
       <>
         <div className="mazo">
           <aside className="mazo__lado">
-            <button type="button" className="boton boton--plano" onClick={() => abrirMazo(null)}>
+            <button
+              type="button"
+              className="boton boton--atras"
+              onClick={() => abrirMazo(null)}
+            >
               ← Mis mazos
             </button>
 
@@ -456,13 +460,13 @@ export function PantallaMazos({ idUsuario, cerrar }: { idUsuario: string; cerrar
   // ---- la lista ----
   return (
     <section className="tarjeta">
+      <button type="button" className="boton boton--atras" onClick={cerrar}>
+        ← Atrás
+      </button>
       <div className="mazo__cabecera">
         <h2 className="mazo__nombre">Mis mazos</h2>
         <button type="button" className="boton boton--principal" onClick={nuevo}>
           Mazo nuevo
-        </button>
-        <button type="button" className="boton boton--plano" onClick={cerrar}>
-          Cerrar
         </button>
       </div>
 

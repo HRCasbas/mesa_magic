@@ -12,6 +12,7 @@ import { supabase } from './supabase'
 export function MenuCuenta({
   nombre,
   avatar,
+  abrirMesa,
   cambiarClave,
   abrirAjustes,
   abrirMazos,
@@ -19,6 +20,7 @@ export function MenuCuenta({
 }: {
   nombre: string
   avatar: string | null
+  abrirMesa: () => void
   cambiarClave: () => void
   abrirAjustes: () => void
   abrirMazos: () => void
@@ -51,6 +53,18 @@ export function MenuCuenta({
 
       {abierto && (
         <div className="cuenta__menu">
+          {/* La mesa la primera: desde cualquier sección se vuelve a jugar
+              de una pulsación, sin ir deshaciendo el camino. */}
+          <button
+            type="button"
+            className="cuenta__opcion"
+            onClick={() => {
+              setAbierto(false)
+              abrirMesa()
+            }}
+          >
+            La mesa
+          </button>
           <button
             type="button"
             className="cuenta__opcion"

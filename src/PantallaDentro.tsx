@@ -122,6 +122,7 @@ export function PantallaDentro({
         <MenuCuenta
           nombre={jugador.nombre}
           avatar={jugador.avatar}
+          abrirMesa={volver}
           cambiarClave={() => setDonde("clave")}
           abrirAjustes={() => setDonde("ajustes")}
           abrirMazos={() => setDonde("mazos")}

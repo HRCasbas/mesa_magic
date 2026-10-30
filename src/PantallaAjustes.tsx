@@ -65,6 +65,9 @@ export function PantallaAjustes({
 
   return (
     <section className="tarjeta">
+      <button type="button" className="boton boton--atras" onClick={cerrar}>
+        ← Atrás
+      </button>
       <h2>Ajustes</h2>
 
       {/* La foto primero: es lo que se ve en la moneda y en el menú, o
@@ -117,10 +120,6 @@ export function PantallaAjustes({
       </label>
 
       {guardado && <p className="recado recado--bien">Guardado.</p>}
-
-      <button type="button" className="boton boton--plano" onClick={cerrar}>
-        Cerrar
-      </button>
     </section>
   )
 }

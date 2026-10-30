@@ -2142,22 +2142,26 @@ select option {
 
 .mazo {
   display: grid;
-  grid-template-columns: 19rem 1fr;
+  grid-template-columns: 16rem 1fr;
   gap: 1.5rem;
   align-items: start;
 }
 
+/* La columna de la izquierda cabe entera en la pantalla y no se desplaza
+   (Hector, 30/10/2026). Lo que la hacia larga era la portada a tamaño de
+   carta: de la portada basta con reconocerla. */
 .mazo__lado {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.75rem;
   position: sticky;
   top: 1rem;
 }
 
 .mazo__grande {
-  width: 100%;
-  border-radius: 0.75rem;
+  width: 9rem;
+  border-radius: 0.6rem;
   display: block;
+  justify-self: center;
 }
 
 .mazo__anadir {
@@ -2352,4 +2356,24 @@ select option {
 .jugada__detalle {
   color: var(--texto-suave);
   font-size: 0.82rem;
+}
+
+/* ---- Volver, siempre arriba a la izquierda ----
+   Lo pidio Hector el 30/10/2026: antes cada seccion tenia su boton de
+   salir en un sitio distinto, y desde un mazo habia que dar dos pasos
+   por dos esquinas diferentes. Uno solo, en el mismo sitio, con la misma
+   pinta y a un nivel por pulsacion. */
+
+.boton--atras {
+  justify-self: start;
+  align-self: start;
+  padding-left: 0;
+  background: transparent;
+  border-color: transparent;
+  color: var(--texto-suave);
+}
+
+.boton--atras:hover {
+  color: var(--texto);
+  background: transparent;
 }

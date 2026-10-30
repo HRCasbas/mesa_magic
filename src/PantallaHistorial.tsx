@@ -36,11 +36,11 @@ export function PantallaHistorial({ tuId, cerrar }: { tuId: string; cerrar: () =
 
   return (
     <section className="tarjeta">
+      <button type="button" className="boton boton--atras" onClick={cerrar}>
+        ← Atrás
+      </button>
       <div className="mazo__cabecera">
         <h2 className="mazo__nombre">Historial</h2>
-        <button type="button" className="boton boton--plano" onClick={cerrar}>
-          Cerrar
-        </button>
       </div>
 
       {lista === null && <p className="cargando">Trayendo las partidas…</p>}
