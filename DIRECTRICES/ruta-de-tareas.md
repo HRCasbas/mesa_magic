@@ -2074,6 +2074,63 @@ mira».
 
 ---
 
+## Repaso del 30/10/2026 (pegas de Héctor probando en el móvil)
+
+Cuatro pegas de una sentada, y la tercera decide algo que llevaba semanas
+abierto.
+
+**La moneda la veía girar solo quien la tiraba.** Solo viajaba el
+resultado (`compartido.empieza`), no la tirada. Ahora quien pulsa manda
+`{que:'moneda', gana}` por el canal de datos y **los dos giran a la vez**,
+con el mismo ganador y la misma duración. Sigue apuntando el resultado
+**solo quien tira**: si lo apuntaran los dos serían dos cambios del estado
+compartido para decir lo mismo. El detalle que lo hace funcionar en los dos
+lados sin más código: cada uno tiene **su propia cara delante**, así que
+`gana === tuId ? 0 : 180` sale bien mirado desde donde se mire.
+
+**La franja roja del borde izquierdo: dos clases con el mismo nombre.**
+`.partida` era a la vez la capa a pantalla completa de la partida en curso
+(línea 1095) y **una fila del historial** (línea 2275), que lleva
+`border-left: 3px solid var(--mal)` para marcar las derrotas. Como la del
+historial se declara después, ganaba, y pintaba una raya roja de arriba
+abajo en todas las partidas. La del historial pasó a llamarse `.jugada`.
+**La lección:** un nombre de clase es un nombre global; `.partida` para una
+pantalla y para una fila de una lista era un choque esperando a pasar.
+
+**La pantalla de un mazo nunca fue ancha.** Se escribió `.pagina--ancha`
+(100rem) el 30/10/2026 para que el mazo abierto usara toda la pantalla,
+pero `PantallaDentro` siempre ponía `.pagina` a secas (44rem): la clase
+existía y no se aplicaba a nada. Ahora la sección de mazos la lleva. Y las
+cartas crecen con la ventana: `--ancho: clamp(8rem, 12vw, 13rem)`, con el
+alto y lo que asoma de cada copia **derivados de ese ancho**, que una carta
+tiene las proporciones que tiene. Una sola regla para el móvil y para la
+pantalla grande.
+
+**Avatar de verdad: sigue pendiente**, y ahora se nota más, porque la
+moneda enseña las dos caras.
+
+---
+
+## El relé TURN: hace falta, y Cloudflare pide tarjeta (30/10/2026)
+
+**La prueba que lo cerró:** Héctor puso el móvil con **datos móviles** (wifi
+apagado) y el PC en su red. Es el caso más difícil que hay, porque en una
+red móvil todos los clientes comparten la misma IP pública. **No entró la
+imagen del otro lado.** Conclusión: sin relé, dos casas cualesquiera no
+tienen por qué conectar.
+
+**Y el relé de Cloudflare pide tarjeta.** Dar de alta Realtime lleva a un
+formulario con método de pago y dirección de facturación, aunque el total
+sea 0,00 € y los 1000 GB al mes entren gratis (0,05 $/GB al pasarse, y una
+partida larga no llega a 2 GB). Choca de frente con «todo gratis», así que
+**la decisión es de Héctor** y está sin tomar.
+
+Lo que NO vale la pena: un relé público gratuito de los que hay por ahí. El
+vídeo de los dos pasaría por un servidor de un tercero y los cupos son de
+50 GB al mes.
+
+---
+
 ## Pendiente de que Héctor decida
 
 - **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
@@ -2091,9 +2148,13 @@ mira».
   borde, antes de que la web llegue a cargarse. Más seguro, pero añade un
   código al correo cada vez. No se ha metido.
 - **La tirada de quién empieza.** Si la tira un navegador y manda el
-  resultado, el otro se lo tiene que creer. Hay un truco limpio: cada uno
-  manda su número tapado y solo al tener los dos se destapan y se suman.
-  Media hora de trabajo.
+  resultado, el otro se lo tiene que creer. Desde el 30/10/2026 el otro
+  **ve girar la moneda**, pero sigue sin poder comprobar nada. Hay un truco
+  limpio: cada uno manda su número tapado y solo al tener los dos se
+  destapan y se suman. Media hora de trabajo.
+- **El relé TURN.** Probado y comprobado que hace falta (móvil con datos
+  contra PC: no entra la imagen), pero Cloudflare pide tarjeta para dar de
+  alta Realtime aunque el total sea 0,00 €. Sin decidir.
 
 ---
 

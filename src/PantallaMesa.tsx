@@ -226,6 +226,8 @@ export function PantallaMesa({ nombre }: { nombre: string }) {
               tuId={mesa.tuId}
               suId={elOtro.id}
               elegir={contadores.elegirQuienEmpieza}
+              enviarDato={enlace.enviarDato}
+              alRecibirDato={enlace.alRecibirDato}
             />
           </div>
         )}

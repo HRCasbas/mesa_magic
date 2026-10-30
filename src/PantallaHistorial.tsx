@@ -68,15 +68,15 @@ export function PantallaHistorial({ tuId, cerrar }: { tuId: string; cerrar: () =
               const miPortada = soyUno ? p.unoPortada : p.dosPortada
               const gane = p.gano === tuId
               return (
-                <li key={p.id} className={gane ? 'partida partida--gane' : 'partida'}>
-                  <span className="partida__portada">
+                <li key={p.id} className={gane ? 'jugada jugada--gane' : 'jugada'}>
+                  <span className="jugada__portada">
                     {miPortada && <img src={portadaDe(miPortada)} alt="" loading="lazy" />}
                   </span>
-                  <span className="partida__texto">
+                  <span className="jugada__texto">
                     <strong>
-                      {miMazo} <span className="partida__contra">contra</span> {suMazo}
+                      {miMazo} <span className="jugada__contra">contra</span> {suMazo}
                     </strong>
-                    <span className="partida__detalle">
+                    <span className="jugada__detalle">
                       {gane ? 'Ganaste' : `Ganó ${suNombre}`} · {nombreDelMotivo(p.motivo)} ·{' '}
                       {p.turnos} {p.turnos === 1 ? 'turno' : 'turnos'} · {cuando(p.jugada)}
                     </span>

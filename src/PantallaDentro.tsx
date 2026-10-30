@@ -111,7 +111,9 @@ export function PantallaDentro({
   const aparato = datosDelAparato()
 
   return (
-    <main className="pagina">
+    /* Un mazo abierto necesita toda la pantalla: son sesenta cartas. El
+       resto de secciones se leen mejor en una columna estrecha. */
+    <main className={donde === 'mazos' ? 'pagina pagina--ancha' : 'pagina'}>
       <header className="cabecera">
         <div className="cabecera__titulos">
           <h1 className="cabecera__titulo">Mesa Magic</h1>

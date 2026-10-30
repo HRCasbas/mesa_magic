@@ -1729,9 +1729,14 @@ body {
 
 /* De cada copia solo asoma la banda del nombre; la ultima se ve entera. */
 .pila {
-  --ancho: 7.4rem;
-  --alto: 10.3rem;
-  --asoma: 1.55rem;
+  /* Las cartas, lo mas grandes que quepan (Hector, 30/10/2026: «cartas mas
+     grandes aunque sean 5 columnas»). La medida sale del ancho de la
+     ventana, asi que la misma regla vale para el movil y para la pantalla
+     grande; el alto y lo que asoma de cada copia se derivan de ella, que
+     una carta tiene las proporciones que tiene. */
+  --ancho: clamp(8rem, 12vw, 13rem);
+  --alto: calc(var(--ancho) * 1.3934);
+  --asoma: calc(var(--ancho) * 0.21);
   position: relative;
   width: var(--ancho);
   display: flex;
@@ -2272,7 +2277,7 @@ select option {
   gap: 0.5rem;
 }
 
-.partida {
+.jugada {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -2283,25 +2288,25 @@ select option {
   overflow: hidden;
 }
 
-.partida--gane {
+.jugada--gane {
   border-left-color: var(--bien);
 }
 
-.partida__portada {
+.jugada__portada {
   flex: 0 0 4.5rem;
   height: 3.2rem;
   background: var(--fondo);
   overflow: hidden;
 }
 
-.partida__portada img {
+.jugada__portada img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.partida__texto {
+.jugada__texto {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -2309,12 +2314,12 @@ select option {
   min-width: 0;
 }
 
-.partida__contra {
+.jugada__contra {
   color: var(--texto-suave);
   font-weight: 400;
 }
 
-.partida__detalle {
+.jugada__detalle {
   color: var(--texto-suave);
   font-size: 0.82rem;
 }
