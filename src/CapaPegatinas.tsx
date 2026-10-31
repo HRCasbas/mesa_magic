@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties, type PointerEvent as EventoPuntero } from 'react'
+import { useRef, useState, type CSSProperties, type PointerEvent as EventoPuntero } from 'react'
 
 import { CLASES, type ManejoPegatinas, type Pegatina } from './pegatinas'
 
@@ -25,11 +25,15 @@ function Pegada({
    * mover deprisa—, aunque pase por encima de otra, y aunque React
    * repinte en medio.
    */
+  /** Para ponerla verde mientras la llevas: se ve cual es aunque el dedo la tape. */
+  const [moviendo, setMoviendo] = useState(false)
+
   function alBajar(evento: EventoPuntero<HTMLDivElement>) {
     evento.preventDefault()
     const caja = marco.current?.getBoundingClientRect()
     if (!caja || caja.width === 0 || caja.height === 0) return
     manejo.empezarArrastre(dato.id)
+    setMoviendo(true)
 
     function alArrastrar(suelto: PointerEvent) {
       if (!caja) return
@@ -40,6 +44,7 @@ function Pegada({
       window.removeEventListener('pointermove', alArrastrar)
       window.removeEventListener('pointerup', alSoltar)
       window.removeEventListener('pointercancel', alSoltar)
+      setMoviendo(false)
       manejo.terminarArrastre()
     }
 
@@ -68,7 +73,9 @@ function Pegada({
 
   return (
     <div
-      className={`pegada pegada--${dato.clase}`}
+      className={
+        moviendo ? `pegada pegada--${dato.clase} pegada--moviendo` : `pegada pegada--${dato.clase}`
+      }
       style={{ left: `${dato.x * 100}%`, top: `${dato.y * 100}%` }}
       onPointerDown={alBajar}
       // Borrar con el botón derecho, que lo pidió Héctor: una × en cada

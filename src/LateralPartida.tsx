@@ -116,11 +116,24 @@ export function LateralPartida({
             />
             )}
 
-            {/* EL RIVAL VE EL MAZO ENTERO (regla 7, Héctor 27/10/2026): en
-                torneo las listas son públicas y entre ellos acaban
-                preguntándoselas igual. Aquí porque es de la partida, y una
-                vez empezada la sección de elegir mazo desaparece y con ella
-                se iba la única forma de verlo. */}
+            <section className="tarjeta">
+              <h2>Las pegatinas</h2>
+              <Paleta
+                mesaMia={tuId}
+                mesaSuya={suId}
+                nombreDelOtro={nombreDelOtro}
+                moverTodas={moverTodas}
+                alternarMoverTodas={alternarMoverTodas}
+                pegar={pegar}
+                quitarTodas={quitarTodas}
+              />
+            </section>
+
+            {/* ABAJO DEL TODO, y a propósito: lo de arriba se toca en cada
+                turno y esto una vez por partida. Ver el mazo del rival es
+                una curiosidad que se mira cuando hay tiempo, y finalizar
+                es lo último que pasa. Tenerlos en medio los ponía a mano
+                de un dedo que iba a los contadores. */}
             {mazoSuyo && (
               <button
                 type="button"
@@ -140,19 +153,6 @@ export function LateralPartida({
                 fin={fin}
               />
             )}
-
-            <section className="tarjeta">
-              <h2>Las pegatinas</h2>
-              <Paleta
-                mesaMia={tuId}
-                mesaSuya={suId}
-                nombreDelOtro={nombreDelOtro}
-                moverTodas={moverTodas}
-                alternarMoverTodas={alternarMoverTodas}
-                pegar={pegar}
-                quitarTodas={quitarTodas}
-              />
-            </section>
           </>
         ) : (
           <PantallaConsultas

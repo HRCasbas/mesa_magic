@@ -49,7 +49,7 @@ export function Paleta({
           <button
             key={clase}
             type="button"
-            className="paleta__clase"
+            className={`paleta__clase paleta__clase--${clase}`}
             title={nombre}
             onClick={() => {
               if (clase !== 'libre') {

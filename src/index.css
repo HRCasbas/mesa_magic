@@ -15,6 +15,12 @@
   --bien: #5dc98a;
   --mal: #e0644f;
   --duda: #e0b44f;
+  /* Las pegatinas van encima del video, no de la pagina: necesitan un
+     color que se vea sobre una mesa de madera, sobre una carta blanca y
+     sobre una sombra. El borde oscuro de la web no se veia (Hector,
+     01/11/2026). */
+  --pegatina: #ffd23f;
+  --pegatina-movida: #46e07a;
 
   color-scheme: dark;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -819,9 +825,14 @@ body {
   align-items: center;
   gap: 0.3rem;
   padding: 0.2rem 0.35rem;
-  border: 1px solid var(--borde);
+  border: 2px solid var(--pegatina);
   border-radius: 0.4rem;
   background: rgba(15, 17, 21, 0.88);
+  /* Un filo negro por fuera y una sombra: asi el amarillo se ve tambien
+     sobre una carta clara, que es justo donde se ponen. */
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.65),
+    0 2px 6px rgba(0, 0, 0, 0.5);
   color: var(--texto);
   font-size: 0.8rem;
   white-space: nowrap;
@@ -832,9 +843,11 @@ body {
   user-select: none;
 }
 
+/* Mientras se mueve, verde: se ve cual llevas aunque el dedo la tape. */
+.pegada--moviendo,
 .pegada:active {
   cursor: grabbing;
-  border-color: var(--acento);
+  border-color: var(--pegatina-movida);
 }
 
 .pegada__que {
@@ -871,17 +884,15 @@ body {
   border-color: var(--mal);
 }
 
-/* Las que cuentan algo se distinguen de un vistazo por el color del borde. */
-.pegada--mas {
-  border-color: var(--bien);
+/* Las que cuentan algo se distinguen por el color de su texto, no por el
+   borde: el borde es de todas igual, que para eso es lo que las hace
+   visibles sobre el video. */
+.pegada--mas .pegada__que {
+  color: var(--bien);
 }
 
-.pegada--menos {
-  border-color: var(--mal);
-}
-
-.pegada--esta {
-  border-color: var(--acento);
+.pegada--menos .pegada__que {
+  color: var(--mal);
 }
 
 /* ---- La paleta ---- */
@@ -1580,14 +1591,58 @@ body {
 
 /* ---- Pegatinas con dibujo ---- */
 
+/* ---- Los iconos de las pegatinas ----
+   Grandes, de color y con un filo oscuro (Hector, 01/11/2026: «iconos mas
+   llamativos, un poco mas grandes y si hace falta ponle color»). Van
+   encima de una imagen de video, donde un dibujo fino y gris desaparece.
+   El color no es decoracion: dice de un vistazo que es cada pegatina sin
+   tener que leerla, que es justo lo que no da tiempo a hacer en medio de
+   un turno. */
+
 .pegada__dibujo {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1.6rem;
+  height: 1.6rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.9));
+}
+
+.pegada--ficha .pegada__dibujo,
+.paleta__clase--ficha .paleta__dibujo {
+  stroke: #ffa94d;
+}
+
+.pegada--volar .pegada__dibujo,
+.paleta__clase--volar .paleta__dibujo {
+  stroke: #6fc3ff;
+}
+
+.pegada--arrolla .pegada__dibujo,
+.paleta__clase--arrolla .paleta__dibujo {
+  stroke: #7bd88f;
+}
+
+.pegada--mortal .pegada__dibujo,
+.paleta__clase--mortal .paleta__dibujo {
+  stroke: #b980ff;
+}
+
+.pegada--vinculo .pegada__dibujo,
+.paleta__clase--vinculo .paleta__dibujo {
+  stroke: #ff8fa3;
+}
+
+.pegada--esta .pegada__dibujo,
+.paleta__clase--esta .paleta__dibujo {
+  stroke: var(--pegatina);
+}
+
+/* El texto de las pegatinas sin dibujo, tambien mas grande. */
+.pegada__que {
+  font-size: 0.95rem;
 }
 
 .paleta__clases {
@@ -1599,8 +1654,8 @@ body {
 .paleta__clase {
   display: grid;
   place-items: center;
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 2.6rem;
+  height: 2.6rem;
   padding: 0;
   border: 1px solid var(--borde);
   border-radius: 0.5rem;
@@ -1617,11 +1672,11 @@ body {
 }
 
 .paleta__dibujo {
-  width: 1.3rem;
-  height: 1.3rem;
+  width: 1.5rem;
+  height: 1.5rem;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.7;
+  stroke-width: 2.1;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
