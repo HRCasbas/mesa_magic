@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ElegirMazo } from './ElegirMazo'
 import { Paleta } from './Paleta'
+import { MazoDelRival } from './MazoDelRival'
 import type { MazoEnJuego } from './mazoElegido'
 import { PantallaConsultas } from './PantallaConsultas'
 import { PantallaContadores } from './PantallaContadores'
@@ -69,6 +70,8 @@ export function LateralPartida({
   fin: ReturnType<typeof useFinDePartida>
 }) {
   const [pestana, setPestana] = useState<Pestana>('partida')
+  /** El mazo del rival, abierto a pantalla completa. */
+  const [mirandoSuMazo, setMirandoSuMazo] = useState(false)
 
   return (
     <aside className="lateral">
@@ -113,6 +116,21 @@ export function LateralPartida({
             />
             )}
 
+            {/* EL RIVAL VE EL MAZO ENTERO (regla 7, Héctor 27/10/2026): en
+                torneo las listas son públicas y entre ellos acaban
+                preguntándoselas igual. Aquí porque es de la partida, y una
+                vez empezada la sección de elegir mazo desaparece y con ella
+                se iba la única forma de verlo. */}
+            {mazoSuyo && (
+              <button
+                type="button"
+                className="boton boton--plano"
+                onClick={() => setMirandoSuMazo(true)}
+              >
+                Ver el mazo de {nombreDelOtro ?? 'tu rival'}
+              </button>
+            )}
+
             {contadores.compartido.empieza && suId && (
               <FinDePartida
                 tuId={tuId}
@@ -152,6 +170,14 @@ export function LateralPartida({
           />
         )}
       </div>
+
+      {mirandoSuMazo && mazoSuyo && (
+        <MazoDelRival
+          mazo={mazoSuyo}
+          nombre={nombreDelOtro ?? 'tu rival'}
+          cerrar={() => setMirandoSuMazo(false)}
+        />
+      )}
     </aside>
   )
 }

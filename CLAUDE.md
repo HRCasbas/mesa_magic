@@ -1,8 +1,9 @@
 # Magic Mesa
 
 Web para jugar a Magic: The Gathering a distancia, mesa contra mesa por
-webcam. **Partidas de dos, no Commander.** Corre en navegador, en PC y en
-móvil.
+webcam. **Partidas de dos, no Commander.** Se juega en el PC; el móvil
+vale para probar, pero no para jugar (Héctor, 01/11/2026), así que no hay
+que complicarse con él.
 
 ---
 
@@ -120,6 +121,11 @@ src/
   partidas.ts         terminar una partida y el historial
   FinDePartida.tsx    declarar ganador y que el otro lo acepte
   PantallaHistorial.tsx  las partidas jugadas y el balance por mazo
+  MazoDelRival.tsx    el mazo entero del otro, en plena partida
+  Pila.tsx            las copias de una carta, apiladas
+  orden.ts            por coste de mana, y las tierras aparte
+  sorteo.ts           la tirada tapada de quien empieza
+  avatares.ts         subir la foto de perfil
   Moneda.tsx          quien empieza
   avatar.ts           un avatar de mentira hasta que haya de verdad
   ajustes.ts          lo que eliges una vez, como el idioma

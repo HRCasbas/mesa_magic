@@ -1,9 +1,8 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 
-import { idiomaElegido } from './ajustes'
+import { ampliarGirada, guardarGiro, idiomaElegido } from './ajustes'
 import { useConsultas } from './consultas'
-import { leerNombres, leerSenas } from './ocr'
-import { adivinar, buscar, porNumero, type Carta } from './scryfall'
+import { buscar, type Carta } from './scryfall'
 
 function Grande({
   carta,
@@ -81,79 +80,7 @@ export function PantallaConsultas({
   const [buscando, setBuscando] = useState(false)
   const [fallo, setFallo] = useState<string | null>(null)
   const [abierta, setAbierta] = useState<Carta | null>(null)
-  const [leyendo, setLeyendo] = useState(false)
-  /** Lo que el lector ha sacado de la foto, acierte o no. */
-  const [leido, setLeido] = useState<string[]>([])
-
-  // Al llegar una foto, se intenta leer el nombre y buscarla sola. Si no
-  // sale, no pasa nada: la foto se queda ahí y el buscador está al lado.
-  useEffect(() => {
-    if (!foto) return
-    let vigente = true
-    setLeyendo(true)
-    setFallo(null)
-    void (async () => {
-      // PRIMERO LAS SEÑAS DE ABAJO A LA IZQUIERDA, no el nombre (Héctor,
-      // 31/10/2026). Son dígitos y mayúsculas de palo sobre fondo liso, o
-      // sea lo único que un lector de texto hace bien, y dan la carta
-      // EXACTA: esa edición y ese número, no «una que se llama parecido».
-      // Además valen igual con una carta en japonés.
-      for (const senas of await leerSenas(foto)) {
-        if (!vigente) return
-        try {
-          const carta = await porNumero(senas.edicion, senas.numero, idiomaElegido())
-          if (!vigente) return
-          consultas.apuntar(carta, true)
-          setAbierta(carta)
-          setLeyendo(false)
-          return
-        } catch {
-          // Esa combinación no existe. Se prueba la siguiente, y si no
-          // queda ninguna se pasa a leer el nombre, que es lo que vale
-          // para las cartas de antes de 2015: no llevan número.
-        }
-      }
-      if (!vigente) return
-
-      const candidatos = await leerNombres(foto)
-      if (!vigente) return
-      // SE ENSEÑA SIEMPRE LO LEÍDO, acierte o no. Si falla, es lo único
-      // que dice si el problema es que lee mal o que busca mal, y además
-      // te deja corregir una letra y darle a Buscar en vez de teclear el
-      // nombre entero (Héctor, 29/10/2026: «no pilla ni una»).
-      setLeido(candidatos)
-      if (candidatos[0]) setEscrito(candidatos[0])
-
-      if (candidatos.length === 0) {
-        setLeyendo(false)
-        setFallo('No he sabido leer nada. Míralo en la foto y búscalo aquí.')
-        return
-      }
-      // Se prueban en orden hasta que una sea una carta de verdad: no hay
-      // forma de saber cuál de las líneas leídas es el nombre, y el que
-      // sabe qué es una carta es Scryfall, no el lector.
-      for (const candidato of candidatos) {
-        const carta = await adivinar(candidato, idiomaElegido())
-        if (!vigente) return
-        if (carta) {
-          consultas.apuntar(carta, true)
-          setAbierta(carta)
-          setLeyendo(false)
-          return
-        }
-      }
-      if (vigente) {
-        setLeyendo(false)
-        setFallo('He leído esto, pero no encuentro ninguna carta así:')
-      }
-    })()
-    return () => {
-      vigente = false
-    }
-    // `consultas.apuntar` es estable; meterlo aquí repetiría la lectura.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [foto])
-
+  const [girada, setGirada] = useState(ampliarGirada)
   async function alBuscar(evento: FormEvent) {
     evento.preventDefault()
     setFallo(null)
@@ -181,14 +108,30 @@ export function PantallaConsultas({
         {apuntando ? 'Encuadra la carta…' : 'Ampliar una carta'}
       </button>
       {esperandoFoto && <p className="cargando">Pidiéndola…</p>}
-      {leyendo && <p className="cargando">Leyendo el nombre…</p>}
       {falloFoto && <p className="recado recado--mal">{falloFoto}</p>}
       {foto && (
-        <div className="foto">
-          <img className="foto__imagen" src={foto} alt="La carta, de cerca" />
-          <button type="button" className="boton boton--plano" onClick={cerrarFoto}>
-            Quitar
-          </button>
+        <div className="ampliada">
+          <img
+            className={girada ? 'ampliada__imagen ampliada__imagen--girada' : 'ampliada__imagen'}
+            src={foto}
+            alt="La carta, de cerca"
+          />
+          <div className="ampliada__pie">
+            <label className="casilla">
+              <input
+                type="checkbox"
+                checked={girada}
+                onChange={(e) => {
+                  setGirada(e.target.checked)
+                  guardarGiro(e.target.checked)
+                }}
+              />
+              <span>Del revés</span>
+            </label>
+            <button type="button" className="boton boton--plano" onClick={cerrarFoto}>
+              Quitar
+            </button>
+          </div>
         </div>
       )}
 
@@ -208,18 +151,6 @@ export function PantallaConsultas({
       </form>
 
       {fallo && <p className="recado recado--mal">{fallo}</p>}
-
-      {leido.length > 0 && !abierta && (
-        <ul className="leido">
-          {leido.map((linea) => (
-            <li key={linea}>
-              <button type="button" className="leido__linea" onClick={() => setEscrito(linea)}>
-                «{linea}»
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
 
       {abierta && (
         <Grande

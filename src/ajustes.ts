@@ -36,3 +36,29 @@ export function guardarIdioma(codigo: string) {
     // Modo privado. Se queda en español hasta que cierre la pestaña.
   }
 }
+
+// ---- La carta ampliada, del revés ----
+//
+// La cámara del rival apunta a SU mesa, así que sus cartas te llegan
+// cabeza abajo: es como se ven de verdad desde el otro lado (Héctor,
+// 01/11/2026). Por eso viene marcado. Se guarda porque es de las cosas
+// que se eligen una vez y valen para siempre.
+
+const CAJON_DEL_GIRO = 'magic:ampliar-girada'
+
+export function ampliarGirada(): boolean {
+  try {
+    return localStorage.getItem(CAJON_DEL_GIRO) !== 'no'
+  } catch {
+    return true
+  }
+}
+
+export function guardarGiro(girar: boolean) {
+  try {
+    localStorage.setItem(CAJON_DEL_GIRO, girar ? 'si' : 'no')
+  } catch {
+    // En modo privado no se puede guardar. Se gira igual, solo que habrá
+    // que volver a marcarlo la próxima vez.
+  }
+}

@@ -1061,16 +1061,47 @@ body {
   outline: 2px solid var(--acento);
 }
 
-.foto {
+.ampliada {
   margin: 0.75rem 0;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
 }
 
-.foto__imagen {
+.ampliada__imagen {
   display: block;
   width: 100%;
   max-width: 22rem;
   border-radius: 0.6rem;
   border: 1px solid var(--borde);
+}
+
+/* La camara del rival apunta a SU mesa, asi que sus cartas llegan cabeza
+   abajo. Girarlas es verlas como las veria el de enfrente. */
+.ampliada__imagen--girada {
+  transform: rotate(180deg);
+}
+
+.ampliada__pie {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+
+.casilla input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--acento);
 }
 
 /* Las pestanas de la puerta: entrar o crear cuenta. */
@@ -1395,13 +1426,13 @@ body {
 
 /* ---- La foto de perfil, en los ajustes ---- */
 
-.foto {
+.perfil {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.foto__cara {
+.perfil__cara {
   width: 5rem;
   height: 5rem;
   border-radius: 50%;
@@ -1410,7 +1441,7 @@ body {
   background: var(--fondo);
 }
 
-.foto__botones {
+.perfil__botones {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -1418,7 +1449,7 @@ body {
 
 /* El selector de archivos del navegador no hay quien lo vista: se esconde
    y se abre desde un boton normal. */
-.foto__fichero {
+.perfil__fichero {
   display: none;
 }
 
@@ -2571,4 +2602,35 @@ select option {
   display: grid;
   grid-template-columns: 6rem 1fr;
   gap: 0.6rem;
+}
+
+/* ---- El mazo del rival, en plena partida (regla 7) ----
+   A pantalla casi completa: son sesenta cartas y se mira un momento, no
+   se trabaja con ellas. Se desplaza por dentro, que la partida de detras
+   no se mueve. */
+
+.dialogo__caja--mazo {
+  width: min(96vw, 76rem);
+  max-width: none;
+  max-height: 92vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 0.6rem;
+}
+
+.dialogo__caja--mazo h3 {
+  margin: 0;
+}
+
+.rival__cartas {
+  overflow-y: auto;
+  min-height: 0;
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+}
+
+/* Aqui las cartas se miran, no se tocan: ni cursor de mano ni resalte. */
+.rival__cartas .pila {
+  cursor: default;
 }

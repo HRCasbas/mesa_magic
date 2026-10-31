@@ -13,6 +13,8 @@ import {
   type Mazo,
   type Zona,
 } from './mazos'
+import { esTierra, porCoste } from './orden'
+import { Pila } from './Pila'
 import { porLote, porNombre, type Carta } from './scryfall'
 
 const SIN_IMAGENES = new Map<string, Carta>()
@@ -31,49 +33,6 @@ interface Menu {
   carta: CartaDelMazo
   x: number
   y: number
-}
-
-function Pila({
-  carta,
-  imagen,
-  esPortada,
-  alPulsar,
-  alMenu,
-}: {
-  carta: CartaDelMazo
-  imagen: Carta | undefined
-  esPortada: boolean
-  alPulsar: () => void
-  alMenu: (evento: React.MouseEvent) => void
-}) {
-  const copias = Array.from({ length: Math.min(carta.cantidad, 9) })
-
-  return (
-    <button
-      type="button"
-      className={esPortada ? 'pila pila--portada' : 'pila'}
-      title={`${carta.cantidad} × ${carta.nombre}`}
-      onClick={alPulsar}
-      onContextMenu={alMenu}
-    >
-      {copias.map((_, i) =>
-        imagen?.imagen ? (
-          <img
-            key={i}
-            className="pila__carta"
-            src={imagen.imagen}
-            alt={i === copias.length - 1 ? carta.nombre : ''}
-            loading="lazy"
-          />
-        ) : (
-          <span key={i} className="pila__carta pila__carta--sinfoto">
-            {carta.nombre}
-          </span>
-        ),
-      )}
-      {carta.cantidad > 9 && <span className="pila__muchas">×{carta.cantidad}</span>}
-    </button>
-  )
 }
 
 function DialogoImportar({
@@ -154,46 +113,6 @@ function DialogoImportar({
  * se dejan al final y en su sitio: moverlas de golpe cuando llega la
  * respuesta sería peor que no ordenarlas.
  */
-const TIERRAS_BASICAS = new Set([
-  'plains', 'island', 'swamp', 'mountain', 'forest', 'wastes',
-  'llanura', 'isla', 'pantano', 'montaña', 'bosque',
-])
-
-/** Si una carta es tierra, con lo que se sepa de ella. */
-function esTierra(carta: CartaDelMazo, fotos: Map<string, Carta>): boolean {
-  return pesoDe(carta, fotos.get(carta.nombre.toLowerCase())).tierra
-}
-
-/** El coste y si es tierra, con lo que se sepa de cada carta. */
-function pesoDe(carta: CartaDelMazo, foto: Carta | undefined) {
-  const porElNombre = TIERRAS_BASICAS.has(carta.nombre.trim().toLowerCase())
-  // Dos redes por debajo de lo que diga Scryfall: el nombre de las
-  // basicas, que no hay que preguntarselo a nadie, y la regla de que una
-  // carta de coste cero SIN TIPO CONOCIDO es una tierra, porque en un
-  // mazo de verdad casi siempre lo es. Esto coloca cartas en la pantalla:
-  // una tierra fuera de su seccion se ve al momento.
-  if (foto) {
-    const sinTipo = (foto.tipo ?? '').trim() === ''
-    return {
-      tierra: foto.esTierra || porElNombre || (sinTipo && foto.coste === 0),
-      coste: foto.coste,
-    }
-  }
-  // Todavía no ha llegado de Scryfall. Las tierras básicas se reconocen
-  // por el nombre y van a su sitio igual; el resto espera al final, para
-  // que la lista no dé un salto raro cuando llegue la respuesta.
-  return { tierra: porElNombre, coste: 99 }
-}
-
-function porCoste(deLaZona: CartaDelMazo[], fotos: Map<string, Carta>): CartaDelMazo[] {
-  return [...deLaZona].sort((una, otra) => {
-    const a = pesoDe(una, fotos.get(una.nombre.toLowerCase()))
-    const b = pesoDe(otra, fotos.get(otra.nombre.toLowerCase()))
-    if (a.tierra !== b.tierra) return a.tierra ? 1 : -1
-    if (a.coste !== b.coste) return a.coste - b.coste
-    return una.nombre.localeCompare(otra.nombre)
-  })
-}
 
 /**
  * «¿Esta carta, y cuántas?»

@@ -2387,6 +2387,38 @@ medio deja de usarse, y lo que no se usa se muere sin avisar. Toda
 conexión que tenga que seguir viva sin tráfico necesita un latido. Y todo
 lo que se mande en muchos trozos necesita mirar si caben.
 
+## Fuera el lector, y el mazo del rival por fin (01/11/2026)
+
+**El lector se quita**, el mismo día que empezó a funcionar. Héctor:
+«quítala, si quieres deja la parte de ampliar carta solo para eso,
+ampliar y ya». Y tiene razón en lo que importa: **ampliar ya resuelve el
+problema**, que es ver qué carta ha jugado el otro. Leerla para buscarla
+sola era un atajo para algo que, mirando la foto, se ve. Se van con ella
+4-5 MB de biblioteca que se bajaban la primera vez. Está en el historial
+de git por si algún día se quiere de vuelta: funcionaba, cinco de cinco.
+
+**Y la carta ampliada sale girada 180°**, con una casilla premarcada.
+Porque la cámara del rival apunta a SU mesa, así que sus cartas te llegan
+cabeza abajo. Es de las cosas que solo se ven jugando.
+
+**El mazo del rival, que era la regla 7 sin cumplir.** Lo decidió Héctor
+el 27/10/2026 y nunca se llegó a hacer: el mazo viajaba por el canal de
+datos al elegirlo, pero **no había dónde verlo**, y además la sección de
+elegir mazo desaparece al empezar la partida. Ahora hay un botón en el
+panel de la derecha que lo abre entero, con el **mismo orden** que tus
+mazos: por coste y las tierras aparte. Para eso, `Pila` y el orden salen
+de la pantalla de mazos a `Pila.tsx` y `orden.ts`: un mazo se mira igual
+sea de quien sea.
+
+**Otro choque de nombres de clase, el tercero.** `.foto` era a la vez la
+carta ampliada y la foto de perfil de los ajustes. Ahora son `.ampliada`
+y `.perfil`. Van tres: `.partida`, `.foto`… **antes de poner un nombre de
+clase, buscarlo en la hoja de estilo.** Es un nombre global aunque no lo
+parezca.
+
+**El móvil, solo para probar** (Héctor, 01/11/2026): se juega en el PC. No
+hay que complicarse con el móvil.
+
 ---
 
 ## Pendiente de que Héctor decida

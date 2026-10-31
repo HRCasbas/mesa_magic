@@ -72,14 +72,14 @@ export function PantallaAjustes({
 
       {/* La foto primero: es lo que se ve en la moneda y en el menú, o
           sea lo único de aquí que mira el otro jugador. */}
-      <div className="foto">
-        <img className="foto__cara" src={avatarDe(nombre, avatar)} alt="" />
-        <div className="foto__botones">
+      <div className="perfil">
+        <img className="perfil__cara" src={avatarDe(nombre, avatar)} alt="" />
+        <div className="perfil__botones">
           <input
             ref={fichero}
             type="file"
             accept="image/*"
-            className="foto__fichero"
+            className="perfil__fichero"
             onChange={(e) => {
               void elegirFoto(e.target.files?.[0])
               e.target.value = ''
