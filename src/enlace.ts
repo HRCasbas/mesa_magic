@@ -197,6 +197,15 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
     return true
   }, [])
 
+  /**
+   * Cuántos bytes hay metidos en el canal que todavía no han salido.
+   *
+   * Hace falta para mandar una foto: si se vuelcan los doscientos trozos
+   * de golpe, el canal se llena y **se cierra**, y con él se va el panel
+   * entero. Quien manda mucho de una vez tiene que mirar esto y esperar.
+   */
+  const datosEnCola = useCallback(() => canal.current?.bufferedAmount ?? 0, [])
+
   /** Avisarme de lo que llegue por el canal. Devuelve cómo darse de baja. */
   const alRecibirDato = useCallback((oyente: (dato: unknown) => void) => {
     oyentesDeDatos.current.add(oyente)
@@ -611,6 +620,7 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
     variasCamaras,
     datosAbiertos,
     enviarDato,
+    datosEnCola,
     alRecibirDato,
     encender,
     apagar,

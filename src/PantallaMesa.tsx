@@ -56,6 +56,7 @@ export function PantallaMesa({ nombre, avatar }: { nombre: string; avatar: strin
   const fotos = useFotos({
     miMedia: enlace.miMedia,
     enviarDato: enlace.enviarDato,
+    datosEnCola: enlace.datosEnCola,
     alRecibirDato: enlace.alRecibirDato,
   })
   const contadores = useContadores({
@@ -119,6 +120,18 @@ export function PantallaMesa({ nombre, avatar }: { nombre: string; avatar: strin
       <section className="tarjeta">
         <h2>La mesa</h2>
         <p className="cargando">Buscando la mesa…</p>
+      </section>
+    )
+  }
+
+  // Se ha caído la conexión y se está volviendo a entrar sola. NO se vuelve
+  // a la pantalla de crear mesa: estás en una partida, y lo último que hace
+  // falta es tener que dictar el código otra vez (Héctor, 01/11/2026).
+  if (mesa.volviendo) {
+    return (
+      <section className="tarjeta">
+        <h2>La mesa {mesa.codigo}</h2>
+        <p className="cargando">Se ha cortado. Volviendo a entrar…</p>
       </section>
     )
   }

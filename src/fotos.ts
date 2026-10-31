@@ -117,10 +117,23 @@ interface Opciones {
   /** Tu cámara, que es de donde sale la foto que te piden. */
   miMedia: MediaStream | null
   enviarDato: (dato: unknown) => boolean
+  /** Cuántos bytes esperan en el canal sin salir todavía. */
+  datosEnCola: () => number
   alRecibirDato: (oyente: (dato: unknown) => void) => () => void
 }
 
-export function useFotos({ miMedia, enviarDato, alRecibirDato }: Opciones) {
+/**
+ * Lo que se deja acumular en el canal antes de parar a respirar.
+ *
+ * UNA FOTO NO SE VUELCA DE GOLPE. Una carta a resolución nativa son
+ * doscientos y pico trozos; metidos todos de una vez, el canal se llena y
+ * **se cierra solo**, y con él se va el panel entero. Pasaba al ampliar
+ * varias cartas seguidas (Héctor, 01/11/2026). Con un cuarto de mega de
+ * margen va igual de rápido y no se atraganta.
+ */
+const TOPE_EN_COLA = 256 * 1024
+
+export function useFotos({ miMedia, enviarDato, datosEnCola, alRecibirDato }: Opciones) {
   const [foto, setFoto] = useState<Foto | null>(null)
   const [esperando, setEsperando] = useState(false)
   const [fallo, setFallo] = useState<string | null>(null)
@@ -177,15 +190,25 @@ export function useFotos({ miMedia, enviarDato, alRecibirDato }: Opciones) {
           // En trozos, porque un mensaje del canal de datos no puede ser
           // tan grande como una foto.
           const cuantos = Math.ceil(imagen.length / TROZO)
-          for (let i = 0; i < cuantos; i++) {
-            enviarDato({
-              que: 'trozoFoto',
-              id: mensaje.id,
-              i,
-              cuantos,
-              dato: imagen.slice(i * TROZO, (i + 1) * TROZO),
-            } satisfies Mensaje)
-          }
+          void (async () => {
+            for (let i = 0; i < cuantos; i++) {
+              // Esperar a que baje la cola antes de meter más. Sin esto el
+              // canal se cierra y se lleva por delante la partida entera.
+              while (datosEnCola() > TOPE_EN_COLA) {
+                await new Promise((sigue) => setTimeout(sigue, 30))
+              }
+              const salio = enviarDato({
+                que: 'trozoFoto',
+                id: mensaje.id,
+                i,
+                cuantos,
+                dato: imagen.slice(i * TROZO, (i + 1) * TROZO),
+              } satisfies Mensaje)
+              // Si el canal se ha cerrado por el camino, no tiene sentido
+              // seguir mandando trozos a ninguna parte.
+              if (!salio) return
+            }
+          })()
         })
         return
       }
@@ -214,7 +237,7 @@ export function useFotos({ miMedia, enviarDato, alRecibirDato }: Opciones) {
         setFoto({ id: mensaje.id, imagen: juntando.join(''), cuando: Date.now() })
       }
     })
-  }, [alRecibirDato, enviarDato])
+  }, [alRecibirDato, enviarDato, datosEnCola])
 
   useEffect(() => {
     return () => {

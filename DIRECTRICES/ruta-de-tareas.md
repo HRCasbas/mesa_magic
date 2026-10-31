@@ -2343,6 +2343,50 @@ preguntarse **qué otra cosa de la imagen dice lo mismo** y es más fácil de
 leer. El nombre y el número identifican la misma carta; uno está escrito
 para que quede bonito y el otro para que una máquina lo lea.
 
+## «De vez en cuando se me sale solo de la mesa» (01/11/2026)
+
+Héctor dio los dos casos exactos, y cada uno era un fallo distinto.
+
+### 1. Una conexión callada la cierra cualquiera
+
+**No había latido.** Mientras no pasa nada por la mesa, el websocket se
+queda mudo, y un websocket mudo lo cierra cualquiera que haya por el
+camino: el router de casa, la antena del móvil, un intermediario. Y aquí
+se queda mudo casi siempre, **porque esa es justo la gracia del diseño**:
+una vez encontrados los dos, el vídeo y los contadores van directos y la
+mesa no vuelve a usarse. El caso que contó Héctor —esperando a que el
+otro meta el código— es el peor de todos: ahí no viaja ni un mensaje.
+
+Ahora va un latido cada **25 segundos** (los cortes por silencio empiezan
+al minuto). Son unas decenas de bytes y lleva marca negativa, para no
+confundirse con la medida del retardo que se enseña en el diagnóstico.
+
+**Y se vuelve a entrar sola.** Antes, una caída te devolvía a la pantalla
+de crear mesa en mitad de la partida y había que volver a dictar el
+código. Ahora se reintenta con el mismo código, esperando cada vez un poco
+más (1, 2, 4… hasta 15 segundos, ocho veces), y la pantalla dice «Se ha
+cortado. Volviendo a entrar…» en vez de echarte. Si quien te ha echado es
+la mesa a propósito —está llena, la sesión ha caducado—, **no se
+reintenta**: sería pedirle lo mismo una y otra vez.
+
+### 2. Una foto no se vuelca de golpe
+
+Ampliar una carta manda la foto a resolución nativa en trozos de 16 KB:
+doscientos y pico mensajes. Se metían **todos de una vez**, sin mirar si
+cabían. Un canal de datos tiene un buffer, y cuando se pasa **se cierra
+solo**, llevándose por delante el panel entero. Por eso aparecía al
+ampliar varias cartas seguidas.
+
+Ahora se mira `bufferedAmount` antes de cada trozo y se espera si hay más
+de un cuarto de mega esperando. Va igual de rápido —el canal sigue lleno
+todo el rato— y no se atraganta. Y si el canal se cierra por el camino, se
+deja de mandar en vez de seguir hablando solo.
+
+**La lección:** cuando algo va «directo entre los dos», lo que queda en
+medio deja de usarse, y lo que no se usa se muere sin avisar. Toda
+conexión que tenga que seguir viva sin tráfico necesita un latido. Y todo
+lo que se mande en muchos trozos necesita mirar si caben.
+
 ---
 
 ## Pendiente de que Héctor decida
