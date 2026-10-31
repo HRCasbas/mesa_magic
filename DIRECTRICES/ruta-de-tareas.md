@@ -1,4 +1,4 @@
-# Mesa Magic — ruta de tareas
+# Magic Mesa — ruta de tareas
 
 La memoria del proyecto. Qué se decidió, por qué, y qué toca ahora.
 **Cuando algo se decida, se descubra o se cambie, se escribe aquí en el mismo
@@ -2304,12 +2304,51 @@ Scryfall: el nombre de las tierras básicas y la regla de que una carta de
 coste cero sin tipo conocido es una tierra. Esto coloca cartas en la
 pantalla, y una tierra fuera de su sección se ve al momento.
 
+## El lector, por fin: las señas, no el nombre (31/10/2026)
+
+Leer el nombre no funcionaba y no iba a funcionar: letra de fantasía, con
+filos, encima de la ilustración y con brillos. Es lo que peor se le da a
+un lector de texto. **Se lee la esquina de abajo a la izquierda**, que en
+toda carta desde 2015 lleva dos líneas de letra de palo sobre fondo liso:
+
+```
+0198/0249 U
+IMA • EN  Zoltan Boros
+```
+
+Dígitos y mayúsculas, que es lo único que un lector hace bien. Y con la
+edición y el número, Scryfall devuelve **esa carta exacta**, no «una que
+se llama parecido». Vale igual con una carta en japonés, que por el
+nombre era imposible.
+
+**Los dos formatos:** hasta 2022 el número venía como `0198/0249`; las de
+ahora traen `0527` a secas. Se admiten los dos.
+
+**El orden importa**, y no es un detalle: cada combinación que se prueba
+es una pregunta a Scryfall con su pausa. Una edición de **tres** letras es
+lo normal, y entre dos números gana el **más largo**. Y se ordena **al
+final de las dos pasadas**, no dentro de cada una: acumulando una detrás
+de otra, la buena de la segunda quedaba detrás de las mal leídas de la
+primera.
+
+**PROBADO CON CARTAS DE VERDAD**, bajadas de Scryfall y pasadas por el
+lector en el navegador, que es la única prueba que vale: las cartas
+pintadas a mano fueron las que engañaron en septiembre. Seis cartas, cinco
+con número impreso: **las cinco aciertan a la primera**, la japonesa
+incluida. La sexta es de 1994 y no lleva número; esa cae a la lectura del
+nombre, que sigue detrás para las viejas.
+
+**La lección que queda:** cuando algo no se lee, antes de afinar el lector,
+preguntarse **qué otra cosa de la imagen dice lo mismo** y es más fácil de
+leer. El nombre y el número identifican la misma carta; uno está escrito
+para que quede bonito y el otro para que una máquina lo lea.
+
 ---
 
 ## Pendiente de que Héctor decida
 
-- **El nombre visible.** «Mesa Magic» es provisional, puesto para que la fase
-  0 tuviera título. La dirección ya sí está elegida:
+- ~~El nombre visible.~~ **«Magic Mesa» desde el 31/10/2026**, elegido por
+  Héctor por lo de *Black Mesa*. La dirección ya lo decía:
   `magic-mesa.duelo.workers.dev`.
 - ~~El avatar de verdad.~~ **Hecho el 30/10/2026.**
 - ~~La red de seguridad de GitHub Pages.~~ **Apagada el 30/10/2026.**

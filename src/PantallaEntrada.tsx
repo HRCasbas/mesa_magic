@@ -117,7 +117,7 @@ export function PantallaEntrada() {
     <main className="entrada">
       <div className="entrada__caja">
         <header className="entrada__cabecera">
-          <h1 className="entrada__titulo">Mesa Magic</h1>
+          <h1 className="entrada__titulo">Magic Mesa</h1>
           <p className="entrada__lema">Magic: The Gathering a distancia, mesa contra mesa.</p>
         </header>
 

@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 
 import { idiomaElegido } from './ajustes'
 import { useConsultas } from './consultas'
-import { leerNombres } from './ocr'
-import { adivinar, buscar, type Carta } from './scryfall'
+import { leerNombres, leerSenas } from './ocr'
+import { adivinar, buscar, porNumero, type Carta } from './scryfall'
 
 function Grande({
   carta,
@@ -93,6 +93,28 @@ export function PantallaConsultas({
     setLeyendo(true)
     setFallo(null)
     void (async () => {
+      // PRIMERO LAS SEÑAS DE ABAJO A LA IZQUIERDA, no el nombre (Héctor,
+      // 31/10/2026). Son dígitos y mayúsculas de palo sobre fondo liso, o
+      // sea lo único que un lector de texto hace bien, y dan la carta
+      // EXACTA: esa edición y ese número, no «una que se llama parecido».
+      // Además valen igual con una carta en japonés.
+      for (const senas of await leerSenas(foto)) {
+        if (!vigente) return
+        try {
+          const carta = await porNumero(senas.edicion, senas.numero, idiomaElegido())
+          if (!vigente) return
+          consultas.apuntar(carta, true)
+          setAbierta(carta)
+          setLeyendo(false)
+          return
+        } catch {
+          // Esa combinación no existe. Se prueba la siguiente, y si no
+          // queda ninguna se pasa a leer el nombre, que es lo que vale
+          // para las cartas de antes de 2015: no llevan número.
+        }
+      }
+      if (!vigente) return
+
       const candidatos = await leerNombres(foto)
       if (!vigente) return
       // SE ENSEÑA SIEMPRE LO LEÍDO, acierte o no. Si falla, es lo único

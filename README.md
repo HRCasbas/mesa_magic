@@ -1,4 +1,4 @@
-# Mesa Magic
+# Magic Mesa
 
 Magic: The Gathering a distancia, mesa contra mesa. Dos jugadores, cada uno
 con su webcam apuntando a su mesa, un panel de contadores compartido y

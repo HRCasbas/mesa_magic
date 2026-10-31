@@ -31,8 +31,12 @@ const FRANJA_DEL_NOMBRE = 0.38
 /** Letras que puede tener el nombre de una carta. Nada de símbolos raros. */
 const LETRAS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ,.'-"
 
+/** Lo de abajo a la izquierda: «0198/0249 U» y «IMA • EN». */
+const LETRAS_DE_LAS_SENAS = '0123456789/ABCDEFGHIJKLMNOPQRSTUVWXYZ '
+
 type Trabajador = {
   recognize: (imagen: HTMLCanvasElement) => Promise<{ data: { text: string } }>
+  setParameters: (ajustes: Record<string, unknown>) => Promise<unknown>
 }
 
 let trabajador: Promise<Trabajador> | null = null
@@ -43,10 +47,10 @@ function conseguirTrabajador(): Promise<Trabajador> {
     trabajador = import('tesseract.js').then(async (tesseract) => {
       const nuevo = await tesseract.createWorker('eng')
       await nuevo.setParameters({
-        tessedit_char_whitelist: LETRAS,
-        // Un bloque de texto, no una sola línea: en el trozo de arriba de
-        // la carta puede haber el nombre y algo más, y queremos todo para
-        // ir probando.
+        // Un bloque de texto, no una sola línea: en el trozo que se mira
+        // puede haber el nombre y algo más, y queremos todo para ir
+        // probando. La lista de caracteres se pone antes de cada lectura,
+        // porque leer un nombre y leer un número no se parecen en nada.
         tessedit_pageseg_mode: '6' as never,
       })
       return nuevo as unknown as Trabajador
@@ -86,22 +90,35 @@ function alReves(fuente: HTMLCanvasElement): HTMLCanvasElement {
   return vuelta
 }
 
-/** Recorta la franja de arriba y la agranda, que es donde está el nombre. */
-function soloElNombre(imagen: HTMLImageElement): HTMLCanvasElement | null {
-  const alto = Math.max(1, Math.round(imagen.naturalHeight * FRANJA_DEL_NOMBRE))
-  const ancho = imagen.naturalWidth
-  if (!ancho || !alto) return null
+/**
+ * Recorta un trozo de la foto, lo agranda y lo deja listo para leer.
+ *
+ * Los cuatro números van de 0 a 1, como las pegatinas: así da igual a qué
+ * resolución venga la foto.
+ */
+function recortar(
+  imagen: HTMLImageElement,
+  desdeX: number,
+  desdeY: number,
+  anchoParte: number,
+  altoParte: number,
+): HTMLCanvasElement | null {
+  const x = Math.round(imagen.naturalWidth * desdeX)
+  const y = Math.round(imagen.naturalHeight * desdeY)
+  const ancho = Math.max(1, Math.round(imagen.naturalWidth * anchoParte))
+  const alto = Math.max(1, Math.round(imagen.naturalHeight * altoParte))
+  if (!imagen.naturalWidth || !imagen.naturalHeight) return null
 
   // Se agranda para que a Tesseract le lleguen letras grandes, pero sin
   // pasarse: una imagen enorme tarda mucho más y no lee mejor.
-  const aumento = Math.min(3, Math.max(1, 1400 / ancho))
+  const aumento = Math.min(4, Math.max(1, 1400 / ancho))
   const lienzo = document.createElement('canvas')
   lienzo.width = Math.round(ancho * aumento)
   lienzo.height = Math.round(alto * aumento)
   const pincel = lienzo.getContext('2d')
   if (!pincel) return null
   pincel.imageSmoothingQuality = 'high'
-  pincel.drawImage(imagen, 0, 0, ancho, alto, 0, 0, lienzo.width, lienzo.height)
+  pincel.drawImage(imagen, x, y, ancho, alto, 0, 0, lienzo.width, lienzo.height)
 
   // SOLO A GRISES, SIN FORZAR BLANCO Y NEGRO. Antes se partía en dos a
   // ojo (claro o oscuro) y eso se comía las letras cuando la foto venía
@@ -184,7 +201,7 @@ export async function leerNombres(imagenUrl: string): Promise<string[]> {
     return []
   }
 
-  const franja = soloElNombre(imagen)
+  const franja = recortar(imagen, 0, 0, 1, FRANJA_DEL_NOMBRE)
   if (!franja) return []
 
   try {
@@ -192,6 +209,7 @@ export async function leerNombres(imagenUrl: string): Promise<string[]> {
     // DOS PASADAS: tal cual y con los colores del revés. En Magic la
     // banda del nombre tanto puede ser oscura sobre claro como clara
     // sobre oscuro, y Tesseract solo sabe leer lo primero.
+    await quien.setParameters({ tessedit_char_whitelist: LETRAS })
     const lineas: string[] = []
     for (const version of [franja, alReves(franja)]) {
       const { data } = await quien.recognize(version)
@@ -207,6 +225,160 @@ export async function leerNombres(imagenUrl: string): Promise<string[]> {
 
     // Sin repetir, y las primeras antes: el nombre va arriba del todo.
     return [...new Set(lineas)].slice(0, 6)
+  } catch {
+    return []
+  }
+}
+
+
+// ---- Las señas de abajo a la izquierda ----
+//
+// POR QUÉ ESTO Y NO EL NOMBRE (Héctor, 31/10/2026). Leer el nombre es
+// pedirle a un lector de texto lo que peor se le da: letra de fantasía,
+// con filos, encima de la ilustración y con brillos. En cambio abajo a la
+// izquierda toda carta moderna lleva dos líneas de letra de palo sobre
+// fondo liso:
+//
+//     0198/0249 U
+//     IMA • EN  Zoltan Boros
+//
+// Eso son **dígitos y mayúsculas**, que es lo único que un lector hace
+// bien. Y con la edición y el número, Scryfall devuelve la carta exacta:
+// no «una carta que se llama parecido», sino esa, con su ilustración y su
+// edición. Encima vale igual para una carta en japonés.
+//
+// LO QUE NO CUBRE: las cartas anteriores a 2015 no llevan número de
+// coleccionista. Para esas sigue estando la lectura del nombre, que corre
+// después, y el buscador de al lado.
+
+/** El trozo de abajo a la izquierda donde están la edición y el número. */
+const SENAS_DESDE_ARRIBA = 0.88
+const SENAS_DE_ANCHO = 0.55
+
+/** Una carta identificada por su edición y su número. */
+export interface Senas {
+  edicion: string
+  numero: string
+}
+
+/** Las ediciones son de tres a cinco letras o cifras. */
+const PARECE_EDICION = /^[A-Z0-9]{2,5}$/
+
+/** Lo que nunca es una edición, aunque lo parezca. */
+const NO_ES_EDICION = new Set(['THE', 'AND', 'ILL', 'TM', 'EN', 'ES', 'FR', 'DE', 'IT', 'PT', 'JA', 'KO', 'RU', 'ZHS', 'ZHT'])
+
+/**
+ * Saca las señas de lo que ha leído el lector.
+ *
+ * Se devuelven **todas las combinaciones** de los números y las ediciones
+ * que se hayan visto, no una sola: el lector confunde un 0 con una O más
+ * de lo que parece, y quien llama las va probando contra Scryfall, que es
+ * el que sabe cuál existe.
+ */
+export function senasDe(texto: string): Senas[] {
+  const numeros: string[] = []
+  const ediciones: string[] = []
+
+  for (const cruda of texto.split('\n')) {
+    const linea = cruda.replace(/\s+/g, ' ').trim()
+    if (!linea) continue
+
+    // El número de la carta, en sus dos formatos: «0198/0249» de las
+    // cartas de hasta 2022, y «0527» a secas de las de ahora. De la
+    // barra se queda el de delante, y los ceros de la izquierda sobran
+    // para buscar.
+    const conBarra = /(\d{1,4})\s*\/\s*\d{1,4}/.exec(linea)
+    const sueltos = conBarra ? [conBarra[1]] : linea.match(/\d{1,4}/g) ?? []
+    for (const crudo of sueltos) {
+      const limpio = crudo.replace(/^0+/, '') || '0'
+      if (!numeros.includes(limpio)) numeros.push(limpio)
+    }
+
+    // La edición va la primera de su línea: «IMA EN Zoltan Boros». Se
+    // coge solo la primera que valga, porque si no el apellido del
+    // dibujante entra también y son combinaciones de más que probar.
+    for (const trozo of linea.split(' ')) {
+      const palabra = trozo.replace(/[^A-Z0-9]/g, '')
+      if (!PARECE_EDICION.test(palabra)) continue
+      if (NO_ES_EDICION.has(palabra)) continue
+      // Solo cifras es parte del número, no una edición.
+      if (/^\d+$/.test(palabra)) continue
+      if (!ediciones.includes(palabra)) ediciones.push(palabra)
+      break
+    }
+  }
+
+  const salida: Senas[] = []
+  for (const edicion of ediciones) {
+    for (const numero of numeros) salida.push({ edicion, numero })
+  }
+
+  // DE MÁS A MENOS PROBABLE, y no es un capricho: cada una que se prueba
+  // es una pregunta a Scryfall con su pausa, así que el orden decide si la
+  // carta sale al momento o después de un segundo largo. Con cartas de
+  // verdad (31/10/2026) esta regla acertó a la primera en las seis.
+  //
+  // Una edición de tres es lo normal («IMA», «DOM», «NEO»); las de dos o
+  // de cinco que salen son casi siempre mal leídas o un trozo de otra
+  // cosa. Y entre dos números, el más largo gana: los cortos vienen de
+  // leer un pedazo suelto.
+  return salida.sort(masProbable).slice(0, 12)
+}
+
+/**
+ * Cuál se prueba antes.
+ *
+ * Una edición de tres es lo normal («IMA», «DOM», «NEO»); las de dos o de
+ * cinco que salen son casi siempre mal leídas o un trozo de otra cosa. Y
+ * entre dos números, el más largo gana: los cortos vienen de leer un
+ * pedazo suelto. Con cartas de verdad (31/10/2026) esta regla deja la
+ * buena la primera.
+ */
+function masProbable(una: Senas, otra: Senas): number {
+  const tresUna = una.edicion.length === 3 ? 0 : 1
+  const tresOtra = otra.edicion.length === 3 ? 0 : 1
+  if (tresUna !== tresOtra) return tresUna - tresOtra
+  return otra.numero.length - una.numero.length
+}
+
+/**
+ * Lee la esquina de abajo a la izquierda y devuelve las señas que ve.
+ *
+ * El más prometedor primero. Vacío si no ha sabido leer nada, que con una
+ * carta vieja o una foto movida pasa, y no es grave: detrás va la lectura
+ * del nombre.
+ */
+export async function leerSenas(imagenUrl: string): Promise<Senas[]> {
+  const imagen = new Image()
+  imagen.src = imagenUrl
+  try {
+    await imagen.decode()
+  } catch {
+    return []
+  }
+
+  const esquina = recortar(imagen, 0, SENAS_DESDE_ARRIBA, SENAS_DE_ANCHO, 1 - SENAS_DESDE_ARRIBA)
+  if (!esquina) return []
+
+  try {
+    const quien = await conseguirTrabajador()
+    await quien.setParameters({ tessedit_char_whitelist: LETRAS_DE_LAS_SENAS })
+
+    const vistas: Senas[] = []
+    // Dos pasadas, igual que con el nombre: esa esquina es letra blanca
+    // sobre marco oscuro en casi todas, pero no en todas.
+    for (const version of [esquina, alReves(esquina)]) {
+      const { data } = await quien.recognize(version)
+      for (const senas of senasDe(data.text)) {
+        if (!vistas.some((v) => v.edicion === senas.edicion && v.numero === senas.numero)) {
+          vistas.push(senas)
+        }
+      }
+    }
+    // SE ORDENA AL FINAL, no dentro de cada pasada: con las dos pasadas
+    // acumulando una detrás de otra, la buena de la segunda quedaba
+    // detrás de las mal leídas de la primera.
+    return vistas.sort(masProbable)
   } catch {
     return []
   }

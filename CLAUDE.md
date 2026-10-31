@@ -1,4 +1,4 @@
-# Mesa Magic
+# Magic Mesa
 
 Web para jugar a Magic: The Gathering a distancia, mesa contra mesa por
 webcam. **Partidas de dos, no Commander.** Corre en navegador, en PC y en

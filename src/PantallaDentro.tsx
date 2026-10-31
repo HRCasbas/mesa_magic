@@ -116,7 +116,7 @@ export function PantallaDentro({
     <main className={donde === 'mazos' ? 'pagina pagina--ancha' : 'pagina'}>
       <header className="cabecera">
         <div className="cabecera__titulos">
-          <h1 className="cabecera__titulo">Mesa Magic</h1>
+          <h1 className="cabecera__titulo">Magic Mesa</h1>
           <p className="cabecera__lema">Magic a distancia, mesa contra mesa.</p>
         </div>
         <MenuCuenta
