@@ -55,9 +55,28 @@ function DialogoImportar({
     cerrar()
   }
 
+  // Cerrar con Escape, que es lo que todo el mundo intenta. Lo que NO se
+  // hace es cerrar al pulsar fuera: ver más abajo.
+  useEffect(() => {
+    function alPulsar(evento: KeyboardEvent) {
+      if (evento.key === 'Escape') cerrar()
+    }
+    window.addEventListener('keydown', alPulsar)
+    return () => window.removeEventListener('keydown', alPulsar)
+  }, [cerrar])
+
   return (
-    <div className="dialogo" onClick={cerrar}>
-      <form className="dialogo__caja" onSubmit={meter} onClick={(e) => e.stopPropagation()}>
+    /* ⚠ AQUÍ NO HAY «CERRAR AL PULSAR FUERA», Y ES A PROPÓSITO.
+       Lo había, y se llevaba por delante la lista entera: al seleccionar
+       el texto dentro del cuadro y soltar el ratón un pelo fuera, el clic
+       llegaba al fondo y el diálogo se cerraba con todo lo pegado dentro
+       (Héctor, 02/11/2026: «al estar copiando y pegando se cierra la
+       pantalla de importar y no se guarda la lista»). Cerrar sin querer
+       algo donde se acaba de pegar una lista de sesenta cartas no se
+       arregla con nada: no hay deshacer. Se cierra con «Dejarlo» o con
+       Escape, que son los dos sitios donde uno sabe lo que está haciendo. */
+    <div className="dialogo">
+      <form className="dialogo__caja" onSubmit={meter}>
         <h3>Importar</h3>
         <textarea
           value={texto}

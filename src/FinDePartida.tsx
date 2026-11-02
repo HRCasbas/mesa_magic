@@ -8,6 +8,13 @@ import { MOTIVOS, type Motivo, type useFinDePartida } from './partidas'
  * Uno lo declara y el otro lo acepta (regla 6). La aplicación no mira las
  * vidas ni nada: se limita a pasar el recado y a apuntarlo cuando los dos
  * están de acuerdo.
+ *
+ * **VA EN UNA VENTANA ENCIMA DE TODO, no dentro del panel** (Héctor,
+ * 02/11/2026: «se baja más la parte a rellenar y no da la pantalla para
+ * elegir el motivo»). El panel de la derecha no se desplaza a propósito,
+ * así que lo que queda por debajo del borde **no existe**: el formulario
+ * estaba, pero fuera de la vista. Y lo mismo, o peor, con la propuesta
+ * que llega del otro: si no se ve, la partida no se cierra nunca.
  */
 export function FinDePartida({
   tuId,
@@ -31,7 +38,7 @@ export function FinDePartida({
 
   if (fin.recibido) {
     return (
-      <section className="tarjeta fin">
+      <Ventana>
         <h2>Fin de la partida</h2>
         <p className="fin__dice">
           Gana <strong>{comoSeLlama(fin.recibido.gano)}</strong>.{' '}
@@ -51,19 +58,19 @@ export function FinDePartida({
             No
           </button>
         </div>
-      </section>
+      </Ventana>
     )
   }
 
   if (fin.propuesto) {
     return (
-      <section className="tarjeta fin">
+      <Ventana>
         <h2>Fin de la partida</h2>
         <p className="fin__dice">Esperando a que {suNombre} lo acepte…</p>
         <button type="button" className="boton boton--plano" onClick={fin.retirar}>
           Retirarlo
         </button>
-      </section>
+      </Ventana>
     )
   }
 
@@ -76,7 +83,7 @@ export function FinDePartida({
   }
 
   return (
-    <section className="tarjeta fin">
+    <Ventana>
       <h2>¿Cómo ha quedado?</h2>
       <label className="campo">
         <span className="campo__nombre">Gana</span>
@@ -110,6 +117,15 @@ export function FinDePartida({
           Dejarlo
         </button>
       </div>
-    </section>
+    </Ventana>
+  )
+}
+
+/** La caja centrada encima de la partida. */
+function Ventana({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="dialogo">
+      <div className="dialogo__caja fin">{children}</div>
+    </div>
   )
 }

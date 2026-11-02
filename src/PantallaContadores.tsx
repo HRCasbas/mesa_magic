@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import {
   numeroDeTurno,
   turnosJugados,
@@ -117,6 +119,27 @@ export function PantallaContadores({
 }) {
   const { compartido, esMiTurno } = contadores
 
+  /**
+   * El aviso de que el otro no te ve los números espera unos segundos.
+   *
+   * Un corte de medio segundo se arregla solo —el canal se vuelve a abrir—
+   * y verlo saltar en mitad de una partida asusta por nada (Héctor,
+   * 02/11/2026: salió «sin camino directo» y lo único que habían hecho era
+   * subir y bajar vidas). Si a los seis segundos sigue sin canal, entonces
+   * sí pasa algo y hay que decirlo.
+   */
+  const [tardando, setTardando] = useState(false)
+  const { enlazados } = contadores
+  useEffect(() => {
+    if (enlazados) return
+    const reloj = setTimeout(() => setTardando(true), 6000)
+    return () => {
+      clearTimeout(reloj)
+      setTardando(false)
+    }
+  }, [enlazados])
+  const avisar = !enlazados && tardando
+
   // Siempre por su nombre, también el tuyo. «Turno 17 de ti» obliga a parar
   // a pensar de quién habla; «Turno 17 de Héctor» no (Héctor, 27/10/2026).
   const nombreDeQuienJuega = contadores.deQuienEs === tuId ? tuNombre : (nombreDelOtro ?? 'tu rival')
@@ -165,9 +188,9 @@ export function PantallaContadores({
         <Columna titulo={nombreDelOtro ?? 'Tu rival'} valores={contadores.suyos} />
       </div>
 
-      {!contadores.enlazados && (
+      {avisar && (
         <p className="recado recado--mal">
-          Sin camino directo con {nombreDelOtro ?? 'tu rival'}: no está viendo tus números.
+          {nombreDelOtro ?? 'Tu rival'} no está viendo tus números. Volviendo a conectar…
         </p>
       )}
 

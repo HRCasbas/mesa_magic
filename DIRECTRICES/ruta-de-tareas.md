@@ -2443,6 +2443,68 @@ Supabase, no entrar en Magic: para eso sigue haciendo falta el código de
 invitación, y para ver una partida, el código de la mesa. Las tablas de
 Pokémon están protegidas por sus propias políticas, que no cambian.
 
+## La primera partida de verdad (02/11/2026)
+
+Héctor y su amigo jugaron una partida entera y salieron siete pegas. Es
+la tarde más productiva del proyecto: **ninguna de las siete se habría
+encontrado probando solo**.
+
+### El canal de datos, si se cerraba, no volvía nunca
+
+«Sin camino directo con Bringoler: no está viendo tus números», y lo único
+que habían hecho era subir y bajar vidas. El canal se crea **una sola
+vez**, al montar el enlace; si se cerraba —se llenó mandando la foto de
+una carta, la red parpadeó— no se abría otro, y la partida se quedaba sin
+contadores, sin pegatinas y sin mazos para siempre. **El vídeo seguía
+yendo**, que es lo que despista: va por otro sitio. Ahora, al cerrarse, el
+mismo lado que lo abrió abre otro.
+
+Y el aviso **espera seis segundos** antes de salir: un corte de medio
+segundo se arregla solo y verlo asusta por nada.
+
+### El mazo elegido se mandaba una sola vez
+
+«A ambos nos dice que el contrario está eligiendo mazo pero ya hemos
+elegido los dos; a veces se queda pillado.» Se mandaba al elegirlo y ya.
+Si ese mensaje se perdía, los dos esperaban al otro **para siempre**.
+Ahora quien recibe un mazo **lo acusa**, y quien lo manda lo repite cada
+tres segundos mientras no le contesten. Repetirlo es inofensivo: recibirlo
+dos veces deja lo mismo que recibirlo una.
+
+### Finalizar no se veía
+
+El formulario del motivo estaba, pero **debajo del borde del panel**, que
+no se desplaza a propósito. Lo que cae fuera de ese panel no existe. Ahora
+el fin de partida —el formulario y, sobre todo, la propuesta que llega del
+otro— sale en una **ventana centrada encima de todo**. Si la propuesta no
+se ve, la partida no se cierra nunca.
+
+### El diálogo de importar se cerraba al pegar
+
+Tenía «cerrar al pulsar fuera». Al seleccionar el texto dentro del cuadro y
+soltar el ratón un pelo fuera, el clic llegaba al fondo y se cerraba con
+la lista entera dentro. **Un diálogo donde se acaba de pegar algo largo no
+se cierra al pulsar fuera**, porque no hay deshacer. Se cierra con
+«Dejarlo» o con Escape.
+
+### Lo demás
+
+- **El micro entra cortado.** Encender la cámara y que se oiga la casa sin
+  haberlo pedido no está bien.
+- **La cámara pide 1440p** en vez de 1080p, y el tope de caudal sube a
+  4,5 Mb/s. **Por qué no 4K:** lo que deja leer una carta no son los
+  píxeles, son los bits por segundo; con el caudal fijo, más píxeles
+  salen más borrosos. Y por el relé pasa todo.
+- **Al acabar una partida se vuelve a elegir mazo**, con el de antes ya
+  puesto en el desplegable y un botón de «Jugar con este». Antes saltaba
+  directamente a la moneda y no daba tiempo a cambiar.
+
+**La lección de la tarde:** cuatro de los siete eran **cosas que se montan
+una vez y nunca se vuelven a montar** —el canal, el mazo que se manda, el
+aviso que se cierra, el formulario que cabe— y las cuatro fallaron igual:
+funcionan a la primera y no tienen vuelta atrás. Al escribir algo que pasa
+una sola vez, preguntarse **qué ocurre si esa vez sale mal**.
+
 ---
 
 ## Pendiente de que Héctor decida

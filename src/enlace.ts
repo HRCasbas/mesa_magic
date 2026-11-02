@@ -85,8 +85,19 @@ const DIAGNOSTICO_VACIO: Diagnostico = {
  * esto no existe y se queda con la única que hay.
  */
 const VIDEO_PEDIDO: MediaTrackConstraints = {
-  width: { ideal: 1920 },
-  height: { ideal: 1080 },
+  // Se pide 1440p (Héctor, 02/11/2026: «¿por qué transmiten las webcam en
+  // 1k si la mía es 2k y la de mi amigo es de 4k?»). Es `ideal`, no
+  // `exact`: la cámara da lo más parecido que sepa, así que una de 4K
+  // manda 1440 y una de 720 sigue funcionando.
+  //
+  // POR QUÉ NO 4K, QUE ES LO QUE PARECE MEJOR: lo que deja leer una carta
+  // no son los píxeles, son los **bits por segundo**. Con el caudal fijo,
+  // cuantos más píxeles haya que mandar menos bits toca cada uno y el
+  // texto sale MÁS borroso, no menos. 4K con este caudal se vería peor que
+  // 1440p. Y por el relé pasa todo: a 4K, una tarde de partidas se come
+  // una parte seria del cupo gratuito.
+  width: { ideal: 2560 },
+  height: { ideal: 1440 },
   frameRate: { ideal: 24, max: 30 },
   facingMode: { ideal: 'environment' },
 }
@@ -96,8 +107,18 @@ const AUDIO_PEDIDO: MediaTrackConstraints = {
   noiseSuppression: true,
 }
 
-/** Tope de calidad del vídeo que se envía. Por encima no mejora lo legible. */
-const TOPE_BITS_POR_SEGUNDO = 3_000_000
+/**
+ * Tope de calidad del vídeo que se envía.
+ *
+ * Esto es lo que de verdad manda en que se lea una carta, más que la
+ * resolución. Subido a 4,5 Mb/s al subir la resolución a 1440p: con el
+ * tope anterior, más píxeles habrían salido más borrosos.
+ *
+ * Lo que cuesta: unas dos horas de partida al mes por cada GB del relé
+ * cuando hace falta pasar por él. Con 1000 GB gratis al mes sobra de
+ * largo para jugar unas horas a la semana.
+ */
+const TOPE_BITS_POR_SEGUNDO = 4_500_000
 
 /** Las cámaras de este aparato. Los nombres solo salen si ya hay permiso. */
 async function camarasDelAparato(): Promise<MediaDeviceInfo[]> {
@@ -229,11 +250,17 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
       // mover una carta se emborrona el texto durante medio segundo.
       for (const pista of media.getVideoTracks()) pista.contentHint = 'detail'
 
+      // EL MICRO ENTRA CORTADO (Héctor, 02/11/2026). Encender la cámara y
+      // que se oiga la casa entera sin haberlo pedido no está bien, y
+      // además en una partida se habla por otro sitio la mitad de las
+      // veces. Se abre con su botón, que está a la vista.
+      for (const pista of media.getAudioTracks()) pista.enabled = false
+
       miMediaRef.current = media
       setMiMedia(media)
       setEstado('encendido')
       setVideoCortado(false)
-      setMicCortado(false)
+      setMicCortado(true)
 
       // Los nombres de las cámaras solo se ven con el permiso ya dado, así
       // que hasta aquí no se sabe si este aparato tiene más de una.
@@ -402,7 +429,31 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
           if (vivo) setDatosAbiertos(true)
         }
         c.onclose = () => {
-          if (vivo) setDatosAbiertos(false)
+          if (!vivo) return
+          setDatosAbiertos(false)
+
+          // ⚠ Y SE ABRE OTRO. El canal se cierra por su cuenta —se llenó
+          // mandando la foto de una carta, la red parpadeó— y antes no se
+          // volvía a abrir NUNCA, porque solo se creaba al montar el
+          // enlace: la partida se quedaba sin contadores, sin pegatinas y
+          // sin mazos, con el aviso de «no está viendo tus números» puesto
+          // para siempre (Héctor, 02/11/2026). El vídeo seguía yendo, que
+          // es lo que despista: va por otro sitio.
+          //
+          // Lo abre el mismo de siempre, el maleducado, para que no se
+          // abran dos. El otro recoge el nuevo por `ondatachannel`.
+          const suyo = pc
+          if (soyEducado || !suyo || suyo.connectionState === `closed`) return
+          setTimeout(() => {
+            if (!vivo || suyo.connectionState === `closed`) return
+            if (canal.current?.readyState === `open`) return
+            try {
+              usarCanal(suyo.createDataChannel(`partida`, { ordered: true }))
+            } catch {
+              // Si la conexión ya no da para más, lo arreglará el enlace
+              // entero al rehacerse.
+            }
+          }, 500)
         }
         c.onmessage = (evento) => {
           let dato: unknown

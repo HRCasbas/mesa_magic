@@ -62,3 +62,29 @@ export function guardarGiro(girar: boolean) {
     // que volver a marcarlo la próxima vez.
   }
 }
+
+// ---- El último mazo con el que jugaste ----
+//
+// Al acabar una partida se vuelve a elegir mazo, y casi siempre se juega
+// otra con el mismo (Héctor, 02/11/2026: «precarga los mazos que ya hemos
+// usado»). Se guarda aquí, no en la base: es una comodidad de ESTE
+// aparato, no un dato de la cuenta.
+
+const CAJON_DEL_ULTIMO = 'magic:ultimo-mazo'
+
+export function ultimoMazo(): string | null {
+  try {
+    return localStorage.getItem(CAJON_DEL_ULTIMO)
+  } catch {
+    return null
+  }
+}
+
+export function guardarUltimoMazo(id: string) {
+  try {
+    localStorage.setItem(CAJON_DEL_ULTIMO, id)
+  } catch {
+    // En modo privado no se guarda. Solo significa que habrá que volver a
+    // elegirlo a mano.
+  }
+}

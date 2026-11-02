@@ -68,15 +68,18 @@ export function PantallaMesa({ nombre, avatar }: { nombre: string; avatar: strin
     alRecibirDato: enlace.alRecibirDato,
   })
 
-  // Al cerrar una partida se vuelve a la moneda con el mismo mazo puesto:
-  // no hay series, hay partidas sueltas encadenadas (regla 5). Las dos
-  // funciones son estables, así que esto tampoco cambia en cada pintado y
-  // el oyente del canal no se vuelve a enganchar sin parar.
+  // Al cerrar una partida se vuelve a ELEGIR MAZO, no directamente a la
+  // moneda (Héctor, 02/11/2026: «déjame elegir el mazo antes de tirar la
+  // moneda»). No hay series, hay partidas sueltas encadenadas (regla 5), y
+  // entre una y otra es justo cuando se cambia de mazo. El desplegable
+  // viene con el de antes puesto, así que seguir con el mismo es un clic.
   const { partidaNueva, reiniciarMios } = contadores
+  const { elegir: elegirMazo } = mazo
   const volverAEmpezar = useCallback(() => {
     partidaNueva()
     reiniciarMios()
-  }, [partidaNueva, reiniciarMios])
+    elegirMazo(null)
+  }, [partidaNueva, reiniciarMios, elegirMazo])
 
   const fin = useFinDePartida({
     tuId: mesa.tuId ?? "",

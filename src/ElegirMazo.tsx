@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { guardarUltimoMazo, ultimoMazo } from './ajustes'
 import { mazoParaJugar, type MazoEnJuego } from './mazoElegido'
 import { useCartasDelMazo, useMazos } from './mazos'
 
@@ -22,6 +23,8 @@ export function ElegirMazo({
 }) {
   const { lista } = useMazos()
   const [pedido, setPedido] = useState<string | null>(null)
+  /** Lo que marca el desplegable antes de darle a jugar. */
+  const [marcado, setMarcado] = useState(() => ultimoMazo() ?? '')
   const cartas = useCartasDelMazo(pedido)
 
   // En cuanto llegan las cartas del mazo pedido, se da por elegido. Va en
@@ -33,6 +36,7 @@ export function ElegirMazo({
     const mazo = lista?.find((m) => m.id === pedido)
     if (!mazo) return
     yaMandado.current = pedido
+    guardarUltimoMazo(pedido)
     elegir(mazoParaJugar(mazo, cartas))
   }, [pedido, cartas, lista, elegir])
 
@@ -76,20 +80,34 @@ export function ElegirMazo({
       <h2>Elige mazo</h2>
       {lista === null && <p className="cargando">…</p>}
       {lista?.length === 0 && <p>No tienes mazos todavía.</p>}
+      {/* El desplegable viene con el último mazo que jugaste puesto, y no
+          se elige hasta darle al botón: al acabar una partida se juega otra
+          con el mismo casi siempre, pero hay que poder cambiarlo ANTES de
+          que salga la moneda (Héctor, 02/11/2026). */}
       {ordenados.length > 0 && (
-        <select
-          className="elegir"
-          value=""
-          disabled={pedido !== null}
-          onChange={(e) => setPedido(e.target.value || null)}
-        >
-          <option value="">{pedido ? 'Un momento…' : 'Elige uno'}</option>
-          {ordenados.map((mazo) => (
-            <option key={mazo.id} value={mazo.id}>
-              {mazo.nombre}
-            </option>
-          ))}
-        </select>
+        <>
+          <select
+            className="elegir"
+            value={ordenados.some((m) => m.id === marcado) ? marcado : ''}
+            disabled={pedido !== null}
+            onChange={(e) => setMarcado(e.target.value)}
+          >
+            <option value="">Elige uno</option>
+            {ordenados.map((mazo) => (
+              <option key={mazo.id} value={mazo.id}>
+                {mazo.nombre}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="boton boton--principal"
+            disabled={!marcado || pedido !== null}
+            onClick={() => setPedido(marcado)}
+          >
+            {pedido ? 'Un momento…' : 'Jugar con este'}
+          </button>
+        </>
       )}
     </section>
   )
