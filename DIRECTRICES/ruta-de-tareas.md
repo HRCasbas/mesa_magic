@@ -2419,6 +2419,30 @@ parezca.
 **El móvil, solo para probar** (Héctor, 01/11/2026): se juega en el PC. No
 hay que complicarse con el móvil.
 
+## El registro, abierto de verdad (02/11/2026)
+
+El amigo de Héctor no podía crearse la cuenta. La primera sospecha fue el
+código de invitación —el campo pasaba a mayúsculas lo tecleado, y la clave
+lleva minúsculas—, y eso se arregló, pero **no era eso**: ni se llegaba a
+mirar el código.
+
+**El interruptor de Supabase estaba apagado.** «Allow new users to sign
+up», en Authentication → Sign In / Providers. Es el cierre de verdad del
+que habla la regla 3, y nunca se había abierto: todas las cuentas de hasta
+ahora se crearon antes de cerrarlo o a mano. Abierto el 02/11/2026.
+
+**Lo que dijo la pantalla fue exactamente lo que pasaba**: «El registro
+está cerrado en el servidor. Hay que abrirlo en Supabase». El aviso estaba
+traducido desde la fase 1 y funcionó. La lección no es técnica: **leer el
+error antes de buscar la causa en otro sitio.** Se perdió un rato mirando
+el código de invitación con la respuesta escrita en rojo en la captura.
+
+**Y lo que afecta a Pokémon:** el interruptor es del proyecto entero, que
+es el mismo que el de la web de Pokémon. Abrirlo permite crear cuentas en
+Supabase, no entrar en Magic: para eso sigue haciendo falta el código de
+invitación, y para ver una partida, el código de la mesa. Las tablas de
+Pokémon están protegidas por sus propias políticas, que no cambian.
+
 ---
 
 ## Pendiente de que Héctor decida
