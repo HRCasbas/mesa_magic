@@ -180,11 +180,17 @@ export function PantallaEntrada() {
               </label>
               <label className="campo">
                 <span className="campo__nombre">Código de invitación</span>
+                {/* SE ESCRIBE TAL CUAL, sin pasarlo a mayúsculas (el amigo de
+                    Héctor, 01/11/2026: «solo puedo ponerlo en mayúsculas y la
+                    clave tiene minúsculas»). Da igual cómo se escriba, porque
+                    al comprobarlo no se miran las mayúsculas; pero verlo
+                    cambiar mientras tecleas hace pensar que lo estás metiendo
+                    mal, y eso para a quien está entrando por primera vez. */}
                 <input
                   type="text"
                   value={codigo}
-                  onChange={(e) => setCodigo(e.target.value.toUpperCase())}
-                  autoCapitalize="characters"
+                  onChange={(e) => setCodigo(e.target.value)}
+                  autoCapitalize="off"
                   autoCorrect="off"
                   spellCheck={false}
                   required
