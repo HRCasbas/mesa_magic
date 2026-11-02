@@ -98,7 +98,13 @@ const VIDEO_PEDIDO: MediaTrackConstraints = {
   // una parte seria del cupo gratuito.
   width: { ideal: 2560 },
   height: { ideal: 1440 },
-  frameRate: { ideal: 24, max: 30 },
+  // POCOS FOTOGRAMAS, Y ES LO QUE MÁS SE NOTA (Héctor, 02/11/2026: «las
+  // cartas no se veían absolutamente nada»). El caudal se reparte entre
+  // los fotogramas de cada segundo: a la mitad de fotogramas, cada uno se
+  // lleva el doble de detalle. Y una mesa de Magic está QUIETA; lo que hay
+  // que leer es texto parado, no seguir un movimiento. 12 nítidos valen
+  // muchísimo más que 24 borrosos.
+  frameRate: { ideal: 12, max: 20 },
   facingMode: { ideal: 'environment' },
 }
 
@@ -118,7 +124,7 @@ const AUDIO_PEDIDO: MediaTrackConstraints = {
  * cuando hace falta pasar por él. Con 1000 GB gratis al mes sobra de
  * largo para jugar unas horas a la semana.
  */
-const TOPE_BITS_POR_SEGUNDO = 4_500_000
+const TOPE_BITS_POR_SEGUNDO = 6_000_000
 
 /** Las cámaras de este aparato. Los nombres solo salen si ya hay permiso. */
 async function camarasDelAparato(): Promise<MediaDeviceInfo[]> {
@@ -195,8 +201,19 @@ export function useEnlace({ activo, soyEducado, enviarSenal, alRecibirSenal }: O
       if (pista.kind !== 'video') continue
       const ajustes = emisor.getParameters()
       ajustes.encodings = [
-        { ...(ajustes.encodings?.[0] ?? {}), maxBitrate: TOPE_BITS_POR_SEGUNDO },
+        {
+          ...(ajustes.encodings?.[0] ?? {}),
+          maxBitrate: TOPE_BITS_POR_SEGUNDO,
+          // Que no se le ocurra encoger la imagen por su cuenta. Es el
+          // ajuste que más importa aquí: sin él, el navegador baja la
+          // RESOLUCIÓN en cuanto la red aprieta, y una carta a media
+          // resolución no se lee de ninguna manera. Prefiere quedarse a
+          // seis fotogramas con la imagen entera.
+          scaleResolutionDownBy: 1,
+        },
       ]
+      // Lo mismo, dicho donde el navegador lo escucha de verdad.
+      ajustes.degradationPreference = 'maintain-resolution'
       emisor.setParameters(ajustes).catch(() => {
         // Algún navegador puede no dejarlo. No es grave: solo significa
         // que el vídeo irá a la calidad que decida él.

@@ -152,6 +152,15 @@ export function BarraPartida({
               <dd>{diagnostico.fps ?? '—'}</dd>
             </div>
             <div>
+              {/* El caudal es lo que de verdad decide si se lee una carta,
+                  más que la resolución: es lo que se reparte entre los
+                  píxeles de cada fotograma. */}
+              <dt>Caudal</dt>
+              <dd>
+                {diagnostico.kbps !== null ? `${(diagnostico.kbps / 1000).toFixed(1)} Mb/s` : '—'}
+              </dd>
+            </div>
+            <div>
               <dt>Ida y vuelta</dt>
               <dd>{diagnostico.idaYVuelta !== null ? `${diagnostico.idaYVuelta} ms` : '—'}</dd>
             </div>

@@ -2505,6 +2505,47 @@ aviso que se cierra, el formulario que cabe— y las cuatro fallaron igual:
 funcionan a la primera y no tienen vuelta atrás. Al escribir algo que pasa
 una sola vez, preguntarse **qué ocurre si esa vez sale mal**.
 
+## Que se lea una carta por la cámara (02/11/2026)
+
+«Prácticamente en la partida las cartas no se veían absolutamente nada por
+mala resolución.» Tres cosas, por orden de cuánto pesan:
+
+**1. Los fotogramas, que es lo que más manda.** Iba a 24 por segundo, y el
+caudal se reparte entre todos: a la mitad de fotogramas, cada uno se lleva
+el doble de detalle. Y **una mesa de Magic está quieta**: lo que hay que
+leer es texto parado, no seguir un movimiento. Bajado a 12 (máximo 20).
+Esto solo ya dobla lo legible.
+
+**2. Que el navegador no encoja la imagen por su cuenta.** Por defecto, en
+cuanto la red aprieta, WebRTC baja la **resolución** para mantener los
+fotogramas: exactamente al revés de lo que hace falta aquí. Con
+`degradationPreference: 'maintain-resolution'` y `scaleResolutionDownBy: 1`
+prefiere quedarse a seis fotogramas con la imagen entera. Una carta a
+media resolución no se lee de ninguna manera; a seis fotogramas, sí.
+
+**3. El caudal**, de 4,5 a 6 Mb/s.
+
+**Y el caudal se enseña ya en el diagnóstico**, junto a la resolución y los
+fotogramas: era el dato que faltaba para saber qué está pasando en vez de
+adivinarlo.
+
+**LO QUE NO ARREGLA NADA DE ESTO, Y HAY QUE DECIRLO:** si la cámara
+encuadra la mesa entera, el nombre de una carta mide cuatro o cinco
+píxeles **en origen**, y eso no lo arregla ninguna resolución ni ningún
+caudal. Para eso está **ampliar**, que no manda un trozo del vídeo
+comprimido: saca un fotograma de la cámara del otro **a su resolución
+nativa** y manda esa imagen. Ahí sí se usan los 4K de la cámara, enteros.
+El vídeo es para ver la mesa y seguir la partida; para leer letra pequeña
+está el ampliar.
+
+**Por qué 4K se vería PEOR** (lo preguntó Héctor, y conviene no volver a
+discutirlo): el caudal es un presupuesto fijo que se reparte entre los
+píxeles. 4K tiene cuatro veces los píxeles de 1080p, así que con el mismo
+caudal a cada uno le tocan cuatro veces menos bits y el códec tira detalle
+justo donde más se nota, que son los bordes finos del texto. Para que 4K
+luciera harían falta unos 20-25 Mb/s, que por el relé son unos 20 GB por
+hora de partida.
+
 ---
 
 ## Pendiente de que Héctor decida
